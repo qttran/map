@@ -1,6 +1,7 @@
 package cs32.maps;
 
 import java.util.List;
+import KDTree.*;
 
 public class MapsEngine {
 	

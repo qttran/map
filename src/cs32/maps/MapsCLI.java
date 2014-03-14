@@ -1,10 +1,15 @@
 package cs32.maps;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+
+import KDTree.KDTree;
+import KDTree.Coordinates;
 
 public class MapsCLI {
 	// user enters 2 latlongs
@@ -85,13 +90,35 @@ public class MapsCLI {
 		}
 	}
 	
-	
-	
+	//Create a KDTree from the file
+		public void createKDTree(String string) throws IOException {
+			Hashtable<String,Coordinates> hashTable = new Hashtable<String,Coordinates>();
+			List<String> result = new ArrayList<String>();
+			
+			KDTree k = new KDTree();
+			BufferedReader br = new BufferedReader(new FileReader(string));
+			String line = br.readLine();
+			line = br.readLine();
 
-	
-	
-	
-	
+			while (line != null) {
+				String[] list = line.split(",");
+
+				double x = Double.parseDouble(list[2]);
+				double y  = Double.parseDouble(list[3]);
+
+				//put in KDTree
+				Coordinates coordinate = new Coordinates(x,y);
+				String id = list[0];
+				k.insert(id, coordinate);
+
+				//put in HashTable
+				String name = list[1];
+				hashTable.put(name, coordinate);
+
+				line = br.readLine();
+			}
+			br.close();
+		}
 	
 	private boolean isDouble(String s){
 		boolean b = true;
