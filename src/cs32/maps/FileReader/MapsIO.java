@@ -1,6 +1,5 @@
 package cs32.maps.FileReader;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -230,13 +229,20 @@ public class MapsIO {
 	
 	
 	
-	/***************/
 	
+	/**
+	 * Get a set of all street names from the index file. To be used for
+	 * populating the autocomplete Trie.
+	 * 
+	 * @return Set<String>
+	 * @throws IOException
+	 */
 	public Set<String> getStreetNames() throws IOException { // for adding to Trie
 		
 		Set<String> streetNames = new HashSet<>();
 		
 		RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
+		nextNewLine(raf); //skip header with titles
 		String line = "";
 		long fileSize = raf.length();
 		
@@ -250,8 +256,30 @@ public class MapsIO {
 		return streetNames;
 	}
 
-	public List<LatLong> getLatLongs(){ // for adding to KDTree
-		return null;
+	/**
+	 * Get a list of all LatLongs from the nodes file. To be used for
+	 * populating the KDTree.
+	 * 
+	 * @return List<LatLong>
+	 * @throws IOException
+	 */
+	public List<LatLong> getLatLongs() throws IOException { // for adding to KDTree
+		List<LatLong> points = new ArrayList<>();
+		
+		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+		nextNewLine(raf); //skip header with titles
+		String line = "";
+		long fileSize = raf.length();
+		
+		while(raf.getFilePointer() < fileSize) {
+			line = this.readOneLine(raf);
+			String[] spl = line.split("\t");
+			LatLong ll = new LatLong(spl[nodes_latCol], spl[nodes_lonCol]);
+			points.add(ll);
+			nextNewLine(raf);
+		}
+		raf.close();
+		return points;
 	}
 	
 	

@@ -2,12 +2,14 @@ package cs32.maps.FileReader;
 
 import static org.junit.Assert.*;
 
+import java.util.List;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Set;
 
 import org.junit.Test;
 
+import cs32.maps.LatLong;
 import cs32.maps.Way;
 
 public class MapsIOTest {
@@ -49,5 +51,15 @@ public class MapsIOTest {
 			System.out.println(s);
 		}
 		System.out.printf("%s street names in total.\n", streetNames.size());
+	}
+	
+	@Test
+	public void latLongAggregation() throws IOException {
+		MapsIO io = new MapsIO(ways, nodes, index);
+		List<LatLong> pts = io.getLatLongs();
+		for(LatLong s : pts) {
+			System.out.println(s.toString());
+		}
+		System.out.printf("%s latlong pairs in total.\n", pts.size());
 	}
 }
