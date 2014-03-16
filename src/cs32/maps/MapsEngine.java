@@ -7,7 +7,7 @@ public class MapsEngine {
 	public MapsEngine() {
 		
 	}
-	protected String getOutputFromIntersection(List<String> streetnames) {
+	protected String getOutputFromIntersection(List<String> streetnames) { //list of four street names
 		// find nearest start node (kdtree)
 		// find nearest end node (kdtree)
 		
@@ -15,7 +15,7 @@ public class MapsEngine {
 		return null;
 	}
 
-	protected String getOutputFromLatLongs(List<Double> latlons) {
+	protected String getOutputFromLatLongs(LatLong s, LatLong e) {
 		// find nearest start node (kdtree)
 		// find nearest end node (kdtree)
 		
