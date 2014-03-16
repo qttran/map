@@ -121,16 +121,16 @@ public class MapsIO {
 		long end = (file.length() - 1);
 		long mid = (start + end)/2;
 		while (end > start) {
-			System.out.println("prepare to seek mid");
+			//System.out.println("prepare to seek mid");
 			file.seek(mid);
-			System.out.println("sook mid");
+			//System.out.println("sook mid");
 			String[] currentLine = readOneLine(file).split("\t");
 
-			System.out.println("line splitted");
+			//System.out.println("line splitted");
 			int difference = toFind.compareTo(currentLine[whichCol]);
 			if (difference == 0) {
 				file.close();
-				System.out.println("currentLine returned");
+				//System.out.println("currentLine returned");
 				return currentLine;
 			}
 			else if (difference > 0) 
@@ -138,8 +138,8 @@ public class MapsIO {
 			else 
 				end = mid - 1;
 			mid = (start + end)/2;
-			System.out.println("Start: " + start + ". Mid: " + mid + ". End: " + end);
-			System.out.println(end > start);
+			//System.out.println("Start: " + start + ". Mid: " + mid + ". End: " + end);
+			//System.out.println(end > start);
 		} 
 		// if not found
 		file.close();
@@ -192,27 +192,20 @@ public class MapsIO {
 			return null;
 		}
 		
-		//convert 'line' to LocationNode object
-		String id = line[nodes_idCol];
-		String ways = line[nodes_waysCol];
-		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
+		LocationNode ln = createLocationNode(line);
 		
-		Preconditions.checkState(id.equals(nodeID)); // id should be the same one that was requested
+		Preconditions.checkState(ln.id.equals(nodeID)); // id should be the same one that was requested
 		
-		//create ways list
-		List<String> wayList = new ArrayList<>();
-		for(String s : ways.split(",")) {
-			wayList.add(s);
-		}
-		
-		return new LocationNode(id, wayList, latlong);
+		return ln;		
 	}
 	
+
 
 	/**
 	 * Given a nodeID, search the *nodes file* for correct line
 	 * and return a list of LocationNode objects that have ids
 	 * with the same 8 digits
+	 * TODO
 	 */
 	public List<LocationNode> getNodePage(String nodeID) throws IOException {
 		// do binary search
@@ -223,9 +216,28 @@ public class MapsIO {
 			return null;
 		}
 		
-		return null;
+		
+		List<LocationNode> pageList = new ArrayList<>();
+		pageList.add(createLocationNode(line));
+		
+		//TODO read a block and add others to list!
+		
+		return pageList;
 	}
 	
+	
+	private LocationNode createLocationNode(String[] line) {
+		//convert 'line' to LocationNode object
+		String id = line[nodes_idCol];
+		String ways = line[nodes_waysCol];
+		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
+		//create ways list
+		List<String> wayList = new ArrayList<>();
+		for(String s : ways.split(",")) {
+			wayList.add(s);
+		}
+		return new LocationNode(id, wayList, latlong);
+	}
 	
 	
 	

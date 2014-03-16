@@ -104,10 +104,12 @@ public class PathFinder {
 			List<String> path = new ArrayList<>();
 			Node curr = ret;
 			Node pred = ret.predecessor;
+			
 			while(pred != null) {
 				String connection = getConnectionString(pred.locNode.id, curr.locNode.id, curr.predConnection);
 				path.add(0, connection);
 				curr = pred;
+				pred = curr.predecessor;
 			}
 			return path;
 		}
@@ -138,8 +140,9 @@ public class PathFinder {
 
 			//remove 'curr' from PQ
 			curr = pq.poll(); 
-			_nodeMap.remove(curr);
+			_nodeMap.remove(curr.locNode.id);
 			
+			//System.out.println(curr.locNode.toString());
 			
 			if(curr.locNode.id.equals(goal.locNode.id)) { // found the best path!
 				return curr;
@@ -152,7 +155,6 @@ public class PathFinder {
 
 			/* for each neighbor 'b' of 'curr' */
 			for(Node b : neighbors.keySet() ) {
-
 				if(closedSet.contains(b))
 					continue;
 
@@ -222,9 +224,9 @@ public class PathFinder {
 		for(String wayID : start.locNode.ways) { // for every WAY connected to 'start'
 
 			Way way = fileUtility.getWay(wayID); // "id"  "start node ID"    "end node ID"
-
-			Preconditions.checkState(start.locNode.id == way.startNodeID);
-
+			
+			Preconditions.checkState(start.locNode.id.equals(way.startNodeID));
+			
 			String oppositeNodeID = way.endNodeID;
 			Node neighbor = null;
 			// if node is already in my nodeMap, get and add it to neighbors
@@ -264,7 +266,7 @@ public class PathFinder {
 		List<LocationNode> pageOfNodes = fileUtility.getNodePage(nodeID);
 		LocationNode toReturn = null;
 		for(LocationNode ln : pageOfNodes) {
-			if(ln.id == nodeID) {
+			if(ln.id.equals(nodeID)) {
 				toReturn = ln;
 			}
 			else {
