@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry excluding="src/" kind="src" path=""/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-<<<<<<< HEAD
-	<classpathentry kind="lib" path="/gpfs/main/home/mcashton/course/cs032/autocorrect/lib/guava-16.0.jar"/>
-	<classpathentry kind="lib" path="/gpfs/main/home/mcashton/course/cs032/autocorrect/lib/junit-4.11.jar"/>
-=======
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-7-openjdk-amd64"/>
->>>>>>> 0341cdfb1f4f98137e892b72a9a86d36647e54b0
+	<classpathentry kind="lib" path="/home/mcashton/course/cs032/map/lib/guava-16.0.jar"/>
+	<classpathentry kind="lib" path="/home/mcashton/course/cs032/map/lib/junit-4.11.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
