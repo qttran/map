@@ -1,9 +1,12 @@
 package cs32.maps.FileReader;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.base.Preconditions;
 
@@ -146,6 +149,10 @@ public class MapsIO {
 
 
 
+
+	
+	
+	
 	
 	/**
 	 * Given a wayID, search the *ways file* for correct line
@@ -223,6 +230,32 @@ public class MapsIO {
 	
 	
 	
+	/***************/
+	
+	public Set<String> getStreetNames() throws IOException { // for adding to Trie
+		
+		Set<String> streetNames = new HashSet<>();
+		
+		RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
+		String line = "";
+		long fileSize = raf.length();
+		
+		while(raf.getFilePointer() < fileSize) {
+			line = this.readOneLine(raf);
+			String[] spl = line.split("\t");
+			streetNames.add(spl[index_nameCol]);
+			nextNewLine(raf);
+		}
+		raf.close();
+		return streetNames;
+	}
+
+	public List<LatLong> getLatLongs(){ // for adding to KDTree
+		return null;
+	}
+	
+	
+	
 	
 	/** for finding column info @mcashton */
 	private int getColumn(String filePath, String colName) throws IOException {
@@ -268,6 +301,12 @@ public class MapsIO {
 		raf.seek(originalLoc);
 		
 		return new String(b);
+	}
+	
+	//helper method -- extends raf to next newline
+	public static void nextNewLine(RandomAccessFile raf) throws IOException{
+		int c;
+		while((c = raf.read()) != '\n'  && c!=-1);
 	}
 }
 

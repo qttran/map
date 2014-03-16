@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -38,5 +39,15 @@ public class MapsIOTest {
 		assertTrue(way.endNodeID.equals("/n/4016.7374.527767845"));
 		
 		System.out.println(way.toString());
+	}
+	
+	@Test
+	public void streetNameAggregation() throws IOException {
+		MapsIO io = new MapsIO(ways, nodes, index);
+		Set<String> streetNames = io.getStreetNames();
+		for(String s : streetNames) {
+			System.out.println(s);
+		}
+		System.out.printf("%s street names in total.\n", streetNames.size());
 	}
 }
