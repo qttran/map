@@ -3,7 +3,21 @@ package cs32.maps.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 
+import cs32.maps.LocationNode;
+import cs32.maps.Way;
+
 public class MapsIO {
+	
+	String waysFile;
+	String nodesFile;
+	String IndexFile;
+	public MapsIO(String waysFile, String nodesFile, String IndexFile) {
+		this.waysFile = waysFile;
+		this.nodesFile = nodesFile;
+		this.IndexFile = IndexFile;
+	}
+	
+	
 	/** Read one line from a file, starting at the file pointer
 	 * 
 	 * @param f
@@ -99,6 +113,23 @@ public class MapsIO {
 		// if not found
 		return null;
 	}
+
+
+
+	
+	
+	public Way getWay(String wayID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+
+
+	public LocationNode getLocationNode(String oppositeNodeID) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	
 	
 }
+

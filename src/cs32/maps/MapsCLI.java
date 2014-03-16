@@ -7,10 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MapsCLI {
-	// user enters 2 latlongs
-	// find nearest start latlong
-	// find nearest end latlong
-	// get shortest path between them
+
 	private MapsEngine _engine;
 
 	public MapsCLI(MapsEngine en) throws IOException {
@@ -60,13 +57,11 @@ public class MapsCLI {
 				System.out.println("ERROR: give two latitude/longitude pairs");
 				return null;
 			}
-
-			List<Double> latlons = new ArrayList<>();
-			latlons.add(lat1);
-			latlons.add(lon1);
-			latlons.add(lat2);
-			latlons.add(lon2);
-			return _engine.getOutputFromLatLongs(latlons); // engine
+			
+			LatLong start = new LatLong(lat1, lon1);
+			LatLong end = new LatLong(lat2, lon2);
+			
+			return _engine.getOutputFromLatLongs(start, end); // engine
 		}
 
 		//street name format
