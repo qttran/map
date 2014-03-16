@@ -3,17 +3,20 @@ package PathFinding;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import cs32.maps.LocationNode;
 import cs32.maps.MapsMathUtility;
 import cs32.maps.Way;
-import cs32.maps.FileReader.MapsFileReader;
+import cs32.maps.FileReader.MapsIO;
 
 /**
  * PathFinder
@@ -27,20 +30,27 @@ public class PathFinder {
 	private static class Node {
 		public final LocationNode locNode;
 		public double g_score = Double.MAX_VALUE;
-		public double f_score = 0;
+		public double f_score = Double.MAX_VALUE;
 		public Node predecessor = null;
 		public String predConnection = ""; //unweighted connection to predecessor
 		public Node(LocationNode a) {
 			locNode = a;
 		}
+
+		public void setPredecessor(Node pred, String conn) {
+			predecessor = pred;
+			predConnection = conn;
+		}
+
 		@Override
 		public boolean equals(Object o){  //nodes are equal if they hold the same LocationNode
 			final Node other = (Node) o;
 			return locNode.equals(other.locNode); 
 		}
-		public void setPredecessor(Node pred, String conn) {
-			predecessor = pred;
-			predConnection = conn;
+		
+		@Override
+		public int hashCode(){
+			return Objects.hashCode(locNode.id); //guava -- hash based on locNode id
 		}
 	}
 
@@ -61,9 +71,14 @@ public class PathFinder {
 
 
 
-	private final MapsFileReader fileUtility;
-
-	public PathFinder(MapsFileReader f){
+	private final MapsIO fileUtility;
+	private Map<String, Node> _nodeMap;
+	private Map<String, LocationNode> _pagedNodes;
+	
+	
+	public PathFinder(MapsIO f){
+		_nodeMap = new HashMap<>(); // the priority queue of A-STAR
+		_pagedNodes = new HashMap<>(); 
 		fileUtility = f;
 	}
 
@@ -105,9 +120,6 @@ public class PathFinder {
 	}
 
 
-
-	/**
-	 */
 	private Node aStarSearch(Node start, Node goal) throws IOException {
 
 		start.g_score = 0;
@@ -115,58 +127,74 @@ public class PathFinder {
 
 		PriorityQueue<Node> pq = new PriorityQueue<>(50, NodeComparator);
 		pq.add(start);		
-
+		_nodeMap.put(start.locNode.id, start);
+		
 		Node curr;
-
+		
+		Set<Node> closedSet = new HashSet<>();
+		
+		
 		while(!pq.isEmpty()) {
 
-			curr = pq.poll(); //remove 'curr' from PQ
-
+			//remove 'curr' from PQ
+			curr = pq.poll(); 
+			_nodeMap.remove(curr);
+			
+			
 			if(curr.locNode.id.equals(goal.locNode.id)) { // found the best path!
 				return curr;
 			}
 
-			// add curr to closed set?
+			closedSet.add(curr);
 
-			List<Node> connectedNodes = getConnectedNodes(curr); 
+			Map<Node, String> neighbors = getConnectedNodes(curr); //  'neighbor Node' , 'wayID that connects it to curr'
+			
 
+			/* for each neighbor 'b' of 'curr' */
+			for(Node b : neighbors.keySet() ) {
 
-			/* FOR EACH NODE 'b' THAT IS CONNECTED TO  'curr' */
-			for(Node b : connectedNodes ) {
+				if(closedSet.contains(b))
+					continue;
 
-				// if the LocationNode in Node b is already in the pq, change
-				// its dist to be whats in the openSet
-				boolean isInPQ = false;
-				Node nodeWithThisLocationNode = getNodeWithLocationNode(pq, b.locNode);
-				if(nodeWithThisLocationNode!=null){
-					b.g_score = nodeWithThisLocationNode.g_score;
-					b.f_score = nodeWithThisLocationNode.f_score;
-					isInPQ = true;
-				}
+				
+				boolean isInPQ = pq.contains(b);
 
-				// 'pre' is the connection between 'b' and 'curr'
-				Node pred = b.predecessor;
-				Preconditions.checkState(pred.equals(curr));
+				if(!isInPQ)
+					Preconditions.checkState(b.predecessor.equals(curr));
+				else
+					Preconditions.checkState(!b.predecessor.equals(curr));
 
 
-				double b_new_g_score = curr.g_score; // + dist_between(curr, b)
+				double tentative_g_score = curr.g_score; // + dist_between(curr, b)
 
-				boolean thisPathIsBetter = b_new_g_score < b.g_score;
+				boolean thisPathIsBetter = tentative_g_score < b.g_score;
 
 
 				if(isInPQ && thisPathIsBetter) {
-					b.g_score = b_new_g_score;
+					//update gscore, fscore, predecessor
+					b.g_score = tentative_g_score;
 					b.f_score = b.g_score + heuristic(b, goal);
-					// remove the old reference to this LocationNode and add the new one
-					// ****this will update the priority and also the 'predecessor' reference
+					b.setPredecessor(curr, neighbors.get(b));
+
+					//remove and re-add
 					pq.remove(b);
 					pq.offer(b);
+					
+					_nodeMap.put(b.locNode.id, b); //update nodeMap reference
 
 				}
 				else if(!isInPQ){
 					//predecessor info is already set
-					b.g_score = b_new_g_score;
+					
+					Preconditions.checkNotNull(b.predecessor);
+					Preconditions.checkState(!_nodeMap.containsKey(b.locNode.id));
+					
+					b.g_score = tentative_g_score;
+					b.f_score = b.g_score + heuristic(b, goal);
+					
 					pq.offer(b);
+					
+					_nodeMap.put(b.locNode.id, b); //add to nodeMap
 				}
 
 				// else: do nothing (it is already in the pq but this path is worse)
@@ -180,6 +208,96 @@ public class PathFinder {
 		return MapsMathUtility.distance(curr.locNode.latlong, goal.locNode.latlong);
 	}
 
+
+
+
+
+
+
+	// map (NODE => wayID) that connects it to 'start'
+	private Map<Node, String> getConnectedNodes(Node start) throws IOException {
+		
+		Map<Node, String> neighbors = new HashMap<>();
+
+		for(String wayID : start.locNode.ways) { // for every WAY connected to 'start'
+
+			Way way = fileUtility.getWay(wayID); // "id"  "start node ID"    "end node ID"
+
+			Preconditions.checkState(start.locNode.id == way.startNodeID);
+
+			String oppositeNodeID = way.endNodeID;
+			Node neighbor = null;
+			// if node is already in my nodeMap, get and add it to neighbors
+			if(_nodeMap.containsKey(oppositeNodeID)) { 
+				neighbor = _nodeMap.get(oppositeNodeID);
+			}
+			// else, if node is in my pagedMap
+			else if(_pagedNodes.containsKey(oppositeNodeID)) {
+				neighbor = new Node(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
+				neighbor.setPredecessor(start, wayID);
+				
+			}
+			// else, read the node from file
+			else {
+				LocationNode opp = this.getLocationNode(oppositeNodeID); // will also add nodes to _pagedNodes
+				neighbor = new Node(opp);
+				neighbor.setPredecessor(start, wayID);	
+			}
+			
+			neighbors.put(neighbor, wayID);
+			
+		}
+		return neighbors;
+	}
+
+	
+	/**
+	 * given a node ID, read in a page (i.e. a list of LocationNodes near 
+	 * and including that node id)
+	 * 
+	 * add all paged nodes to _pagedNodes map
+	 * 
+	 * return the found LocationNode of original nodeID
+	 */
+	private LocationNode getLocationNode(String nodeID) throws IOException {
+		
+		List<LocationNode> pageOfNodes = fileUtility.getNodePage(nodeID);
+		LocationNode toReturn = null;
+		for(LocationNode ln : pageOfNodes) {
+			if(ln.id == nodeID) {
+				toReturn = ln;
+			}
+			else {
+				_pagedNodes.put(ln.id, ln);	
+			}
+		}
+		Preconditions.checkNotNull(toReturn);
+		return toReturn;
+	}
+	
+	
+	/*** for testing only ***/
+	public Set<LocationNode> dummyGetReceivers(String nodeID) throws IOException{
+		LocationNode a = fileUtility.getLocationNode(nodeID);
+		Map<Node, String> map = getConnectedNodes(new Node(a));
+		Set<LocationNode> as = new HashSet<>();
+		for(Node nn : map.keySet()){
+			as.add(nn.locNode);
+		}
+		return as;
+	}
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * given a priority queue and an LocationNode,
 	 * return the node in the priority queue that contains the
@@ -199,58 +317,4 @@ public class PathFinder {
 		}
 		return null;
 	}
-
-
-
-
-
-	/**
-	 * - get list of possible bacon receivers given a start Node
-	 * - creates all NEW NODES, so their 'predecessor' is set to 'start'
-	 * and their 'dist' is set to infinity.
-	 * 
-	 * NOTE: these LocationNodes returned MAY already be in the PQ. Taken care
-	 * of in dijkstra's.
-	 */
-	private List<Node> getConnectedNodes(Node start) throws IOException {
-		List<Node> receivers = new ArrayList<>();
-
-		for(String wayID : start.locNode.ways) { // for every WAY connected to 'start'
-
-			Way w = fileUtility.getWay(wayID);
-			String oppositeNodeID = "";
-			//TODO deal with 'direction' of the way ID
-			if(w.startNodeID == start.locNode.id) {
-				oppositeNodeID = w.endNodeID;
-			}
-			else if (w.endNodeID == start.locNode.id) {
-				oppositeNodeID = w.startNodeID;
-			}
-			else {
-				System.out.println("ERROR");
-			}
-
-			LocationNode opp = fileUtility.getLocationNode(oppositeNodeID);
-			
-			Node nodeToAdd = new Node(opp);
-			nodeToAdd.setPredecessor(start, wayID);
-			receivers.add(nodeToAdd);			
-		}
-		return receivers;
-	}
-
-
-
-	/*** for testing only ***/
-	public Set<LocationNode> dummyGetReceivers(String nodeID) throws IOException{
-		LocationNode a = fileUtility.getLocationNode(nodeID);
-		List<Node> map = getConnectedNodes(new Node(a));
-		Set<LocationNode> as = new HashSet<>();
-		for(Node nn : map){
-			as.add(nn.locNode);
-		}
-		return as;
-	}
-
-
 }

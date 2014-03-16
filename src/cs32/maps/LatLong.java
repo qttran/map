@@ -7,4 +7,8 @@ public class LatLong {
 		lat = latitude;
 		lon = longitude;
 	}
+	public LatLong(String latString, String lonString) {
+		lat = Double.parseDouble(latString);
+		lon = Double.parseDouble(lonString);
+	}
 }
