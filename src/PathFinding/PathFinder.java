@@ -219,6 +219,7 @@ public class PathFinder {
 
 			Way w = fileUtility.getWay(wayID);
 			String oppositeNodeID = "";
+			//TODO deal with 'direction' of the way ID
 			if(w.startNodeID == start.locNode.id) {
 				oppositeNodeID = w.endNodeID;
 			}
