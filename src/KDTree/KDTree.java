@@ -30,38 +30,7 @@ public class KDTree {
 		}
 	}
 
-	/** SEARCH METHOD
-	 * Input: ITEM type T
-	 * Output: returns a Tuple(Binary Node, Integer)
-	 * If the tree is empty, return Tuple(null,null)
-	 * Otherwise, if ITEM is already in the tree, return Tuple(that node, 0)
-	 * if the node is not in the tree, return the parent of the node 
-	 * where ITEM is supposed to be put in and 1 if ITEM on the right of that parent,
-	 * and -1 if ITEM should be put on the left of that parent.
-	 */
-	private Tuple<KDNode, Integer> search(Coordinates item) {
-		KDNode current = root;
-		Tuple<KDNode, Integer> tuple = new Tuple<KDNode, Integer>(null, null);
-		while (current != null) {
-			if (current.item.compareTo(item) == 0) {
-				tuple.x = current;
-				tuple.y = 0;
-				current = null;
-			}
-			else if (current.item.compareTo(item) < 0) {
-				tuple.x = current;
-				tuple.y = 1;
-				current = current.right;
-			}
-			else {
-				tuple.x = current;
-				tuple.y = -1;
-				current = current.left;
-			}
-		}
-		return tuple;
-	}
-	
+
 	
 	/** LOOK UP METHOD
 	 */
@@ -69,75 +38,6 @@ public class KDTree {
 		Tuple<KDNode, Integer> tuple = this.search(item);
 		if (tuple.y == null) return false;
 		else return (tuple.y == 0);
-	}
-
-
-	/** ROTATE METHOD
-	 */
-	private void rotate(KDNode x) {
-		if ((x != null) && (x.parent != null)) {
-			KDNode y = x.parent;
-			//connect x with y's parent if there is one
-			x.parent = y.parent;
-			if (y.parent != null) {
-				if (y.parent.item.compareTo(y.item) < 0) 
-					y.parent.right = x;
-				else y.parent.left = x;
-			}
-			// CW
-			if (x.item.compareTo(y.item) < 0) {
-				KDNode b = x.right;
-				x.right = y;
-				y.parent = x;
-				y.left = b;
-				if (b != null) {
-					b.parent = y;
-				}
-			}
-			// CCW
-			else {
-				KDNode b = x.left;
-				x.left = y;
-				y.parent = x;
-				y.right = b;
-				if (b != null) {
-					b.parent = y;
-				}
-			}
-		}
-	}
-
-	/** SPLAY METHOD 
-	 */
-	private void splay(KDNode x) {
-		if (x.parent != null) {
-			KDNode p = x.parent;
-			//Zig step: p is the root
-			if (p.parent == null) {
-				this.rotate(x);
-				this.root = x;
-			}
-			else {
-				KDNode g = p.parent;
-				//Zig-zig step: p is not the root and 
-				// x and p are either both right or left children
-				if ((x.item.compareTo(p.item) * p.item.compareTo(g.item)) > 0) {
-					this.rotate(p);
-					this.rotate(x);
-					if (x.parent == null) 
-						this.root = x;
-				}
-				//Zig-zag step: p is not the root and 
-				//x is a right child and p is a left child or vice versa
-				else {
-					this.rotate(x);
-					this.rotate(x);
-					if (x.parent == null) 
-						this.root = x;
-				}
-			}
-
-		}
 	}
 
 
@@ -167,36 +67,7 @@ public class KDTree {
 		}
 	}
 
-	/**SEARCH DISTANCE HELPER */
-	public PriorityQueue<Tuple<KDNode,Double>> searchDistanceHelper(int r, Coordinates item, KDNode node) {
-		PriorityQueue<Tuple<KDNode,Double>> pQueue = new PriorityQueue<Tuple<KDNode, Double>>();
-
-		if (r == 0) {
-			return pQueue;
-		}
-		if (node != null) {
-			double difference = item.distance(node.item);
-			double compare = node.item.compareTo(item);
-			if (Math.abs(difference) <= r*r) {
-				pQueue.add(new Tuple<KDNode, Double>(node,difference));
-				PriorityQueue<Tuple<KDNode,Double>> toAdd = searchDistanceHelper(r,item,node.right);
-				PriorityQueue<Tuple<KDNode,Double>> toAdd2 = searchDistanceHelper(r,item,node.left);
-				pQueue.addAll(toAdd);
-				pQueue.addAll(toAdd2);
-			}
-			else if (difference > r*r) {
-				if (compare > 0) {
-					PriorityQueue<Tuple<KDNode,Double>> toAdd = searchDistanceHelper(r,item,node.right);
-					pQueue.addAll(toAdd);
-				} else {
-					PriorityQueue<Tuple<KDNode,Double>> toAdd = searchDistanceHelper(r,item,node.left);
-					pQueue.addAll(toAdd);
-				}
-			} 
-		}
-		return pQueue;
-		
-	}
+	
 	
 	/**SEARCH DISTANCE */
 	public List<String> searchDistance(int r, Coordinates item, KDNode node) {
@@ -308,6 +179,139 @@ public class KDTree {
 	}
 
 
+	/**SEARCH DISTANCE HELPER */
+	private PriorityQueue<Tuple<KDNode,Double>> searchDistanceHelper(int r, Coordinates item, KDNode node) {
+		PriorityQueue<Tuple<KDNode,Double>> pQueue = new PriorityQueue<Tuple<KDNode, Double>>();
+
+		if (r == 0) {
+			return pQueue;
+		}
+		if (node != null) {
+			double difference = item.distance(node.item);
+			double compare = node.item.compareTo(item);
+			if (Math.abs(difference) <= r*r) {
+				pQueue.add(new Tuple<KDNode, Double>(node,difference));
+				PriorityQueue<Tuple<KDNode,Double>> toAdd = searchDistanceHelper(r,item,node.right);
+				PriorityQueue<Tuple<KDNode,Double>> toAdd2 = searchDistanceHelper(r,item,node.left);
+				pQueue.addAll(toAdd);
+				pQueue.addAll(toAdd2);
+			}
+			else if (difference > r*r) {
+				if (compare > 0) {
+					PriorityQueue<Tuple<KDNode,Double>> toAdd = searchDistanceHelper(r,item,node.right);
+					pQueue.addAll(toAdd);
+				} else {
+					PriorityQueue<Tuple<KDNode,Double>> toAdd = searchDistanceHelper(r,item,node.left);
+					pQueue.addAll(toAdd);
+				}
+			} 
+		}
+		return pQueue;
+		
+	}
+	
+	/** ROTATE METHOD
+	 */
+	private void rotate(KDNode x) {
+		if ((x != null) && (x.parent != null)) {
+			KDNode y = x.parent;
+			//connect x with y's parent if there is one
+			x.parent = y.parent;
+			if (y.parent != null) {
+				if (y.parent.item.compareTo(y.item) < 0) 
+					y.parent.right = x;
+				else y.parent.left = x;
+			}
+			// CW
+			if (x.item.compareTo(y.item) < 0) {
+				KDNode b = x.right;
+				x.right = y;
+				y.parent = x;
+				y.left = b;
+				if (b != null) {
+					b.parent = y;
+				}
+			}
+			// CCW
+			else {
+				KDNode b = x.left;
+				x.left = y;
+				y.parent = x;
+				y.right = b;
+				if (b != null) {
+					b.parent = y;
+				}
+			}
+		}
+	}
+
+	/** SPLAY METHOD 
+	 */
+	private void splay(KDNode x) {
+		if (x.parent != null) {
+			KDNode p = x.parent;
+			//Zig step: p is the root
+			if (p.parent == null) {
+				this.rotate(x);
+				this.root = x;
+			}
+			else {
+				KDNode g = p.parent;
+				//Zig-zig step: p is not the root and 
+				// x and p are either both right or left children
+				if ((x.item.compareTo(p.item) * p.item.compareTo(g.item)) > 0) {
+					this.rotate(p);
+					this.rotate(x);
+					if (x.parent == null) 
+						this.root = x;
+				}
+				//Zig-zag step: p is not the root and 
+				//x is a right child and p is a left child or vice versa
+				else {
+					this.rotate(x);
+					this.rotate(x);
+					if (x.parent == null) 
+						this.root = x;
+				}
+			}
+
+		}
+	}
+	
+	/** SEARCH METHOD
+	 * Input: ITEM type T
+	 * Output: returns a Tuple(Binary Node, Integer)
+	 * If the tree is empty, return Tuple(null,null)
+	 * Otherwise, if ITEM is already in the tree, return Tuple(that node, 0)
+	 * if the node is not in the tree, return the parent of the node 
+	 * where ITEM is supposed to be put in and 1 if ITEM on the right of that parent,
+	 * and -1 if ITEM should be put on the left of that parent.
+	 */
+	private Tuple<KDNode, Integer> search(Coordinates item) {
+		KDNode current = root;
+		Tuple<KDNode, Integer> tuple = new Tuple<KDNode, Integer>(null, null);
+		while (current != null) {
+			if (current.item.compareTo(item) == 0) {
+				tuple.x = current;
+				tuple.y = 0;
+				current = null;
+			}
+			else if (current.item.compareTo(item) < 0) {
+				tuple.x = current;
+				tuple.y = 1;
+				current = current.right;
+			}
+			else {
+				tuple.x = current;
+				tuple.y = -1;
+				current = current.left;
+			}
+		}
+		return tuple;
+	}
+	
+
+	
 	/** DELETE METHOD
 	 * METHOD NEVER USED
 	 */
