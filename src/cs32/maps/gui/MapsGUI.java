@@ -29,10 +29,12 @@ public class MapsGUI extends JFrame {
 		super();
 		this.setPreferredSize(new Dimension(800, 800));
 		this.setLocationRelativeTo(null);
+		
+		//for testing purposes
 		LinkedList<StreetNode> ll = new LinkedList<StreetNode>();
 		ll.add(new StreetNode(new Point2D.Double(50,50), new Point2D.Double(80,40), "a"));
 		ll.add(new StreetNode(new Point2D.Double(50,50), new Point2D.Double(30, 120), "b"));
-		//ll.add(new StreetNode(new Point2D.Double(100,100)));
+		
 		MapPanel mp = new MapPanel(en, ll);
 		JPanel mpWrap = new JPanel(new FlowLayout());
 		mpWrap.add(mp);
