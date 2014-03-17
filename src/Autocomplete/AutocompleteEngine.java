@@ -1,21 +1,17 @@
 package Autocomplete;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
-import java.util.Set;
 
 public class AutocompleteEngine {
 	
 	public static final int SUGGS = 5; // how many suggestions to give
 	
-	private Trie _trie;
+	private Autocorrect _ac;
 	
 	public AutocompleteEngine() {
-		_trie = new Trie();
+		_ac = new Autocorrect();
 	}
-	
 	
 	/*
 	 * word list generation:
@@ -29,45 +25,25 @@ public class AutocompleteEngine {
 	 *  
 	 */
 
-	public void addAllWords(Set<String> wordSet) {
-
-		for(String s : wordSet) {
-
-			// no modification -- keep spaces, characters, capitalization
-
-			if(s.equals("")) { //no letters in this string
-				continue;
-			}
-
-			_trie.addWord(s);
-		}
+	public void addAllWords(String fileLocation) {
+		_ac.addCorpus(fileLocation);
 	}
 
-
-	public List<String> getCompletions(String prefix) {
-		//Preconditions.checkArgument(prefix.matches("[a-z]{1,}")); //check valid
+	public List<String> getCompletions(String input) {
+		//modify the input to make all the letters lowercase, remove unwanted spaces and
+		//punctuations.
+		input = input.toLowerCase();
+		//input = input.replaceAll("[^a-zA-Z ]", " ");
+		input = input.replaceAll(" +", " ");
+		input = input.trim();
+		//split input string into seperate words.
+		String[] words = input.split(" ");
+		String word = words[words.length-1];
+		input = input.substring(0, input.lastIndexOf(" ")+1);
+		String prevWord = null;
+		if (words.length > 1) prevWord = words[words.length-2];
 		
-		List<String> completions = getSortedWords(_trie.getCompletions(prefix));
-		if(completions.size() > SUGGS) { //trim list size
-			completions = completions.subList(0, SUGGS);
-		}
+		List<String> completions = _ac.getSuggestions(word, prevWord);
 		return completions; 
 	}
-	
-	
-	public static List<String> getSortedWords(Set<String> ws) {
-		List<String> sorted = new ArrayList<>();
-		for(String s : ws) {
-			sorted.add(s);
-		}
-		Collections.sort(sorted, new WordSortComparator());
-		return sorted;
-	}
-
-	
-	
-	public Trie getTrie(){
-		return _trie;
-	}
-
 }

@@ -1,181 +1,224 @@
 package Autocomplete;
-import java.util.HashSet;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Set;
-import com.google.common.base.Preconditions;
+import java.util.Stack;
+import static java.lang.Math.*;
 
 public class Trie {
-
-	private TrieNode _root;
-
+	private Node _root; 
+	
+	/*
+		>Purpose: 
+			constructor that creates a new trie with a root node.
+		>Input: --
+		>Output: --
+		>Throws: -- 
+	*/
 	public Trie() {
-		_root = new TrieNode();
+		_root = new Node("root");	
 	}
 	
-	
+	/*
+		>Purpose: 
+			this method adds a word to the trie by searching through the trie and 
+			adding new nodes where necessary.
+		>Input: s - word that will be added to the trie.
+		>Output: --
+		>Throws: -- 
+	*/
+	private void addToTrie(String s){
+		Node currentNode = _root;
+		char[] letters = s.toCharArray();
+		for (int i=0; i<letters.length; i++){
+			char letter = letters[i];
+			Boolean isFound = false;
+			if (!currentNode.getChildren().isEmpty()) {
+				for (Node n : currentNode.getChildren()) {
+					if (n._letter == letter) {
+						currentNode = n;
+						isFound = true;
+						break;
+					}
+				}	
+			}
+			if (!isFound) {
+				if (i==letters.length-1) {
+					currentNode = currentNode.addChild(letter,true);
+				}
+				else currentNode = currentNode.addChild(letter, false);
+			}
+			else if (i==letters.length-1) currentNode.setWord();
+		}
+	}
 
-	/**
-	 * addWord
-	 *  -> calls recursive func. insert(root, word)
-	 * @param word to add to the Trie
-	 * @return added TrieNode. If word already existed in Trie,
-	 * return the existing TrieNodes.
-	 */
-	public TrieNode addWord(String word) {
-		Preconditions.checkArgument(isValidWord(word.toUpperCase()));
+	/*
+		>Purpose: 
+			searches the trie for the given string. returns null if the string is not in
+			the trie.
+		>Input: s - string that will be searched for.
+		>Output: Node - the node that represents the input string.
+		>Throws: -- 
+	*/
+	public Node searchTrie(String s){
+		Node currentNode = _root;
+		LinkedList<Character> charQueue = new LinkedList<Character>();
+		for (Character letter : s.toCharArray()){
+			charQueue.add(letter);
+		}
+		while (!charQueue.isEmpty()){
+			Boolean isFound = false;
+			if (currentNode.getChildren().isEmpty()) return null;
+			for (Node n : currentNode.getChildren()) {
+				if (n._letter == charQueue.peek()) {
+					charQueue.pop();
+					currentNode = n;
+					isFound = true;
+					break;
+				}
+			}
+			if (!isFound) return null;
+		}
+		return currentNode;
+	}
+	
+	/*
+		>Purpose: 
+			lists all the strings that starts with the given prefix.
+		>Input: s - the prefix that will be searched.
+		>Output: ArrayList<String> a list of all the strings that start with the prefix.
+		>Throws: -- 
+	*/
+	public ArrayList<String> getPrefixMatch(String s) {
+		Node n = searchTrie(s);
+		if (n==null) return new ArrayList<String>();
+		ArrayList<String> stringsToReturn = new ArrayList<String>();
+		Stack<Node> stack = new Stack<Node>();
+		stack.push(n);
 		
-		TrieNode newNode = insert(_root, word.toUpperCase()); //uppercase in tree
-		newNode.setIsWord(word); //word var holds original case
-
-		return newNode;
-	}
-
-
-	/**
-	 * insert(node, word)
-	 * 
-	 * insert a string into trie. If TrieNode for this
-	 * string already exists, just return it. (The caller,
-	 * addWord(), takes are of incrementing occurrences
-	 * if this is the case).
-	 * 
-	 * @param node
-	 * @param word
-	 * @return the new or existing TrieNode that is the end of 'word'
-	 */
-	private TrieNode insert(TrieNode node, String word) {
-		if(word.length()==0) {
-			return node;
-		}
-		char first = word.charAt(0);
-		TrieNode child = node.getChildAtChar(first);
-
-		//if char is not already a child, create it
-		if(child == null) {
-			child = node.addChild(first); //add a child with that first char
-		}
-		return insert(child, word.substring(1, word.length()));
-	}
-
-	
-	
-	
-	//32 - 96
-	//lowercase 97 - 122
-	//123 - 126 
-	/* if word is a valid word to add to trie */
-	public static boolean isValidWord(String word) {
-		for(char c : word.toCharArray()) {
-			if ((int) c<32 || (int) c>96 ) { 
-				System.out.println("ALERT char _"+c+"_ is invalid");
-				return false;
+		while (!stack.isEmpty()){
+			Node node = stack.pop();
+			
+			if (node.isWord()) {
+				stringsToReturn.add(node._key);
+			}
+			
+			for (Node child : node.getChildren()) {
+				stack.push(child);
 			}
 		}
-		return true;
+		return stringsToReturn;
 	}
 	
-	/* is empty boolean */
-	public boolean isEmpty() {
-		return _root.isLeaf();
-	}
+	/*
+		>Purpose: 
+			lists all the words that are at most the specified number of Edit Distances away
+			from the input string.
+		>Input: string1 - the input string.
+				d - the maximum number of edit distances.
+		>Output: - list of all the found words.
+		>Throws: -- 
+	*/
+	public ArrayList<String> getLED(String string1, int d){
+		ArrayList<String> stringsToReturn = new ArrayList<String>();
+		int l1 = string1.length()+1; 
+		Stack<Node> stack = new Stack<Node>();
+		stack.push(_root);
+		
+		while (!stack.isEmpty()){
+			Node node = stack.pop();
+			if (node.isWord()) {
+				String string2 = node._key;
+				int[] currentRow = new int[l1];
+				int[] previousRow = new int[l1];
+				int l2 = string2.length()+1;
 
-	
-	
-	
-	/******** finding prefixes **********/
-	
-	
-	/**
-	 * simple function to call find() without having
-	 * to give root.
-	 * @param s
-	 * @return found TrieNode or null
-	 */
-	public TrieNode getPrefixNode(String s){
-		return this.find(_root, s);
-	}
+				for (int col = 0; col<l1; col++) previousRow[col] = col;
 
-	/**
-	 * finds end node of string "str"
-	 * end node may be a real word or a prefix
-	 * if str prefix does not exist, returns null
-	 * 
-	 * @param node
-	 * @param str
-	 * @return found node or null
-	 */
-	private TrieNode find(TrieNode node, String str) {
-		if(str.length()==0) {
-			return node;
+				for (int row = 1; row<l2; row++) {
+					currentRow = new int[l1];
+					currentRow[0] = previousRow[0] + 1;
+
+					for (int col = 1; col<l1; col++){
+						if (string1.charAt(col-1) == string2.charAt(row-1)) {
+							currentRow[col] = previousRow[col - 1];
+						}
+						else {
+							int replaceDistance = previousRow[col - 1] + 1;
+							int insertDistance = currentRow[col - 1] + 1;
+							int removeDistance = previousRow[col] + 1;
+							currentRow[col] = min(min(insertDistance,removeDistance),replaceDistance);
+						}
+					}
+					previousRow = currentRow;
+				}
+		
+				if (currentRow[l1-1]<=d) stringsToReturn.add(node._key);
+
+				for (Node child : node.getChildren()) {
+					stack.push(child);
+				}
+			}
+			else {
+				for (Node child : node.getChildren()) {
+					stack.push(child);
+				}
+			}
 		}
-		
-		str = str.toUpperCase();
-		
-		char first_char = str.charAt(0); 
-		
-		TrieNode child = node.getChildAtChar(first_char);
-				
-		if(child==null) // at the end of the string 
-			return null;
-		return find(child, str.substring(1, str.length()));
+		return stringsToReturn;
 	}
 	
-	
-	
-	
-	/**
-	 * getCompletions
-	 * 
-	 * @param prefix
-	 * @return Set of Strings that are completions of the prefix
-	 */
-	public Set<String> getCompletions(String prefix){
-		Set<String> ret = new HashSet<>();
-		
-		TrieNode prefixNode = this.getPrefixNode(prefix);
-		
-		if(prefixNode == null) //if trie does not contain this prefix
-			return ret;
-		
-		Set<TrieNode> nodes = getEndWords(prefixNode, new HashSet<TrieNode>());
-		
-		//extract strings and return them
-		for(TrieNode n : nodes){
-			Preconditions.checkState(n.isWord());
-			ret.add(n.getWord());
+
+	/*
+		>Purpose: 
+			returns all the possible ways to split the input word into two meaningful words
+		>Input: s - input string
+		>Output: ArrayList<String> - list of all the possible two word splits.
+		>Throws: -- 
+	*/
+	public ArrayList<String> getWordSplit(String s) {
+		ArrayList<String> stringsToReturn = new ArrayList<String>();
+		Stack<Node> nodeStack = new Stack<Node>();
+		LinkedList<Character> charQueue = new LinkedList<Character>();
+		for (Character letter : s.toCharArray()){
+			charQueue.add(letter);
 		}
+		nodeStack.push(_root);
 		
-		return ret;
+		while (!nodeStack.isEmpty()){
+			Node node1 = nodeStack.pop();
+			
+			if (node1.isWord()) {
+				String k = s.substring(node1._key.length());
+				Node node2 = searchTrie(k); 
+				if (node2 != null && node2.isWord()) {
+					stringsToReturn.add(node1._key + " " + k);
+				}
+			}
+			if (!charQueue.isEmpty()){
+				Character c = charQueue.pop();
+				for (Node child : node1.getChildren()) {
+					if(child._letter == c) nodeStack.push(child);
+				}	
+			}
+		}
+		return stringsToReturn;
 	}
 	
-	/**
-	 * getEndWords: private helper method for getCompletions
-	 * 
-	 * 
-	 * @param pre
-	 * @param nodes_so_far
-	 * @return set of TrieNodes that are completions of prefix pre
-	 */
-	private Set<TrieNode> getEndWords(TrieNode pre, Set<TrieNode> nodes_so_far){
-		if(pre.isWord())
-			nodes_so_far.add(pre);
-
-		if(pre.isLeaf())
-			return nodes_so_far;
-		
-		//recursive call on each child
-		for(int i=0;i<65;i++){
-			TrieNode child = pre.getChildAtIndex(i);
-			if(child!=null)
-				nodes_so_far = getEndWords(child, nodes_so_far);
+	/*
+		>Purpose: 
+			adds all the words in a given list to the trie.
+		>Input: words - the strings that will be inserted into the trie.
+		>Output: --
+		>Throws: -- 
+	*/
+	public void insertToTrie(ArrayList<String> words){
+		for (String s : words) {
+			if(s.equals("")) { //no letters in this string
+				continue;
+			}
+			addToTrie(s);
 		}
-
-		return nodes_so_far;
 	}
-
 }
-
-
-
-
-
-

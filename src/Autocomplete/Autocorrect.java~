@@ -1,0 +1,179 @@
+
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+
+public class Autocorrect {
+
+	private Trie _trie;
+	private Ranker _ranker;
+	private int _ED = 0;
+	private Boolean _isPrefix = false;
+	private Boolean _isWhitespace = false;
+	private Boolean _isSmart = false;
+	
+
+	/*
+		>Purpose:
+			autocorrect constructor creates a new trie to hold the strings in corpus and 
+			a new ranker to rank the set of suggestions returned by the trie.			
+		>Input: --
+		>Output: -- 
+		>Throws: -- 
+	*/
+	public Autocorrect(){
+		_trie = new Trie();
+		_ranker = new Ranker();
+	}
+	
+	/*
+		>Purpose:
+			addCorpus uses Lister to get all the words in a corpus and adds those words 
+			to the trie and the dictionaries in ranker.		
+		>Input: fileLocation - location of the corpus.
+		>Output: Boolean - whether the operation was successful or not. 
+		>Throws: -- 
+	*/
+	public Boolean addCorpus(String fileLocation){
+		ArrayList<String> words = Lister.listAllWords(fileLocation);
+		if (words == null) return false;				
+		_trie.insertToTrie(words);
+		_ranker.insertToMaps(words);
+		return true;
+	}
+	
+	/*
+		>Purpose: 
+			getSuggestions uses the trie's methods to creat a set of possible suggestions
+			and ranks those suggestions by using Ranker's methods. 
+		>Input: word - the word that is currently being written
+				previousWord - the word that precedes word (if one exists)
+		>Output: ArrayList<String> a sorted list of possible suggestions.
+		>Throws: -- 
+	*/
+
+	public ArrayList<String> getSuggestions(String word, String previousWord) {
+		//store suggestions in a HashSet<String> to prevent duplicates;
+		HashSet<String> suggestions = new HashSet<String>(32);
+		if (_isPrefix) suggestions.addAll(_trie.getPrefixMatch(word));
+		if (_ED != 0) suggestions.addAll(_trie.getLED(word, _ED));
+		if (_isWhitespace) suggestions.addAll(_trie.getWordSplit(word)); 
+		ArrayList<String> rankedArray;
+		Node n = _trie.searchTrie(word);
+		//check if the input word is among the ones that are stored in trie and put it
+		//at the beginning of the sorted list if so.
+		if (n != null && n.isWord()) suggestions.add(n._key);
+		if (_isSmart) rankedArray = _ranker.smartRank(suggestions, word, previousWord);
+		else rankedArray = _ranker.standardRank(suggestions, word, previousWord);
+		return rankedArray;
+	}
+	
+		
+	//these are just some simple getter and setter methods to monitor and modify the booleans
+	//storing program settings.
+	public void setLed(int i) {
+		_ED = i;
+	}
+	
+	public void setPrefix(Boolean b) {
+		_isPrefix = b;
+	}
+	
+	public void setWordsplit(Boolean b) {
+		_isWhitespace = b;
+	}
+	
+	public void setSmart(Boolean b) {
+		_isSmart = b;
+	}
+	
+	public int getLed() {
+		return _ED;
+	}
+	
+	public Boolean getPrefix() {
+		return _isPrefix;
+	}
+	
+	public Boolean getWordsplit() {
+		return _isWhitespace;
+	}
+	
+	public Boolean getSmart() {
+		return _isSmart;
+	}
+
+	/*
+		>Purpose:	
+			start starts a new infinite loop that listens to terminal input and prints
+			suggestions using printSuggestions method.
+		>Input: --
+		>Output: -- 
+		>Throws: -- 
+	*/
+	public void start(){
+		String input;
+		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+		while(true) {
+			try {
+				input = br.readLine();
+				printSuggestions(input, false);
+			} 
+			catch (IOException e) {
+				System.out.println("ERROR: Cannot start autocorrect");
+				System.exit(1);
+			}
+		}
+	}
+
+	/*
+		>Purpose:
+			transforms the input string to an acceptable format. Uses getSuggestions 
+			method to get a set of suggestions then prints out and returns the first five 
+			suggestions. Also exits the program if the user input is "exit"
+		>Input: String - user input
+				Boolean - whether GUI is active or not.
+		>Output: List<String> - A list of at most 5 suggestions. 
+		>Throws: -- 
+	*/
+	public List<String> printSuggestions(String input, Boolean isGUI){
+		List<String> toReturn = new ArrayList<String>(); 
+		//modify the input to make all the letters lowercase, remove unwanted spaces and
+		//punctuations.
+		input = input.toLowerCase();
+		input = input.replaceAll("[^a-zA-Z ]", " ");
+		input = input.replaceAll(" +", " ");
+		input = input.trim();
+		//split input string into seperate words.
+		String[] words = input.split(" ");
+		ArrayList<String> rankedArray;
+		if (words.length > 1) {
+			String word = words[words.length-1];
+			input = input.substring(0, input.lastIndexOf(" ")+1);
+			String prevWord = words[words.length-2];
+			rankedArray = getSuggestions(word, prevWord);
+			for (String s : rankedArray) {
+				//if GUI is not activated, print the results.
+				if (!isGUI) System.out.print(input + s + "\n");
+				toReturn.add(input + s + "\n");
+			}
+			if (!isGUI) System.out.print("\n");
+		}
+		
+		if (words.length == 1 && !words[0].equals("")) {
+			if (words[0].equals("exit") && !isGUI) System.exit(0);
+			String word = words[0];
+			rankedArray = getSuggestions(word, null);
+			for (String s : rankedArray) {
+				if (!isGUI) System.out.println(s);
+				toReturn.add(s);
+			}
+			if (!isGUI) System.out.print("\n");
+		}
+		return toReturn;
+	}
+}

@@ -12,12 +12,12 @@ public class Main {
 	
 	public static void main(String[] args) throws IOException {
 		//for GUI testing.
-/*		if(args.length==1){
+		if(args.length==1){
 			if(args[0].equals("--guitest")) {
 				new MapsGUI(null);
 				return;
 			}
-		}*/
+		}
 		
 		MapsEngine e = new MapsEngine();
 		new MapsCLI(e);
