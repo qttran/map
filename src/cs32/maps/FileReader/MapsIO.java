@@ -120,6 +120,7 @@ public class MapsIO {
 	
 	public Way getWay(String wayID) {
 		// TODO Auto-generated method stub
+		
 		return null;
 	}
 
