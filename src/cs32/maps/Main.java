@@ -3,12 +3,22 @@ package cs32.maps;
 import java.io.File;
 import java.io.IOException;
 
+import javax.swing.JFrame;
+
 import cs32.maps.gui.MapsGUI;
 
 public class Main {
 	
 	
 	public static void main(String[] args) throws IOException {
+		//for GUI testing.
+/*		if(args.length==1){
+			if(args[0].equals("--gui")) {
+				new MapsGUI(null);
+				return;
+			}
+		}*/
+		
 		MapsEngine e = new MapsEngine();
 		new MapsCLI(e);
 		/* maps [--gui] ways.tsv nodes.tsv index.tsv */
