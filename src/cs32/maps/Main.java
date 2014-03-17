@@ -9,8 +9,14 @@ public class Main {
 	
 	
 	public static void main(String[] args) throws IOException {
-		MapsEngine e = new MapsEngine();
-		new MapsCLI(e);
+		//for GUI testing.
+/*		if(args.length==1){
+			if(args[0].equals("--guitest")) {
+				new MapsGUI(null);
+				return;
+			}
+		}*/
+		
 		/* maps [--gui] ways.tsv nodes.tsv index.tsv */
 		int len = args.length;
 		boolean gui = false;
@@ -35,6 +41,9 @@ public class Main {
 		checkFilePath(fpWays);
 		checkFilePath(fpNodes);
 		checkFilePath(fpIndex);
+		
+
+		MapsEngine e = new MapsEngine(fpWays,fpNodes,fpIndex);
 		
 		//new MapsFileReader
 		//MapsFileReader, read all latlongs
