@@ -1,0 +1,4 @@
+#! /bin/bash
+
+java -cp derived/map.jar:lib/* cs32/maps.Main "$@"
+
