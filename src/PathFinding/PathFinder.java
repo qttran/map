@@ -142,7 +142,7 @@ public class PathFinder {
 			curr = pq.poll(); 
 			_nodeMap.remove(curr.locNode.id);
 			
-			//System.out.println(curr.locNode.toString());
+			//System.out.println("CURR "+curr.locNode.toString());
 			
 			if(curr.locNode.id.equals(goal.locNode.id)) { // found the best path!
 				return curr;
@@ -262,19 +262,21 @@ public class PathFinder {
 	 * return the found LocationNode of original nodeID
 	 */
 	private LocationNode getLocationNode(String nodeID) throws IOException {
-		
-		List<LocationNode> pageOfNodes = fileUtility.getNodePage(nodeID);
-		LocationNode toReturn = null;
-		for(LocationNode ln : pageOfNodes) {
-			if(ln.id.equals(nodeID)) {
-				toReturn = ln;
-			}
-			else {
-				_pagedNodes.put(ln.id, ln);	
-			}
-		}
-		Preconditions.checkNotNull(toReturn);
-		return toReturn;
+		LocationNode n = fileUtility.getLocationNode(nodeID);
+		return n;
+//		List<LocationNode> pageOfNodes = fileUtility.getPage(nodeID);
+//		LocationNode toReturn = null;
+//		for(LocationNode ln : pageOfNodes) {
+//			if(ln.id.equals(nodeID)) {
+//				toReturn = ln;
+//			}
+//			else {
+//				_pagedNodes.put(ln.id, ln);	
+//			}
+//		}
+//		Preconditions.checkNotNull(toReturn);
+//		System.out.printf("Paged in %s new location nodes. Size of _pagedNodes is %s", pageOfNodes.size(), _pagedNodes.size());
+//		return toReturn;
 	}
 	
 	

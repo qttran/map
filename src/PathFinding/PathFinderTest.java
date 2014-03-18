@@ -16,6 +16,11 @@ public class PathFinderTest {
 	public static final String nodes = "/course/cs032/data/maps/nodes.tsv";
 	public static final String index = "/course/cs032/data/maps/index.tsv";
 
+
+	public static final String smallways = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallWays.tsv";
+	public static final String smallnodes = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallNodes.tsv";
+	public static final String smallindex = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallIndex.tsv";
+	
 	
 	@Test
 	public void test() throws IOException {
@@ -46,20 +51,36 @@ public class PathFinderTest {
 		
 	}
 	
-	
-
 	@Test
-	public void randoTest2() throws IOException {
-		MapsIO io = new MapsIO(ways, nodes, index);
+	public void smallTest() throws IOException {
+
+		MapsIO io = new MapsIO(smallways, smallnodes, smallindex); // small files with 4 nodes and 3 ways connecting them
 		PathFinder pf = new PathFinder(io);
-		LocationNode s = io.getLocationNode("/n/4017.7374.527767851");
-		LocationNode e = io.getLocationNode("/n/4140.7149.201383732");
-		List<String> path = pf.getPath(s, e);
-		System.out.println("Path: ");
-		for(String str : path) {
-			System.out.println(str);
-		}
-		System.out.println("--");
 		
+		LocationNode s = io.getLocationNode("/n/1111.2222.333333333");
+		LocationNode e = io.getLocationNode("/n/5555.6666.333333333");
+
+		List<String> path = pf.getPath(s, e);
+		assertTrue(path.size()==3);
+		assertTrue(path.get(0).endsWith("/w/7777.7777.77777777.7.7"));
+		assertTrue(path.get(1).endsWith("/w/8888.8888.88888888.8.8"));
+		assertTrue(path.get(2).endsWith("/w/9999.9999.99999999.9.9"));
+
 	}
+	//TODO io gets out of bounds error when there is a node with no ways (idk if this ever happens in the real files)
+
+//	@Test
+//	public void randoTest2() throws IOException {
+//		MapsIO io = new MapsIO(ways, nodes, index);
+//		PathFinder pf = new PathFinder(io);
+//		LocationNode s = io.getLocationNode("/n/4017.7374.527767851");
+//		LocationNode e = io.getLocationNode("/n/4140.7149.201383732");
+//		List<String> path = pf.getPath(s, e);
+//		System.out.println("Path: ");
+//		for(String str : path) {
+//			System.out.println(str);
+//		}
+//		System.out.println("--");
+//		
+//	}
 }
