@@ -21,7 +21,10 @@ public class PathFinderTest {
 	public static final String smallnodes = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallNodes.tsv";
 	public static final String smallindex = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallIndex.tsv";
 	
-	
+	public static final String smallways2 = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallWays2.tsv";
+	public static final String smallnodes2 = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallNodes2.tsv";
+	public static final String smallindex2 = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallIndex2.tsv";
+		
 	@Test
 	public void test() throws IOException {
 		MapsIO io = new MapsIO(ways, nodes, index);
@@ -69,18 +72,44 @@ public class PathFinderTest {
 	}
 	//TODO io gets out of bounds error when there is a node with no ways (idk if this ever happens in the real files)
 
-//	@Test
-//	public void randoTest2() throws IOException {
-//		MapsIO io = new MapsIO(ways, nodes, index);
-//		PathFinder pf = new PathFinder(io);
-//		LocationNode s = io.getLocationNode("/n/4017.7374.527767851");
-//		LocationNode e = io.getLocationNode("/n/4140.7149.201383732");
-//		List<String> path = pf.getPath(s, e);
-//		System.out.println("Path: ");
-//		for(String str : path) {
-//			System.out.println(str);
-//		}
-//		System.out.println("--");
-//		
-//	}
+	
+	
+	@Test
+	public void smallTestsUsingID() throws IOException {
+
+		MapsIO io = new MapsIO(smallways2, smallnodes2, smallindex2); // small files with 4 nodes and 3 ways connecting them
+		PathFinder pf = new PathFinder(io);
+		String two = "/n/1111.2222.33";
+		String three = "/n/1111.2222.44";
+		String four = "/n/1111.2222.55";
+		String five = "/n/2222.3333.00";
+	 	String six = "/n/2222.3333.77";
+		LocationNode s = io.getLocationNode(two); 
+		LocationNode e = io.getLocationNode(six);
+
+		List<String> path = pf.getPath(s, e);
+		assertTrue(path.size()==2);
+		assertTrue(path.get(0).endsWith("/w/22"));
+		assertTrue(path.get(1).endsWith("/w/66"));
+
+		
+		e = io.getLocationNode(three);
+		path = pf.getPath(s, e);
+		assertTrue(path.size()==1);
+		assertTrue(path.get(0).endsWith("/w/11"));
+		
+		e = io.getLocationNode(four);
+		path = pf.getPath(s, e);
+		assertTrue(path.size()==1);
+		assertTrue(path.get(0).endsWith("/w/22"));
+		
+		s = io.getLocationNode(six);
+		e = io.getLocationNode(two);
+		path = pf.getPath(s, e);
+		assertTrue(path.size()==3);
+		assertTrue(path.get(0).endsWith("/w/99"));
+		assertTrue(path.get(1).endsWith("/w/44"));
+		assertTrue(path.get(2).endsWith("/w/33"));
+	}
+
 }
