@@ -4,10 +4,8 @@ import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -23,6 +21,7 @@ public class MapsEngine {
 	String fpIndex;
 	public KDTree k;
 	MapsIO fileReader;
+	HashMap<String, Integer> latPointers = new HashMap<>();
 
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 		this.k = buildKDTree(fpNodes);
@@ -91,7 +90,7 @@ public class MapsEngine {
 	
 	//Get Directions backend:
 	// input: two pairs of latitude and longitude (that are REAL POINTS)
-	// output: set of StreetNodes
+	// output: set of StreetNodes...
 	
 	
 	
@@ -103,12 +102,15 @@ public class MapsEngine {
 
 	private KDTree buildKDTree(String nodeFile) throws IOException {
 		//Create a KDTree from the file
-		Hashtable<String,Coordinates> hashTable = new Hashtable<String,Coordinates>();
-
 		KDTree k = new KDTree();
 		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
 		String line = br.readLine();
 		line = br.readLine();
+		String lat = line.split("\t")[0].substring(3,7);
+		int bytes = 0;
+		
+		String tosplit = "a,b,c,";
+		System.out.println(tosplit.split(",",-1).length);
 
 		while (line != null) {
 			String[] list = line.split("\t");
@@ -120,12 +122,19 @@ public class MapsEngine {
 			String id = list[0];
 			k.insert(id, coordinate);
 
-			//put in HashTable
-			String name = list[1];
-			hashTable.put(name, coordinate);
-
+			
+			//keep track of lat pointers:
+			if (!lat.equals(list[0].substring(3,7))) {
+				latPointers.put(lat, bytes);
+				lat = list[0].substring(3,7);
+				bytes = line.length();
+			} else {
+				bytes += line.length();
+			}
 			line = br.readLine();
 		}
+		latPointers.put(lat,bytes);
+		
 		br.close();
 		return k;
 	}
