@@ -1,5 +1,6 @@
 package PathFinding;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,6 +15,7 @@ import java.util.Set;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
+import cs32.maps.LatLong;
 import cs32.maps.LocationNode;
 import cs32.maps.MapsMathUtility;
 import cs32.maps.Way;
@@ -122,6 +124,41 @@ public class PathFinder {
 		return nodeid1 + " -> " + nodeid2 + " : " + wayid;
 	}
 
+	public class Connection {
+		public final LatLong s;
+		public final LatLong e;
+		public Connection(LatLong loc1, LatLong loc2) {
+			s = loc1;
+			e = loc2;
+		}
+	}
+	public List<Connection> getPathSet(LocationNode start, LocationNode end) throws IOException {
+		_nodeMap = new HashMap<>();
+		Node ret  = aStarSearch(new Node(start), new Node(end));
+
+		
+		
+		// trace path back
+		if(ret!=null){
+			List<Connection> path = new ArrayList<>();
+			Connection connection;
+			
+			
+			Node curr = ret;
+			Node pred = ret.predecessor;
+			
+			while(pred != null) {
+				connection = new Connection(pred.locNode.latlong, curr.locNode.latlong);
+
+				path.add(connection);
+				curr = pred;
+				pred = curr.predecessor;
+			}
+			return path;
+		}
+
+		return null; //no path
+	}
 
 	private Node aStarSearch(Node start, Node goal) throws IOException {
 

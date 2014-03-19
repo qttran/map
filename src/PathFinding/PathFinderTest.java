@@ -20,7 +20,8 @@ public class PathFinderTest {
 	public static final String smallways = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallWays.tsv";
 	public static final String smallnodes = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallNodes.tsv";
 	public static final String smallindex = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallIndex.tsv";
-	
+	//TODO io gets out of bounds error when there is a node with no ways (idk if this ever happens in the real files)
+
 	public static final String smallways2 = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallWays2.tsv";
 	public static final String smallnodes2 = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallNodes2.tsv";
 	public static final String smallindex2 = "/gpfs/main/home/mcashton/course/cs032/map/testfiles/smallIndex2.tsv";
@@ -32,7 +33,6 @@ public class PathFinderTest {
 		LocationNode s = io.getLocationNode("/n/4016.7374.527767846");
 		LocationNode e = io.getLocationNode("/n/4016.7374.527767845");
 		List<String> path = pf.getPath(s, e);
-		//System.out.println(path);
 		
 		assertTrue(path.size()==1);
 		assertTrue(path.get(0).endsWith("/w/4016.7374.42295268.1.2"));
@@ -69,8 +69,6 @@ public class PathFinderTest {
 		assertTrue(path.get(1).endsWith("/w/8888.8888.88888888.8.8"));
 		assertTrue(path.get(2).endsWith("/w/9999.9999.99999999.9.9"));
 	}
-	//TODO io gets out of bounds error when there is a node with no ways (idk if this ever happens in the real files)
-
 	
 	
 	@Test
@@ -81,7 +79,7 @@ public class PathFinderTest {
 		String two = "/n/1111.2222.33";
 		String three = "/n/1111.2222.44";
 		String four = "/n/1111.2222.55";
-		String five = "/n/2222.3333.00";
+		//String five = "/n/2222.3333.00";
 	 	String six = "/n/2222.3333.77";
 		LocationNode s = io.getLocationNode(two); 
 		LocationNode e = io.getLocationNode(six);
