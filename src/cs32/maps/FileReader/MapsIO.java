@@ -1,9 +1,11 @@
 package cs32.maps.FileReader;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -23,8 +25,20 @@ public class MapsIO {
 	public int ways_idCol, ways_startCol, ways_endCol, ways_nameCol;  //public for testing right now
 	public int nodes_idCol, nodes_latCol, nodes_lonCol, nodes_waysCol;
 	public int index_nameCol, index_nodesCol;
+	
+	
+	private HashMap<String, Long> wayLatPointers;
+	private HashMap<String, Long> nodeLatPointers;
+	
+	
+	
 
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
+		
+		wayLatPointers = new HashMap<>(); //getAllWays fills this up
+		nodeLatPointers = new HashMap<>();
+		
+		
 		this.waysFile = waysFile;
 		this.nodesFile = nodesFile;
 		this.indexFile = indexFile;
@@ -46,6 +60,10 @@ public class MapsIO {
 		}
 
 	}
+	
+	public void setNodeLatPtrs(HashMap<String, Long> hm) {
+		nodeLatPointers=hm;
+	}
 
 
 	/** Read one line from a file, starting at the file pointer
@@ -54,7 +72,7 @@ public class MapsIO {
 	 * @return Read one line from a file, starting at the file pointer
 	 * @throws IOException
 	 */
-	private String readOneLine(RandomAccessFile f) throws IOException {
+	private String[] readOneLine(RandomAccessFile f) throws IOException {
 		// seek start of line
 		boolean start = false;
 		long pointer = f.getFilePointer();
@@ -111,19 +129,20 @@ public class MapsIO {
 		}
 
 		String line = new String(bytes);
-		return line;
+		return line.split("\t", -1);
 	}
 
 
 
 	public String[] binarySearch(RandomAccessFile file, int whichCol, String toFind) throws IOException {
 		file.seek(0);
-		long start = readOneLine(file).length();
+		nextNewLine(file);
+		long start = file.getFilePointer();
 		long end = (file.length() - 1);
 		long mid = (start + end)/2;
 		while (end > start) {
 			file.seek(mid);
-			String[] currentLine = readOneLine(file).split("\t", -1);
+			String[] currentLine = readOneLine(file);
 			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
 			if (difference == 0) {
 				//file.close();
@@ -219,7 +238,7 @@ public class MapsIO {
 		previousNewLine(raf);
 		String nameHere = getWordAt(raf);
 		while(nameHere.equals(streetName)) {
-			Collections.addAll(nodeIDset, readOneLine(raf).split("\t", -1)[index_nodesCol].split(","));
+			Collections.addAll(nodeIDset, readOneLine(raf)[index_nodesCol].split(","));
 			previousNewLine(raf);
 			previousNewLine(raf);
 			nameHere = getWordAt(raf); //its the index so we know the street name is first
@@ -231,7 +250,7 @@ public class MapsIO {
 		nextNewLine(raf);
 		nameHere = getWordAt(raf);
 		while(nameHere.equals(streetName)) {
-			Collections.addAll(nodeIDset, readOneLine(raf).split("\t", -1)[index_nodesCol].split(","));
+			Collections.addAll(nodeIDset, readOneLine(raf)[index_nodesCol].split(","));
 			nextNewLine(raf); 
 			nameHere = getWordAt(raf);
 		}
@@ -276,7 +295,7 @@ public class MapsIO {
 			
 			previousNewLine(raf); 
 			//previousNewLine(raf);
-			nodeLine = readOneLine(raf).split("\t", -1);
+			nodeLine = readOneLine(raf);
 			nodeIDhere = nodeLine[nodes_idCol];
 		
 			while(isOnSamePage(nodeID, nodeIDhere)) {
@@ -289,7 +308,7 @@ public class MapsIO {
 					break;
 				
 				previousNewLine(raf);
-				nodeLine = readOneLine(raf).split("\t", -1);
+				nodeLine = readOneLine(raf);
 				nodeIDhere = nodeLine[nodes_idCol];
 				//previousNewLine(raf);
 				//previousNewLine(raf);
@@ -302,14 +321,14 @@ public class MapsIO {
 		// if anything below, get it
 		nextNewLine(raf);
 		if(raf.getFilePointer() < raf.length()) {
-			nodeLine = readOneLine(raf).split("\t", -1);
+			nodeLine = readOneLine(raf);
 			nodeIDhere = nodeLine[nodes_idCol];
 			
 			while(isOnSamePage(nodeID, nodeIDhere) && raf.getFilePointer()<raf.length()) {
 				pageList.add(createLocationNode(nodeLine));
 				nextNewLine(raf); 
 				
-				nodeLine = readOneLine(raf).split("\t", -1);
+				nodeLine = readOneLine(raf);
 				nodeIDhere = nodeLine[nodes_idCol];
 			}
 		}
@@ -384,43 +403,15 @@ public class MapsIO {
 
 		RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
 		nextNewLine(raf); //skip header with titles
-		String line = "";
 		long fileSize = raf.length();
-
+		String[] line;
 		while(raf.getFilePointer() < fileSize) {
-			line = this.readOneLine(raf);
-			String[] spl = line.split("\t", -1);
-			streetNames.add(spl[index_nameCol]);
+			line = readOneLine(raf);
+			streetNames.add(line[index_nameCol]);
 			nextNewLine(raf);
 		}
 		raf.close();
 		return streetNames;
-	}
-
-	/**
-	 * Get a list of all LatLongs from the nodes file. To be used for
-	 * populating the KDTree.
-	 * 
-	 * @return List<LatLong>
-	 * @throws IOException
-	 */
-	public List<LatLong> getLatLongs() throws IOException { // for adding to KDTree
-		List<LatLong> points = new ArrayList<>();
-
-		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
-		nextNewLine(raf); //skip header with titles
-		String line = "";
-		long fileSize = raf.length();
-
-		while(raf.getFilePointer() < fileSize) {
-			line = this.readOneLine(raf);
-			String[] spl = line.split("\t", -1);
-			LatLong ll = new LatLong(spl[nodes_latCol], spl[nodes_lonCol]);
-			points.add(ll);
-			nextNewLine(raf);
-		}
-		raf.close();
-		return points;
 	}
 
 
@@ -435,23 +426,42 @@ public class MapsIO {
 		nextNewLine(raf); //skip header with titles
 		String inp = "";
 		long fileSize = raf.length();
+		String lat = "9999";
+		
 		while(raf.getFilePointer() < fileSize) {
-			inp = this.readOneLine(raf);
-			String[] line = inp.split("\t", -1);
+			long topOfThisLine = raf.getFilePointer();
+			String[] line = readOneLine(raf);
 			String id = line[ways_idCol];
 			String startID = line[ways_startCol];
 			String endID = line[ways_endCol];
 			String name = line[ways_nameCol];
 			points.add(new Way(id, startID, endID, name));
+			
+			String currLat = id.substring(3, 7);
+			if(!lat.equals(currLat)) {
+				if(!wayLatPointers.containsKey(currLat)) {
+					wayLatPointers.put(currLat, topOfThisLine);
+					
+				}
+				
+				lat = currLat;
+			}
+			
 			nextNewLine(raf);
 		}
 		raf.close();
+		
+		/*
+		 		string = string.toLowerCase();
+				string = string.replaceAll(" +", " ");
+				stringList.add(string.split("	")[1]);
+		 */
 
 		return points;
 	}
 	
-
-
+	/** read within bytes of file **/
+	
 
 	/** for finding column info @mcashton */
 	private int getColumn(String filePath, String colName) throws IOException {
@@ -488,7 +498,7 @@ public class MapsIO {
 
 		//go back to starting point
 		raf.seek(originalLoc);
-
+		// TODO Auto-generated method stub
 		//read that number of bytes
 		byte[] b = new byte[bytesRead];
 		raf.readFully(b);
@@ -515,6 +525,117 @@ public class MapsIO {
 				break;
 			raf.seek(raf.getFilePointer()-2);
 		}		
+	}
+	
+	
+	
+	public List<Way> getWaysWithin(String latTop, String latBottom) throws IOException {
+
+		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
+		
+		
+		long top = wayLatPointers.get(latTop);
+		long bottom = raf.length();
+		if (wayLatPointers.containsKey(latBottom)) {
+			bottom = wayLatPointers.get(latBottom);
+		}
+
+		raf.seek(top);
+
+		List<Way> wl = new ArrayList<>();
+		
+		//long fileSize = raf.length();
+		while(raf.getFilePointer() < bottom) {
+			String[] line = readOneLine(raf);
+			String id = line[ways_idCol];
+			String startID = line[ways_startCol];
+			String endID = line[ways_endCol];
+			String name = line[ways_nameCol];
+			wl.add(new Way(id, startID, endID, name));
+			nextNewLine(raf);
+		}
+		raf.close();
+
+		
+		return wl;
+	}
+
+	
+	
+	public LocationNode getLocationNodeWithin(String nodeID) throws IOException {
+		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
+		
+		
+		String startTopLat = nodeID.substring(3, 7);
+		String startBotLat="";
+		try {
+		 startBotLat = Integer.toString(Integer.parseInt(startTopLat)+1);
+		}
+		catch(Exception E) {
+			System.out.println(startTopLat);
+		}
+		long latTop = nodeLatPointers.get(startTopLat);
+		long latBottom = file.length();
+		if(nodeLatPointers.containsKey(startBotLat))
+				latBottom = nodeLatPointers.get(startBotLat);
+		
+		
+		
+		String foundLine[] = null;
+		file.seek(latTop);
+
+		long start = file.getFilePointer();
+		long end = latBottom;//(file.length() - 1);
+		long mid = (start + end)/2;
+		while (end > start) {
+			file.seek(mid);
+			String[] currentLine = readOneLine(file);
+			int difference = nodeID.compareToIgnoreCase(currentLine[nodes_idCol]);
+			if (difference == 0) {
+				file.close();
+				foundLine = currentLine;
+				break;
+				
+			}
+			else if (difference > 0) 
+				start = mid + 1;
+			else 
+				end = mid - 1;
+			mid = (start + end)/2;
+		} 
+		file.close();
+		
+		if(foundLine == null)
+			return null;
+		
+		return createLocationNode(foundLine);
+	}
+
+	
+	
+	public String[] findBlockStart(RandomAccessFile file, int whichCol, String toFind) throws IOException {
+		file.seek(0);
+		nextNewLine(file);
+		long start = file.getFilePointer();
+		long end = (file.length() - 1);
+		long mid = (start + end)/2;
+		while (end > start) {
+			file.seek(mid);
+			String[] currentLine = readOneLine(file);
+			String wordHere = currentLine[whichCol].substring(3, 7); //first four digs of an ID
+			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
+			if (difference == 0) {
+				//file.close();
+				return currentLine;
+			}
+			else if (difference > 0) 
+				start = mid + 1;
+			else 
+				end = mid - 1;
+			mid = (start + end)/2;
+		} 
+		file.close();
+		return null;
 	}
 
 }
