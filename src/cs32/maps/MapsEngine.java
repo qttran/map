@@ -5,10 +5,14 @@ import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+<<<<<<< HEAD
 import java.io.RandomAccessFile;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
+=======
+import java.util.HashMap;
+>>>>>>> 565f0fb8ff9a4ffaaec70d363b3ebd0432de93cd
 import java.util.List;
 import java.util.Set;
 
@@ -97,6 +101,7 @@ public class MapsEngine {
 	
 	//Get Directions backend:
 	// input: two pairs of latitude and longitude (that are REAL POINTS)
+<<<<<<< HEAD
 	// output: set of StreetNodes
 	public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
 		Set<StreetNode> pathSet = new HashSet<>();
@@ -122,6 +127,10 @@ public class MapsEngine {
 		return pathSet;
 		
 	}
+=======
+	// output: set of StreetNodes...
+	
+>>>>>>> 565f0fb8ff9a4ffaaec70d363b3ebd0432de93cd
 	
 	
 	
@@ -138,6 +147,14 @@ public class MapsEngine {
 		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
 		String line = br.readLine();
 		line = br.readLine();
+<<<<<<< HEAD
+=======
+		String lat = line.split("\t")[0].substring(3,7);
+		int bytes = 0;
+		
+		String tosplit = "a,b,c,";
+		System.out.println(tosplit.split(",",-1).length);
+>>>>>>> 565f0fb8ff9a4ffaaec70d363b3ebd0432de93cd
 
 		while (line != null) {
 			String[] list = line.split("\t");
