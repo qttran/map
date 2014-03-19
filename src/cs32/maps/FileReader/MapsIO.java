@@ -417,6 +417,33 @@ public class MapsIO {
 	}
 
 
+	/**
+	 * Given a wayID, search the *ways file* for correct line
+	 * and return a Way object with all relevant info
+	 */
+	public List<Way> getAllWays() throws IOException {
+		List<Way> points = new ArrayList<>();
+		
+		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
+		nextNewLine(raf); //skip header with titles
+		String inp = "";
+		long fileSize = raf.length();
+		while(raf.getFilePointer() < fileSize) {
+			inp = this.readOneLine(raf);
+			String[] line = inp.split("\t");
+			String id = line[ways_idCol];
+			String startID = line[ways_startCol];
+			String endID = line[ways_endCol];
+			String name = line[ways_nameCol];
+			points.add(new Way(id, startID, endID, name));
+			nextNewLine(raf);
+		}
+		raf.close();
+
+		return points;
+	}
+	
+
 
 
 	/** for finding column info @mcashton */
