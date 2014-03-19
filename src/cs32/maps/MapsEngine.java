@@ -31,8 +31,8 @@ public class MapsEngine {
 		this.k = buildKDTree(fpNodes);
 		
 		
-		fileReader.getAllWays(); // send to autocomplete??? TODO
-		System.out.println("-- done reading all ways --");
+		//fileReader.getAllWays(); // send to autocomplete??? TODO
+		//System.out.println("-- done reading all ways --");
 	}
 
 
@@ -131,7 +131,7 @@ public class MapsEngine {
 		PathFinder pF = new PathFinder(fileReader);
 		List<Connection> resultList = pF.getPathSet(nearestStartNode,nearestEndNode);
 		for(Connection leg : resultList) {
-			pathSet.add(new StreetNode(leg.s.getPt(), leg.e.getPt(), ""));
+			pathSet.add(new StreetNode(leg.s.getPt().x, leg.s.getPt().y,  leg.e.getPt().x, leg.e.getPt().y, ""));
 		}
 
 		return pathSet;
@@ -146,8 +146,7 @@ public class MapsEngine {
 			//System.out.println("yay!!");
 			LocationNode start = fileReader.getLocationNode(w.startNodeID);
 			LocationNode end = fileReader.getLocationNode(w.endNodeID);
-			hs.add(new StreetNode(new Point2D.Double(start.latlong.lat, start.latlong.lon), 
-					new Point2D.Double(end.latlong.lat, end.latlong.lon), w.name));
+			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
 		}
 		return hs;
 	}
@@ -187,8 +186,7 @@ public class MapsEngine {
 			LocationNode end = fileReader.getLocationNodeWithin(w.endNodeID);//, t, b);
 			
 			
-			hs.add(new StreetNode(new Point2D.Double(start.latlong.lat, start.latlong.lon), 
-					new Point2D.Double(end.latlong.lat, end.latlong.lon), w.name));
+			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
 		}
 		System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
 		return hs;
@@ -268,7 +266,7 @@ public class MapsEngine {
 				Double b = Double.parseDouble(words[1]);
 				Double c = Double.parseDouble(words[2]);
 				Double d = Double.parseDouble(words[3]);
-				streetSet.add(new StreetNode(new Point2D.Double(a,b), new Point2D.Double(c,d), ""));
+				streetSet.add(new StreetNode(a, b, c, d, ""));
 		        string = bufferedReader.readLine();
 		    }
 		    bufferedReader.close();

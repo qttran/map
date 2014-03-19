@@ -1,24 +1,12 @@
 package cs32.maps.gui;
 
-import java.awt.geom.Point2D;
+import java.awt.geom.Line2D;
 
-public class StreetNode {
-	public final Point2D.Double startingPoint;
-	public final Point2D.Double endPoint;
-	private Boolean isHighlighted = false;
+public class StreetNode extends Line2D.Double{
 	public final String name;
 	
-	public StreetNode(Point2D.Double startingPoint, Point2D.Double endPoint, String name){
-		this.startingPoint = startingPoint;
-		this.endPoint = endPoint;
+	public StreetNode(double x1, double y1, double x2, double y2, String name){
+		super(x1,y1,x2,y2);
 		this.name = name;
-	}
-	
-	public Boolean isHighligted(){
-		return isHighlighted;
-	}
-	
-	public void setHiglighted(Boolean b){
-		isHighlighted = b;
 	}
 }

@@ -13,6 +13,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.LinkedList;
 import java.util.Set;
 
@@ -27,8 +28,8 @@ public class MapPanel extends JPanel {
 	
 	private MapsEngine _engine;
 	private Set<StreetNode> _nodes;
-	private Double scale = 1000D;
-	private Point2D.Double _center = new Point2D.Double(40D,-73D);
+	private Double scale = 20000D;
+	private Point2D.Double _center = new Point2D.Double(41.82163534608988, -71.38882713291805);
 	private Point2D.Double _location;
 	private Point2D.Double _destination;
 	
@@ -44,8 +45,8 @@ public class MapPanel extends JPanel {
 			public void mouseDragged(MouseEvent e) {
 				// TODO Auto-generated method stub
 				if (ip == null) ip = e.getPoint();
-				_center.x += (-e.getPoint().x + ip.x)/scale;
-				_center.y += (-e.getPoint().y + ip.y)/scale;
+				_center.x += (e.getPoint().y - ip.y)/scale;
+				_center.y -= (e.getPoint().x - ip.x)/scale;
 				ip = e.getPoint();
 				_map.repaint();
 			}
@@ -63,7 +64,7 @@ public class MapPanel extends JPanel {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				// TODO Auto-generated method stub
-				scale-=e.getWheelRotation()*10;
+				scale-=e.getWheelRotation()*1000;
 				if (scale < 0.1D) scale = 0.1D;
 				_map.repaint();
 			}
@@ -76,26 +77,32 @@ public class MapPanel extends JPanel {
 		super.paint(g);
 		//get updated points
 		Graphics2D g2D = (Graphics2D) g;
-//		/g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.setColor(Color.BLACK);
-		g2D.setStroke(new BasicStroke((int)(0.0006*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
-		for (StreetNode node: _nodes){
-			Point p1 = getCoordinates(node.startingPoint);
-			Point p2 = getCoordinates(node.endPoint);
-			g2D.drawLine(p1.x, p1.y, p2.x, p2.y);
-/*			System.out.println(node.startingPoint  + ", " + p1);
-			System.out.println(node.endPoint  + ", " + p2);*/
-		}
+		//g2D.setStroke(new BasicStroke((int)(0.0002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
 		
-		Point loc = getCoordinates(_location);
-		Point des = getCoordinates(_destination);
-		if (loc != null) {
-			g2D.setColor(Color.BLUE);
-			g2D.draw(new Ellipse2D.Double(loc.x-4, loc.y-4, 8, 8));
+		for (StreetNode node: _nodes){
+			if(bb.intersectsLine(node)){
+				Point p1 = getCoordinates(node.x1, node.y1);
+				Point p2 = getCoordinates(node.x2, node.y2);
+				g2D.drawLine(p1.x, p1.y, p2.x, p2.y);
+				//System.out.println(node.startingPoint  + ", " + p1);
+//				System.out.println(node.endPoint  + ", " + p2);
+			}
 		}
-		if (des != null) {
+
+		
+		
+		if (_location != null) {
+			Point loc = getCoordinates(_location.x, _location.y);
+			g2D.setColor(Color.BLUE);
+			g2D.fill(new Ellipse2D.Double(loc.x-4, loc.y-4, 8, 8));
+		}
+		if (_destination != null) {
+			Point des = getCoordinates(_destination.x, _destination.y);
 			g2D.setColor(Color.ORANGE);
-			g2D.draw(new Ellipse2D.Double(des.x-4, des.y-4, 8, 8));
+			g2D.fill(new Ellipse2D.Double(des.x-4, des.y-4, 8, 8));
 		}
 		
 	}
@@ -107,9 +114,8 @@ public class MapPanel extends JPanel {
 		
 	}
 
-	private Point getCoordinates(Point2D.Double p){
-		if (p == null) return null;
-		return new Point((int) ((scale*(p.x - _center.x)) + (MAP_HEIGHT/2)), (int) ((scale*(p.y - _center.y)) + (MAP_HEIGHT/2)));
+	private Point getCoordinates(double x, double y){
+		return new Point((int) ((scale*(y - _center.y)) + (MAP_WIDTH/2)), (int) -((scale*(x - _center.x)) - (MAP_HEIGHT/2)));
 	}
 	
 	public void setCurrentLocation(Point2D.Double p){
