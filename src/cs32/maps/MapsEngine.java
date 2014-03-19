@@ -20,11 +20,11 @@ import cs32.maps.FileReader.MapsIO;
 import cs32.maps.gui.StreetNode;
 
 public class MapsEngine {
-	String fpWays;
-	String fpNodes;
-	String fpIndex;
+	private final String fpWays;
+	private final String fpNodes;
+	private final String fpIndex;
 	public KDTree k;
-	MapsIO fileReader;
+	private MapsIO fileReader;
 
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 		this.k = buildKDTree(fpNodes);
@@ -89,8 +89,9 @@ public class MapsEngine {
 	// input: latitude and longitude
 	// output: latitude and longitude that is nearest real point
 	public Point2D.Double getNearestPoint(Point2D.Double pt) {
-		String nearestStartNodeID = k.searchNumber(1, new Coordinates(pt.x, pt.y)).get(0);
-		Point2D.Double nearestPt = 
+		Coordinates c = k.searchNumberCoordinates(1, new Coordinates(pt.x, pt.y)).get(0);
+		Point2D.Double nearestPt = new Point2D.Double(c.x, c.y);
+		return nearestPt;
 		
 	}
 	
