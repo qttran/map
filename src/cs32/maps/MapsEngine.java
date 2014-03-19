@@ -1,17 +1,23 @@
 package cs32.maps;
 
+import java.awt.Point;
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import KDTree.Coordinates;
 import KDTree.KDTree;
 import PathFinding.PathFinder;
+import PathFinding.PathFinder.Connection;
 import cs32.maps.FileReader.MapsIO;
+import cs32.maps.gui.StreetNode;
 
 public class MapsEngine {
 	String fpWays;
@@ -52,7 +58,6 @@ public class MapsEngine {
 	}
 
 	public String getOutputFromLatLongs(LatLong s, LatLong e) throws IOException {
-		MapsIO fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
 		// find nearest start node (kdtree)
 		String nearestStartNodeID = k.searchNumber(1, new Coordinates(s.lat, s.lon)).get(0);
 		LocationNode nearestStartNode = fileReader.getLocationNode(nearestStartNodeID);
@@ -83,12 +88,39 @@ public class MapsEngine {
 	//User-Click backend:
 	// input: latitude and longitude
 	// output: latitude and longitude that is nearest real point
-	
+	public Point2D.Double getNearestPoint(Point2D.Double pt) {
+		String nearestStartNodeID = k.searchNumber(1, new Coordinates(pt.x, pt.y)).get(0);
+		Point2D.Double nearestPt = 
+		
+	}
 	
 	//Get Directions backend:
 	// input: two pairs of latitude and longitude (that are REAL POINTS)
 	// output: set of StreetNodes
-	
+	public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
+		Set<StreetNode> pathSet = new HashSet<>();
+		
+		
+		
+		// find nearest start node (kdtree)
+		String nearestStartNodeID = k.searchNumber(1, new Coordinates(start.x, start.y)).get(0);
+		LocationNode nearestStartNode = fileReader.getLocationNode(nearestStartNodeID);
+
+		// find nearest end node (kdtree)
+		String nearestEndNodeID = k.searchNumber(1, new Coordinates(end.x, start.y)).get(0);
+		LocationNode nearestEndNode = fileReader.getLocationNode(nearestEndNodeID);
+
+
+		// get shortest path between them (PathFinder)
+		PathFinder pF = new PathFinder(fileReader);
+		List<Connection> resultList = pF.getPathSet(nearestStartNode,nearestEndNode);
+		for(Connection leg : resultList) {
+			pathSet.add(new StreetNode(leg.s.getPt(), leg.e.getPt(), ""));
+		}
+		
+		return pathSet;
+		
+	}
 	
 	
 	
