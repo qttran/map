@@ -3,10 +3,7 @@ package cs32.maps;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.LinkedList;
 import java.util.List;
 
 import KDTree.Coordinates;
@@ -89,7 +86,7 @@ public class MapsEngine {
 	
 	//Get Directions backend:
 	// input: two pairs of latitude and longitude (that are REAL POINTS)
-	// output: set of StreetNodes
+	// output: set of StreetNodes...
 	
 	
 	
@@ -106,8 +103,10 @@ public class MapsEngine {
 		String line = br.readLine();
 		line = br.readLine();
 		String lat = line.split("\t")[0].substring(3,7);
-		System.out.println(lat);
 		int bytes = 0;
+		
+		String tosplit = "a,b,c,";
+		System.out.println(tosplit.split(",",-1).length);
 
 		while (line != null) {
 			String[] list = line.split("\t");
