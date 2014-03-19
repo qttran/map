@@ -1,18 +1,11 @@
 package cs32.maps;
 
-import java.awt.Point;
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-<<<<<<< HEAD
-import java.io.RandomAccessFile;
 import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.LinkedList;
-=======
 import java.util.HashMap;
->>>>>>> 565f0fb8ff9a4ffaaec70d363b3ebd0432de93cd
 import java.util.List;
 import java.util.Set;
 
@@ -24,17 +17,13 @@ import cs32.maps.FileReader.MapsIO;
 import cs32.maps.gui.StreetNode;
 
 public class MapsEngine {
-	private final String fpWays;
-	private final String fpNodes;
-	private final String fpIndex;
+
 	public KDTree k;
 	private MapsIO fileReader;
+	HashMap<String, Integer> latPointers = new HashMap<>();
 
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 		this.k = buildKDTree(fpNodes);
-		this.fpNodes = fpNodes;
-		this.fpIndex = fpIndex;
-		this.fpWays = fpWays;
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
 	}
 
@@ -84,14 +73,12 @@ public class MapsEngine {
 	
 	/*************** for use with GUI ***************/
 	
-	//GUI version
-	// node1 - node2    ...   node2 - node3
-	// set of StreetNodes that have starting point (2d double), ending point (name not  necessary)
-	
-	
-	//User-Click backend:
-	// input: latitude and longitude
-	// output: latitude and longitude that is nearest real point
+
+	/**
+	 * For GUI: get the nearest Point2D.Double lat/long that is a real node
+	 * @param pt
+	 * @return
+	 */
 	public Point2D.Double getNearestPoint(Point2D.Double pt) {
 		Coordinates c = k.searchNumberCoordinates(1, new Coordinates(pt.x, pt.y)).get(0);
 		Point2D.Double nearestPt = new Point2D.Double(c.x, c.y);
@@ -99,14 +86,15 @@ public class MapsEngine {
 		
 	}
 	
-	//Get Directions backend:
-	// input: two pairs of latitude and longitude (that are REAL POINTS)
-<<<<<<< HEAD
-	// output: set of StreetNodes
+
+	/**
+	 * For GUI: get directions in the form of a set of StreetNodes
+	 * @param start Point2D.Double
+	 * @param end Point2D.Double
+	 * @return Set<StreetNode> 
+	 */
 	public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
 		Set<StreetNode> pathSet = new HashSet<>();
-		
-		
 		
 		// find nearest start node (kdtree)
 		String nearestStartNodeID = k.searchNumber(1, new Coordinates(start.x, start.y)).get(0);
@@ -127,34 +115,18 @@ public class MapsEngine {
 		return pathSet;
 		
 	}
-=======
-	// output: set of StreetNodes...
-	
->>>>>>> 565f0fb8ff9a4ffaaec70d363b3ebd0432de93cd
-	
-	
-	
-	
-	
-	
-	
 
 	private KDTree buildKDTree(String nodeFile) throws IOException {
 		//Create a KDTree from the file
-		Hashtable<String,Coordinates> hashTable = new Hashtable<String,Coordinates>();
-
 		KDTree k = new KDTree();
 		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
 		String line = br.readLine();
 		line = br.readLine();
-<<<<<<< HEAD
-=======
 		String lat = line.split("\t")[0].substring(3,7);
 		int bytes = 0;
-		
+
 		String tosplit = "a,b,c,";
 		System.out.println(tosplit.split(",",-1).length);
->>>>>>> 565f0fb8ff9a4ffaaec70d363b3ebd0432de93cd
 
 		while (line != null) {
 			String[] list = line.split("\t");
@@ -166,12 +138,19 @@ public class MapsEngine {
 			String id = list[0];
 			k.insert(id, coordinate);
 
-			//put in HashTable
-			String name = list[1];
-			hashTable.put(name, coordinate);
 
+			//keep track of lat pointers:
+			if (!lat.equals(list[0].substring(3,7))) {
+				latPointers.put(lat, bytes);
+				lat = list[0].substring(3,7);
+				bytes = line.length();
+			} else {
+				bytes += line.length();
+			}
 			line = br.readLine();
 		}
+		latPointers.put(lat,bytes);
+
 		br.close();
 		return k;
 	}
