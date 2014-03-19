@@ -48,12 +48,11 @@ public class MapsGUI extends JFrame {
 		ll.add(new StreetNode(new Point2D.Double(50,50), new Point2D.Double(15, 0), "f"));
 		*/
 		
-		Set<StreetNode> set =  en.getAllStreetNodes();
-		System.out.println(set.size());
+		Set<StreetNode> set =  en.getStreetsFromFile("/home/bsenturk/course/cs032/map/all_ways.txt");
 		MapPanel mp = new MapPanel(en, set);
 		
-		mp.setCurrentLocation(new Point2D.Double(15,0));
-		mp.setDestination(new Point2D.Double(200, 170));
+		//mp.setCurrentLocation(new Point2D.Double(15,0));
+		//mp.setDestination(new Point2D.Double(200, 170));
 		
 		JPanel mpWrap = new JPanel(new FlowLayout());
 		mpWrap.add(mp);

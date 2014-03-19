@@ -27,8 +27,8 @@ public class MapPanel extends JPanel {
 	
 	private MapsEngine _engine;
 	private Set<StreetNode> _nodes;
-	private Double scale = 2D;
-	private Point2D.Double _center = new Point2D.Double(100D,100D);
+	private Double scale = 1000D;
+	private Point2D.Double _center = new Point2D.Double(40D,-73D);
 	private Point2D.Double _location;
 	private Point2D.Double _destination;
 	
@@ -63,7 +63,7 @@ public class MapPanel extends JPanel {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				// TODO Auto-generated method stub
-				scale-=e.getWheelRotation()*0.3;
+				scale-=e.getWheelRotation()*10;
 				if (scale < 0.1D) scale = 0.1D;
 				_map.repaint();
 			}
@@ -76,13 +76,15 @@ public class MapPanel extends JPanel {
 		super.paint(g);
 		//get updated points
 		Graphics2D g2D = (Graphics2D) g;
-		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2D.setColor(Color.LIGHT_GRAY);
-		g2D.setStroke(new BasicStroke((int)(0.6*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+//		/g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2D.setColor(Color.BLACK);
+		g2D.setStroke(new BasicStroke((int)(0.0006*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		for (StreetNode node: _nodes){
 			Point p1 = getCoordinates(node.startingPoint);
 			Point p2 = getCoordinates(node.endPoint);
 			g2D.drawLine(p1.x, p1.y, p2.x, p2.y);
+/*			System.out.println(node.startingPoint  + ", " + p1);
+			System.out.println(node.endPoint  + ", " + p2);*/
 		}
 		
 		Point loc = getCoordinates(_location);

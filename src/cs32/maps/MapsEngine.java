@@ -2,8 +2,10 @@ package cs32.maps;
 
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
@@ -91,14 +93,6 @@ public class MapsEngine {
 	//Get Directions backend:
 	// input: two pairs of latitude and longitude (that are REAL POINTS)
 	// output: set of StreetNodes...
-	
-	
-	
-	
-	
-	
-	
-	
 
 	private KDTree buildKDTree(String nodeFile) throws IOException {
 		//Create a KDTree from the file
@@ -109,8 +103,8 @@ public class MapsEngine {
 		String lat = line.split("\t")[0].substring(3,7);
 		int bytes = 0;
 		
-		String tosplit = "a,b,c,";
-		System.out.println(tosplit.split(",",-1).length);
+		//String tosplit = "a,b,c,";
+		//System.out.println(tosplit.split(",",-1).length);
 
 		while (line != null) {
 			String[] list = line.split("\t");
@@ -142,13 +136,47 @@ public class MapsEngine {
 	public Set<StreetNode> getAllStreetNodes() throws IOException{
 		List<Way> ws = fileReader.getAllWays();
 		Set<StreetNode> hs = new HashSet<StreetNode>();
+		PrintWriter writer = new PrintWriter("all_ways.txt", "UTF-8");
 		for(Way w : ws) {
+			
 			//System.out.println("yay!!");
 			LocationNode start = fileReader.getLocationNode(w.startNodeID);
 			LocationNode end = fileReader.getLocationNode(w.endNodeID);
 			hs.add(new StreetNode(new Point2D.Double(start.latlong.lat, start.latlong.lon), 
 				new Point2D.Double(end.latlong.lat, end.latlong.lon), w.name));
+				writer.println(start.latlong.lat + "," + start.latlong.lon + "," + end.latlong.lat + "," + end.latlong.lon);
 		}
+		writer.close();
 		return hs;
+	}
+	
+	public Set<StreetNode> getStreetsFromFile(String fileLocation){
+		BufferedReader bufferedReader = null;
+		String string;
+		Set<StreetNode> streetSet;
+		
+		streetSet = new HashSet<StreetNode>();
+		try {
+			bufferedReader = new BufferedReader(new FileReader(fileLocation));
+		} catch (FileNotFoundException e) {	
+			return null;
+		}
+	    try {
+	    	string = bufferedReader.readLine();
+			while(string != null) {
+				String[] words = string.split(",");
+				Double a = Double.parseDouble(words[0]);
+				Double b = Double.parseDouble(words[1]);
+				Double c = Double.parseDouble(words[2]);
+				Double d = Double.parseDouble(words[3]);
+				streetSet.add(new StreetNode(new Point2D.Double(a,b), new Point2D.Double(c,d), ""));
+		        string = bufferedReader.readLine();
+		    }
+		    bufferedReader.close();
+	    }
+	    catch(IOException e) {
+	    	return null;
+	    }
+	    return streetSet;
 	}
 }

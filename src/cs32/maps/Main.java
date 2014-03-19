@@ -13,9 +13,9 @@ public class Main {
 		if(args.length==1){ 
 			if(args[0].equals("--guitest")) {
 				
-				final String ways = "/home/bsenturk/course/cs032/map/testfiles/smallWays2.tsv";
-				final String nodes = "/home/bsenturk/course/cs032/map/testfiles/smallNodes2.tsv";
-				final String index = "/home/bsenturk/course/cs032/map/testfiles/smallIndex2.tsv";
+				final String ways = "/course/cs032/data/maps/ways.tsv";
+				final String nodes = "/course/cs032/data/maps/nodes.tsv";
+				final String index = "/course/cs032/data/maps/index.tsv";
 				
 				MapsEngine e = new MapsEngine(ways,nodes,index);
 				
