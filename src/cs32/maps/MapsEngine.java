@@ -31,7 +31,8 @@ public class MapsEngine {
 	}
 
 
-
+	/************** for use with CLI ******************/
+	
 	//CLI version
 	public String getOutputFromIntersection(List<String> streetnames) throws IOException {
 		// find nearest start node (kdtree)
@@ -51,22 +52,6 @@ public class MapsEngine {
 		}
 		return result;
 	}
-
-	//GUI version
-	// node1 - node2    ...   node2 - node3
-	// set of StreetNodes that have starting point (2d double), ending point (name not  necessary)
-	
-	
-	//User-Click backend:
-	// input: latitude and longitude
-	// output: latitude and longitude that is nearest real point
-	
-	
-	//Get Directions backend:
-	// input: two pairs of latitude and longitude (that are REAL POINTS)
-	// output: set of StreetNodes
-	
-	
 
 	public String getOutputFromLatLongs(LatLong s, LatLong e) throws IOException {
 		MapsIO fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
@@ -89,6 +74,30 @@ public class MapsEngine {
 		return result;
 	}
 
+	
+	/*************** for use with GUI ***************/
+	
+	//GUI version
+	// node1 - node2    ...   node2 - node3
+	// set of StreetNodes that have starting point (2d double), ending point (name not  necessary)
+	
+	
+	//User-Click backend:
+	// input: latitude and longitude
+	// output: latitude and longitude that is nearest real point
+	
+	
+	//Get Directions backend:
+	// input: two pairs of latitude and longitude (that are REAL POINTS)
+	// output: set of StreetNodes
+	
+	
+	
+	
+	
+	
+	
+	
 
 	private KDTree buildKDTree(String nodeFile) throws IOException {
 		//Create a KDTree from the file
