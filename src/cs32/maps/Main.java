@@ -9,6 +9,7 @@ public class Main {
 	
 	
 	public static void main(String[] args) throws IOException {
+<<<<<<< HEAD
 		//for GUI testing.
 		if(args.length==1){
 			if(args[0].equals("--guitest")) {
@@ -16,6 +17,8 @@ public class Main {
 				return;
 			}
 		}
+=======
+>>>>>>> 0d9bfd659a420ad77c318e5b41fe0d3afa843413
 		
 		/* maps [--gui] ways.tsv nodes.tsv index.tsv */
 		int len = args.length;

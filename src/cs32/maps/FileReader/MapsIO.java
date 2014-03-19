@@ -3,7 +3,9 @@ package cs32.maps.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +21,6 @@ public class MapsIO {
 	private final String waysFile;
 	private final String nodesFile;
 	private final String indexFile;
-
 	public int ways_idCol, ways_startCol, ways_endCol, ways_nameCol;  //public for testing right now
 	public int nodes_idCol, nodes_latCol, nodes_lonCol, nodes_waysCol;
 	public int index_nameCol, index_nodesCol;
@@ -37,7 +38,6 @@ public class MapsIO {
 			ways_startCol = getColumn(waysFile, "start");
 			ways_endCol = getColumn(waysFile, "end");
 			ways_nameCol = getColumn(waysFile, "name");
-
 			nodes_idCol = getColumn(nodesFile, "id");
 			nodes_latCol = getColumn(nodesFile, "latitude");
 			nodes_lonCol = getColumn(nodesFile, "longitude");
@@ -59,12 +59,13 @@ public class MapsIO {
 		// seek start of line
 		boolean start = false;
 		long pointer = f.getFilePointer();
+		int byteToRead = 256;
 		while (!start) {
-			byte[] seg = new byte[256];
+			byte[] seg = new byte[byteToRead];
 			for (int i = 0; i < seg.length; i++) {
 				seg[i] = 0;
 			}
-			long pointer2 = f.getFilePointer() - 256;
+			long pointer2 = f.getFilePointer() - byteToRead;
 			if (pointer2 < 0) {
 				pointer2 = 0;
 				start = true;
@@ -88,7 +89,7 @@ public class MapsIO {
 		int length = 0;
 		boolean end = false;
 		while (!end) {
-			byte[] seg = new byte[256];
+			byte[] seg = new byte[byteToRead];
 			f.read(seg);
 
 			for (int i = 0; i < seg.length; i++) {
@@ -98,7 +99,7 @@ public class MapsIO {
 					break;
 				}
 				if (i == seg.length - 1) {
-					length += 256;
+					length += byteToRead;
 				}
 			}
 		}
@@ -107,7 +108,7 @@ public class MapsIO {
 		f.seek(pointer);
 		byte[] bytes = new byte[length];
 		if (f.read(bytes) != length) {
-			throw new IOException("ERROR: wrong number of bytes");
+			throw new IOException("ERROR: incorrect number of bytes");
 		}
 
 		String line = new String(bytes);
@@ -124,10 +125,9 @@ public class MapsIO {
 		while (end > start) {
 			file.seek(mid);
 			String[] currentLine = readOneLine(file).split("\t");
-
-			int difference = toFind.compareTo(currentLine[whichCol]);
+			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
 			if (difference == 0) {
-				file.close();
+				//file.close();
 				return currentLine;
 			}
 			else if (difference > 0) 
@@ -188,13 +188,62 @@ public class MapsIO {
 		return ln;		
 	}
 
+	/* given a street name,
+	   read the INDEX file. Find ALL 
+	   the streets with this name and create 
+	   a set of all the nodes
+	   connected to streets with 
+	   this name.
+
+	   This is a helper function for getIntersection(..)
+	*/
+	private Set<String> getNodeIDsFromStreet(String streetName) throws IOException {
+		RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
+		
+		String[] line = binarySearch(raf, index_nameCol, streetName);
+		if(line==null){
+			System.out.printf("No such street: %s\n", streetName);
+			return null;
+		}
+		
+		// Create set, add what binary search gave me
+		Set<String> nodeIDset = new HashSet<>();
+		String[] ids = line[index_nodesCol].split(",");
+		Collections.addAll(nodeIDset, ids); //add all ids from this street entry)
 
 
-	/**
+		long originalPtr = raf.getFilePointer();
+
+
+		//look ABOVE
+		previousNewLine(raf);
+		previousNewLine(raf);
+		String nameHere = getWordAt(raf);
+		while(nameHere.equals(streetName)) {
+			Collections.addAll(nodeIDset, readOneLine(raf).split("\t")[index_nodesCol].split(","));
+			previousNewLine(raf);
+			previousNewLine(raf);
+			nameHere = getWordAt(raf); //its the index so we know the street name is first
+		}
+		// seek original
+		raf.seek(originalPtr);
+		
+		// get everything below
+		nextNewLine(raf);
+		nameHere = getWordAt(raf);
+		while(nameHere.equals(streetName)) {
+			Collections.addAll(nodeIDset, readOneLine(raf).split("\t")[index_nodesCol].split(","));
+			nextNewLine(raf); 
+			nameHere = getWordAt(raf);
+		}
+
+		return nodeIDset;
+	}
+
+	/**idSetOne
 	 * Given a nodeID, search the *nodes file* for correct line
 	 * and return a list of LocationNode objects that have ids
 	 * with the same 8 digits
-	 * TODO
 	 */
 	public List<LocationNode> getNodePage(String nodeID) throws IOException {
 		// do binary search
@@ -205,15 +254,79 @@ public class MapsIO {
 			return null;
 		}
 
-
 		List<LocationNode> pageList = new ArrayList<>();
 		pageList.add(createLocationNode(line));
+		
+		//! raf is currently at the *END* of the line I just added
+		long originalPtr = raf.getFilePointer();
+		raf.seek(0);
+		nextNewLine(raf);
+		long topOfFile = raf.getFilePointer();
+		raf.seek(originalPtr);
+		
+		// get everything above
+		 		
+		String[] nodeLine;
+		String nodeIDhere;
 
-		//TODO read a block and add others to list!
+		previousNewLine(raf);
+		//previousNewLine(raf);
+		
+		//if anything above, get it
+		if(raf.getFilePointer()!=topOfFile) {
+			
+			previousNewLine(raf); 
+			//previousNewLine(raf);
+			nodeLine = readOneLine(raf).split("\t");
+			nodeIDhere = nodeLine[nodes_idCol];
+		
+			while(isOnSamePage(nodeID, nodeIDhere)) {
+				
+				pageList.add(createLocationNode(nodeLine));
+				//previousNewLine(raf); 
+				previousNewLine(raf);
 
+				if(raf.getFilePointer()==topOfFile) //if at top of file
+					break;
+				
+				previousNewLine(raf);
+				nodeLine = readOneLine(raf).split("\t");
+				nodeIDhere = nodeLine[nodes_idCol];
+				//previousNewLine(raf);
+				//previousNewLine(raf);
+				
+			}
+		}
+		// seek original
+		raf.seek(originalPtr);
+		
+		// if anything below, get it
+		nextNewLine(raf);
+		if(raf.getFilePointer() < raf.length()) {
+			nodeLine = readOneLine(raf).split("\t");
+			nodeIDhere = nodeLine[nodes_idCol];
+			
+			while(isOnSamePage(nodeID, nodeIDhere) && raf.getFilePointer()<raf.length()) {
+				pageList.add(createLocationNode(nodeLine));
+				nextNewLine(raf); 
+				
+				nodeLine = readOneLine(raf).split("\t");
+				nodeIDhere = nodeLine[nodes_idCol];
+			}
+		}
 		return pageList;
 	}
 
+	/**
+	  helper for getNodePage
+	  return true if the two IDs have the same first eight digits
+	**/
+	private boolean isOnSamePage(String origID, String queryID) {
+		//   /n/xxxx.yyyy.....
+		String eightDigs = origID.substring(3,7) + origID.substring(8,12);
+		String eightDigs2 = queryID.substring(3,7) + queryID.substring(8,12);
+		return eightDigs.equals(eightDigs2); 
+	}
 
 	private LocationNode createLocationNode(String[] line) {
 		//convert 'line' to LocationNode object
@@ -234,15 +347,25 @@ public class MapsIO {
 	 * @param street1
 	 * @param street2
 	 * @return String
+	 * @throws IOException 
 	 */
-	public String getIntersection(String street1, String street2) {
-		//TODO
+
+	public String getIntersection(String street1, String street2) throws IOException{
+		Set<String> idSetOne = this.getNodeIDsFromStreet(street1);
+		Set<String> idSetTwo = this.getNodeIDsFromStreet(street2);
+		for(Iterator<String> iter = idSetOne.iterator(); iter.hasNext(); ) {
+			String id = iter.next();
+			if(idSetTwo.contains(id)) {
+				return id;
+			}
+		}
+		System.out.printf("No intersection found between %s and %s\n", street1, street2);
 		return "";
 	}
 
 
 	/**
-	 * Get a set of all street names from the index file. To be used for
+	 * Get a set of all streegetNodeIDsFromStreett names from the index file. To be used for
 	 * populating the autocomplete Trie.
 	 * 
 	 * @return Set<String>
@@ -294,70 +417,6 @@ public class MapsIO {
 	}
 
 
-	/**Get page: Return a list of location nodes that have the same first 4 digits
-	 * of latitude and first 4 digits of longitude @qttran
-	 * @param node
-	 * @return List<LocationNode>
-	 * @throws IOException
-	 */
-	public List<LocationNode> getPage(LocationNode node) throws IOException {
-		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
-		String toFind = node.id.substring(0, 12);
-		List<LocationNode> result = new LinkedList<LocationNode>();
-
-		file.seek(0);
-		long start = readOneLine(file).length();
-		long end = (file.length() - 1);
-		long mid = (start + end)/2;
-		while (end > start) {
-			file.seek(mid);
-			String[] currentLine = readOneLine(file).split("\t");
-
-			int difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
-			if (difference == 0) {
-				LocationNode toAdd = createLocationNode(currentLine);
-				result.add(toAdd);
-			}
-			else if (difference > 0) 
-				start = mid + 1;
-			else 
-				end = mid - 1;
-			mid = (start + end)/2;
-		} 
-
-		long lowMid = mid - 1;
-
-		int difference = 0;
-		while (true) { 
-			file.seek(lowMid);
-			String[] currentLine = readOneLine(file).split("\t");
-			difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
-			lowMid -= 1;
-			
-			if (difference == 0) {
-				LocationNode toAdd = createLocationNode(currentLine);
-				result.add(toAdd);
-			} else break;
-		}
-		
-
-		long highMid = mid + 1;
-		difference = 0;
-		while (true) { 
-			file.seek(highMid);
-			String[] currentLine = readOneLine(file).split("\t");
-			difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
-			highMid +=1;
-			
-			if (difference == 0) {
-				LocationNode toAdd = createLocationNode(currentLine);
-				result.add(toAdd);
-			} else break;
-		}
-
-		file.close();
-		return result;
-	}
 
 
 	/** for finding column info @mcashton */
@@ -411,5 +470,18 @@ public class MapsIO {
 		int c;
 		while((c = raf.read()) != '\n'  && c!=-1);
 	}
+
+
+	//helper method -- move raf to previous newline
+	public static void previousNewLine(RandomAccessFile raf) throws IOException {		
+		long currPtr = raf.getFilePointer();
+		raf.seek(currPtr-2);
+		while(raf.getFilePointer()>1) {
+			if(raf.read()=='\n')
+				break;
+			raf.seek(raf.getFilePointer()-2);
+		}		
+	}
+
 }
 

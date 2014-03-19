@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -95,7 +96,7 @@ public class PathFinder {
 	 * @throws IOException
 	 */
 	public List<String> getPath(LocationNode start, LocationNode end) throws IOException {
-
+		_nodeMap = new HashMap<>();
 		Node ret  = aStarSearch(new Node(start), new Node(end));
 
 
@@ -140,31 +141,51 @@ public class PathFinder {
 
 			//remove 'curr' from PQ
 			curr = pq.poll(); 
-			_nodeMap.remove(curr.locNode.id);
+			Preconditions.checkNotNull(_nodeMap.remove(curr.locNode.id));
 			
-			//System.out.println(curr.locNode.toString());
+			//System.out.println("\n\nCURR "+curr.locNode.toString());
 			
 			if(curr.locNode.id.equals(goal.locNode.id)) { // found the best path!
+				//System.out.println("----------------");
 				return curr;
 			}
 
 			closedSet.add(curr);
 
 			Map<Node, String> neighbors = getConnectedNodes(curr); //  'neighbor Node' , 'wayID that connects it to curr'
-			
+//			for(Node n : neighbors.keySet()) {
+//				System.out.println("    connected to "+n.locNode.id);
+//			}
 
 			/* for each neighbor 'b' of 'curr' */
 			for(Node b : neighbors.keySet() ) {
 				if(closedSet.contains(b))
 					continue;
 
+//				System.out.println();
+//				System.out.println(b.locNode.toString());
+//				System.out.println("PQ: ");
+//				for(Iterator<Node> it = pq.iterator(); it.hasNext(); ) {
+//					Node p = it.next();
+//					System.out.print(p.locNode.id + ", ");
+//				}
+//				System.out.println();
+//				System.out.println("Node Map: ");
+//				for(String s : _nodeMap.keySet()) {
+//					System.out.print(s+", ");
+//				}
+//				System.out.println("<><><<>");
+				
+				
 				
 				boolean isInPQ = pq.contains(b);
 
-				if(!isInPQ)
+				if(!isInPQ) {
 					Preconditions.checkState(b.predecessor.equals(curr));
-				else
+				}
+				else {
 					Preconditions.checkState(!b.predecessor.equals(curr));
+				}
 
 
 				double tentative_g_score = curr.g_score; // + dist_between(curr, b)
@@ -181,13 +202,15 @@ public class PathFinder {
 					//remove and re-add
 					pq.remove(b);
 					pq.offer(b);
-					
+					Preconditions.checkState(_nodeMap.containsKey(b.locNode.id));
+					_nodeMap.remove(b.locNode.id);
 					_nodeMap.put(b.locNode.id, b); //update nodeMap reference
 
 				}
 				else if(!isInPQ){
 					//predecessor info is already set
 					
+
 					Preconditions.checkNotNull(b.predecessor);
 					Preconditions.checkState(!_nodeMap.containsKey(b.locNode.id));
 					
@@ -195,7 +218,7 @@ public class PathFinder {
 					b.f_score = b.g_score + heuristic(b, goal);
 					
 					pq.offer(b);
-					
+					_nodeMap.remove(b.locNode.id);
 					_nodeMap.put(b.locNode.id, b); //add to nodeMap
 				}
 
@@ -235,6 +258,7 @@ public class PathFinder {
 			}
 			// else, if node is in my pagedMap
 			else if(_pagedNodes.containsKey(oppositeNodeID)) {
+				System.out.println("NOT calling file utility because I already have node!!!");
 				neighbor = new Node(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
 				neighbor.setPredecessor(start, wayID);
 				
@@ -262,7 +286,7 @@ public class PathFinder {
 	 * return the found LocationNode of original nodeID
 	 */
 	private LocationNode getLocationNode(String nodeID) throws IOException {
-		
+
 		List<LocationNode> pageOfNodes = fileUtility.getNodePage(nodeID);
 		LocationNode toReturn = null;
 		for(LocationNode ln : pageOfNodes) {
@@ -274,6 +298,7 @@ public class PathFinder {
 			}
 		}
 		Preconditions.checkNotNull(toReturn);
+		System.out.printf("Paged in %s new location nodes. Size of _pagedNodes is %s\n\n", pageOfNodes.size(), _pagedNodes.size());
 		return toReturn;
 	}
 	

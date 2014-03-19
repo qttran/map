@@ -15,6 +15,6 @@ public class Tuple<X,Y extends Comparable<Y>> implements Comparable<Tuple<X,Y>> 
 	  
 	@Override
 	public int compareTo(Tuple<X,Y> o) {
-		return this.y.compareTo((Y) o.y);
+		return this.y.compareTo(o.y);
 	}
 } 
