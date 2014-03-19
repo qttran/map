@@ -29,21 +29,8 @@ public class AutocompleteEngine {
 		_ac.addCorpus(fileLocation);
 	}
 
-	public List<String> getCompletions(String input) {
-		//modify the input to make all the letters lowercase, remove unwanted spaces and
-		//punctuations.
-		input = input.toLowerCase();
-		//input = input.replaceAll("[^a-zA-Z ]", " ");
-		input = input.replaceAll(" +", " ");
-		input = input.trim();
-		//split input string into seperate words.
-		String[] words = input.split(" ");
-		String word = words[words.length-1];
-		input = input.substring(0, input.lastIndexOf(" ")+1);
-		String prevWord = null;
-		if (words.length > 1) prevWord = words[words.length-2];
-		
-		List<String> completions = _ac.getSuggestions(word, prevWord);
+	public List<String> getCompletions(String input) {		
+		List<String> completions = _ac.getSuggestions(input);
 		return completions; 
 	}
 }

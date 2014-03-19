@@ -9,13 +9,13 @@ public class Main {
 	
 	
 	public static void main(String[] args) throws IOException {
-/*		//for GUI testing.
+		//for GUI testing.
 		if(args.length==1){
 			if(args[0].equals("--guitest")) {
 				new MapsGUI(null);
 				return;
 			}
-		}*/
+		}
 		
 		/* maps [--gui] ways.tsv nodes.tsv index.tsv */
 		int len = args.length;
