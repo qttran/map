@@ -1,4 +1,4 @@
-package Autocomplete;
+package Autocomplete.old;
 
 import static org.junit.Assert.assertTrue;
 

@@ -59,12 +59,13 @@ public class MapsIO {
 		// seek start of line
 		boolean start = false;
 		long pointer = f.getFilePointer();
+		int byteToRead = 256;
 		while (!start) {
-			byte[] seg = new byte[256];
+			byte[] seg = new byte[byteToRead];
 			for (int i = 0; i < seg.length; i++) {
 				seg[i] = 0;
 			}
-			long pointer2 = f.getFilePointer() - 256;
+			long pointer2 = f.getFilePointer() - byteToRead;
 			if (pointer2 < 0) {
 				pointer2 = 0;
 				start = true;
@@ -88,7 +89,7 @@ public class MapsIO {
 		int length = 0;
 		boolean end = false;
 		while (!end) {
-			byte[] seg = new byte[256];
+			byte[] seg = new byte[byteToRead];
 			f.read(seg);
 
 			for (int i = 0; i < seg.length; i++) {
@@ -98,7 +99,7 @@ public class MapsIO {
 					break;
 				}
 				if (i == seg.length - 1) {
-					length += 256;
+					length += byteToRead;
 				}
 			}
 		}
@@ -107,7 +108,7 @@ public class MapsIO {
 		f.seek(pointer);
 		byte[] bytes = new byte[length];
 		if (f.read(bytes) != length) {
-			throw new IOException("ERROR: wrong number of bytes");
+			throw new IOException("ERROR: incorrect number of bytes");
 		}
 
 		String line = new String(bytes);
@@ -234,10 +235,79 @@ public class MapsIO {
 	 * @param street1
 	 * @param street2
 	 * @return String
+	 * @throws IOException 
 	 */
-	public String getIntersection(String street1, String street2) {
+	public String getIntersection(String street1, String street2) throws IOException {
 		//TODO
-		return "";
+		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
+		List<String> nodes = new LinkedList<>();
+		String toFind = street1;
+		for (int i = 0; i<2; i++) {
+			if (i == 1) toFind = street2;
+
+			//binary search for the street
+			file.seek(0);
+			long start = readOneLine(file).length();
+			long end = (file.length() - 1);
+			long mid = (start + end)/2;
+			while (end > start) {
+				file.seek(mid);
+				String[] currentLine = readOneLine(file).split("\t");
+				System.out.println("binary: " + file.getFilePointer());
+
+				int difference = toFind.compareTo(currentLine[index_nameCol]);
+				if (difference == 0) {
+					for (String node: currentLine[index_nodesCol].split(",")) {
+						if (i == 1 && nodes.contains(node)) 
+							return node;
+						else nodes.add(node);
+					}
+				}
+				else if (difference > 0) 
+					start = mid + 1;
+				else 
+					end = mid - 1;
+				mid = (start + end)/2;
+			} 
+
+			//continue reading upwards
+			int difference = 0;
+			while (true) { 
+				String[] currentLine = readOneLine(file).split("\t");
+				difference = toFind.compareTo(currentLine[index_nameCol]);
+				System.out.println("upwards: " + file.getFilePointer());
+				if (difference == 0) {
+					for (String node: currentLine[index_nodesCol].split(",")) {
+						if (i == 1 && nodes.contains(node)) 
+							return node;
+						else nodes.add(node);
+					}
+				} else break;
+			}
+
+			// move downwards
+			long lowMid = mid;
+
+			difference = 0;
+			while (true) { 
+				file.seek(lowMid);
+				String current = readOneLine(file);
+				String[] currentLine = current.split("\t");
+				difference = toFind.compareTo(currentLine[index_nameCol]);
+				lowMid -= file.getFilePointer() - current.length() - 1; 
+				System.out.println("downwards: " + file.getFilePointer());
+
+				if (difference == 0) {
+					for (String node: currentLine[index_nodesCol].split(",")) {
+						if (i == 1 && nodes.contains(node)) 
+							return node;
+						else nodes.add(node);
+					}
+				} else break;
+			}
+		}
+		file.close();
+		return null;
 	}
 
 
@@ -333,13 +403,13 @@ public class MapsIO {
 			String[] currentLine = readOneLine(file).split("\t");
 			difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
 			lowMid -= 1;
-			
+
 			if (difference == 0) {
 				LocationNode toAdd = createLocationNode(currentLine);
 				result.add(toAdd);
 			} else break;
 		}
-		
+
 
 		long highMid = mid + 1;
 		difference = 0;
@@ -348,7 +418,7 @@ public class MapsIO {
 			String[] currentLine = readOneLine(file).split("\t");
 			difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
 			highMid +=1;
-			
+
 			if (difference == 0) {
 				LocationNode toAdd = createLocationNode(currentLine);
 				result.add(toAdd);

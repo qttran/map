@@ -68,7 +68,6 @@ public class PathFinderTest {
 		assertTrue(path.get(0).endsWith("/w/7777.7777.77777777.7.7"));
 		assertTrue(path.get(1).endsWith("/w/8888.8888.88888888.8.8"));
 		assertTrue(path.get(2).endsWith("/w/9999.9999.99999999.9.9"));
-
 	}
 	//TODO io gets out of bounds error when there is a node with no ways (idk if this ever happens in the real files)
 
