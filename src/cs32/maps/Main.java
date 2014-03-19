@@ -9,14 +9,29 @@ public class Main {
 	
 	
 	public static void main(String[] args) throws IOException {
+		//for GUI testing.
+		if(args.length==1){ 
+			if(args[0].equals("--guitest")) {
+				
+				final String ways = "/home/bsenturk/course/cs032/map/testfiles/smallWays2.tsv";
+				final String nodes = "/home/bsenturk/course/cs032/map/testfiles/smallNodes2.tsv";
+				final String index = "/home/bsenturk/course/cs032/map/testfiles/smallIndex2.tsv";
+				
+				MapsEngine e = new MapsEngine(ways,nodes,index);
+				
+				new MapsGUI(e);
+				return;
+			}
+		}
 		
 		/* maps [--gui] ways.tsv nodes.tsv index.tsv */
 		int len = args.length;
-		boolean gui = false;
+		boolean gui = false;		
 		String fpWays, fpNodes, fpIndex;
 		
 		if(len!=4 && len!=3){
 			System.exit(0); //print something
+			System.out.println("something");
 		}
 	
 		if(len==4){
@@ -26,7 +41,21 @@ public class Main {
 			gui = true;
 		}
 		
-		
+		//for GUI testing.
+		if(args.length==1){ 
+			if(args[0].equals("--guitest")) {
+				
+				final String ways = "/course/cs032/data/maps/ways.tsv";
+				final String nodes = "/course/cs032/data/maps/nodes.tsv";
+				final String index = "/course/cs032/data/maps/index.tsv";
+				
+				MapsEngine e = new MapsEngine(ways,nodes,index);
+				
+				System.out.println(" adsfa");
+				new MapsGUI(e);
+				return;
+			}
+		}
 		fpWays = gui ? args[1] : args[0];
 		fpNodes = gui ? args[2] : args[1];
 		fpIndex = gui ? args[3] : args[2];

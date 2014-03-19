@@ -62,20 +62,34 @@ public class Autocorrect {
 		//input = input.replaceAll("[^a-zA-Z ]", " ");
 		input = input.replaceAll(" +", " ");
 		input = input.trim();
+
+		//split input string into seperate words.
+		String[] words = input.split(" ");
+		ArrayList<String> rankedArray;
+		String word = words[words.length-1];
+		String prevWord;
+		if (words.length > 1) {
+			input = input.substring(0, input.lastIndexOf(" ")+1);
+			prevWord = words[words.length-2];
+		}
+		else {
+			input = "";
+			prevWord = null;
+		}
 		
 		//store suggestions in a HashSet<String> to prevent duplicates;
 		HashSet<String> suggestions = new HashSet<String>(32);
-		suggestions.addAll(_trie.getPrefixMatch(input));
-		suggestions.addAll(_trie.getLED(input, _ED));
-		suggestions.addAll(_trie.getWordSplit(input)); 
-		Node n = _trie.searchTrie(input);
+		suggestions.addAll(_trie.getPrefixMatch(word));
+		suggestions.addAll(_trie.getLED(word, _ED));
+		suggestions.addAll(_trie.getWordSplit(word)); 
+		Node n = _trie.searchTrie(word);
 		//check if the input word is among the ones that are stored in trie and put it
 		//at the beginning of the sorted list if so.
 		if (n != null && n.isWord()) suggestions.add(n._key);
-		ArrayList<String> rankedArray = _ranker.standardRank(suggestions, input, null);
+		rankedArray = _ranker.standardRank(suggestions, word, prevWord);
 		ArrayList<String> toReturn = new ArrayList<String>();
 		for (String s : rankedArray){
-			toReturn.add(s);
+			toReturn.add(input + s);
 		}
 		return toReturn;
 	}

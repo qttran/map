@@ -31,8 +31,13 @@ public class Lister {
 	    	string = bufferedReader.readLine();
 			while(string != null) {
 				string = string.toLowerCase();
+				//string = string.replaceAll("[^a-zA-Z ]", " ");
 				string = string.replaceAll(" +", " ");
-				stringList.add(string.split("	")[1]);
+				String[] words = string.split("	")[1].split(" ");
+				//stringList.add(string.split("	")[1]);
+				for (String word : words) {
+					stringList.add(word);
+				}
 		        string = bufferedReader.readLine();
 		    }
 		    bufferedReader.close();

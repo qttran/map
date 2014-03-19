@@ -123,7 +123,7 @@ public class MapsIO {
 		long mid = (start + end)/2;
 		while (end > start) {
 			file.seek(mid);
-			String[] currentLine = readOneLine(file).split("\t");
+			String[] currentLine = readOneLine(file).split("\t", -1);
 			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
 			if (difference == 0) {
 				//file.close();
@@ -183,7 +183,7 @@ public class MapsIO {
 		LocationNode ln = createLocationNode(line);
 
 		Preconditions.checkState(ln.id.equals(nodeID)); // id should be the same one that was requested
-
+		raf.close();////
 		return ln;		
 	}
 
@@ -219,7 +219,7 @@ public class MapsIO {
 		previousNewLine(raf);
 		String nameHere = getWordAt(raf);
 		while(nameHere.equals(streetName)) {
-			Collections.addAll(nodeIDset, readOneLine(raf).split("\t")[index_nodesCol].split(","));
+			Collections.addAll(nodeIDset, readOneLine(raf).split("\t", -1)[index_nodesCol].split(","));
 			previousNewLine(raf);
 			previousNewLine(raf);
 			nameHere = getWordAt(raf); //its the index so we know the street name is first
@@ -231,7 +231,7 @@ public class MapsIO {
 		nextNewLine(raf);
 		nameHere = getWordAt(raf);
 		while(nameHere.equals(streetName)) {
-			Collections.addAll(nodeIDset, readOneLine(raf).split("\t")[index_nodesCol].split(","));
+			Collections.addAll(nodeIDset, readOneLine(raf).split("\t", -1)[index_nodesCol].split(","));
 			nextNewLine(raf); 
 			nameHere = getWordAt(raf);
 		}
@@ -276,7 +276,7 @@ public class MapsIO {
 			
 			previousNewLine(raf); 
 			//previousNewLine(raf);
-			nodeLine = readOneLine(raf).split("\t");
+			nodeLine = readOneLine(raf).split("\t", -1);
 			nodeIDhere = nodeLine[nodes_idCol];
 		
 			while(isOnSamePage(nodeID, nodeIDhere)) {
@@ -289,7 +289,7 @@ public class MapsIO {
 					break;
 				
 				previousNewLine(raf);
-				nodeLine = readOneLine(raf).split("\t");
+				nodeLine = readOneLine(raf).split("\t", -1);
 				nodeIDhere = nodeLine[nodes_idCol];
 				//previousNewLine(raf);
 				//previousNewLine(raf);
@@ -302,14 +302,14 @@ public class MapsIO {
 		// if anything below, get it
 		nextNewLine(raf);
 		if(raf.getFilePointer() < raf.length()) {
-			nodeLine = readOneLine(raf).split("\t");
+			nodeLine = readOneLine(raf).split("\t", -1);
 			nodeIDhere = nodeLine[nodes_idCol];
 			
 			while(isOnSamePage(nodeID, nodeIDhere) && raf.getFilePointer()<raf.length()) {
 				pageList.add(createLocationNode(nodeLine));
 				nextNewLine(raf); 
 				
-				nodeLine = readOneLine(raf).split("\t");
+				nodeLine = readOneLine(raf).split("\t", -1);
 				nodeIDhere = nodeLine[nodes_idCol];
 			}
 		}
@@ -330,6 +330,7 @@ public class MapsIO {
 	private LocationNode createLocationNode(String[] line) {
 		//convert 'line' to LocationNode object
 		String id = line[nodes_idCol];
+		try {
 		String ways = line[nodes_waysCol];
 		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
 		//create ways list
@@ -338,6 +339,13 @@ public class MapsIO {
 			wayList.add(s);
 		}
 		return new LocationNode(id, wayList, latlong);
+		} catch (java.lang.ArrayIndexOutOfBoundsException e){
+			for (String word : line) {
+				System.out.println(word);	
+			}
+			System.exit(0);
+		}
+		return null;
 	}
 
 
@@ -381,7 +389,7 @@ public class MapsIO {
 
 		while(raf.getFilePointer() < fileSize) {
 			line = this.readOneLine(raf);
-			String[] spl = line.split("\t");
+			String[] spl = line.split("\t", -1);
 			streetNames.add(spl[index_nameCol]);
 			nextNewLine(raf);
 		}
@@ -406,7 +414,7 @@ public class MapsIO {
 
 		while(raf.getFilePointer() < fileSize) {
 			line = this.readOneLine(raf);
-			String[] spl = line.split("\t");
+			String[] spl = line.split("\t", -1);
 			LatLong ll = new LatLong(spl[nodes_latCol], spl[nodes_lonCol]);
 			points.add(ll);
 			nextNewLine(raf);
@@ -429,7 +437,7 @@ public class MapsIO {
 		long fileSize = raf.length();
 		while(raf.getFilePointer() < fileSize) {
 			inp = this.readOneLine(raf);
-			String[] line = inp.split("\t");
+			String[] line = inp.split("\t", -1);
 			String id = line[ways_idCol];
 			String startID = line[ways_startCol];
 			String endID = line[ways_endCol];
