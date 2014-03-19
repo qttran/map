@@ -46,27 +46,37 @@ public class MapsIOTest {
 		assertTrue(way.startNodeID.equals("/n/4016.7374.527767846"));
 		assertTrue(way.endNodeID.equals("/n/4016.7374.527767845"));
 		
-		System.out.println(way.toString());
+		//System.out.println(way.toString());
 	}
 	
 	@Test
 	public void streetNameAggregation() throws IOException {
 		MapsIO io = new MapsIO(ways, nodes, index);
 		Set<String> streetNames = io.getStreetNames();
-		for(String s : streetNames) {
-			System.out.println(s);
-		}
-		System.out.printf("%s street names in total.\n", streetNames.size());
+		//for(String s : streetNames) {
+			//System.out.println(s);
+		//}
+		//System.out.printf("%s street names in total.\n", streetNames.size());
 	}
 	
 	@Test
 	public void latLongAggregation() throws IOException {
 		MapsIO io = new MapsIO(ways, nodes, index);
 		List<LatLong> pts = io.getLatLongs();
-		for(LatLong s : pts) {
+		/*for(LatLong s : pts) {
 			System.out.println(s.toString());
-		}
-		System.out.printf("%s latlong pairs in total.\n", pts.size());
+		}*/
+		//System.out.printf("%s latlong pairs in total.\n", pts.size());
+	}
+	
+	@Test
+	public void getIntersection() throws IOException {
+		MapsIO io = new MapsIO(ways, nodes, index);
+		String street1 = "10 Avenue";
+		String street2 = "Buttonwoods Avenue";
+		String intersection = io.getIntersection(street1, street2);
+		System.out.println(intersection);
+		assertTrue(intersection.equals("/n/4168.7141.201141885"));
 	}
 	
 	

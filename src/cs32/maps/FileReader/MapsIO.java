@@ -59,12 +59,13 @@ public class MapsIO {
 		// seek start of line
 		boolean start = false;
 		long pointer = f.getFilePointer();
+		int byteToRead = 256;
 		while (!start) {
-			byte[] seg = new byte[256];
+			byte[] seg = new byte[byteToRead];
 			for (int i = 0; i < seg.length; i++) {
 				seg[i] = 0;
 			}
-			long pointer2 = f.getFilePointer() - 256;
+			long pointer2 = f.getFilePointer() - byteToRead;
 			if (pointer2 < 0) {
 				pointer2 = 0;
 				start = true;
@@ -88,7 +89,7 @@ public class MapsIO {
 		int length = 0;
 		boolean end = false;
 		while (!end) {
-			byte[] seg = new byte[256];
+			byte[] seg = new byte[byteToRead];
 			f.read(seg);
 
 			for (int i = 0; i < seg.length; i++) {
@@ -98,7 +99,7 @@ public class MapsIO {
 					break;
 				}
 				if (i == seg.length - 1) {
-					length += 256;
+					length += byteToRead;
 				}
 			}
 		}
@@ -107,7 +108,7 @@ public class MapsIO {
 		f.seek(pointer);
 		byte[] bytes = new byte[length];
 		if (f.read(bytes) != length) {
-			throw new IOException("ERROR: wrong number of bytes");
+			throw new IOException("ERROR: incorrect number of bytes");
 		}
 
 		String line = new String(bytes);
@@ -346,7 +347,9 @@ public class MapsIO {
 	 * @param street1
 	 * @param street2
 	 * @return String
+	 * @throws IOException 
 	 */
+
 	public String getIntersection(String street1, String street2) throws IOException{
 		Set<String> idSetOne = this.getNodeIDsFromStreet(street1);
 		Set<String> idSetTwo = this.getNodeIDsFromStreet(street2);
@@ -440,70 +443,7 @@ public class MapsIO {
 		return points;
 	}
 	
-	
-	/**Get page: Return a list of location nodes that have the same first 4 digits
-	 * of latitude and first 4 digits of longitude @qttran
-	 * @param node
-	 * @return List<LocationNode>
-	 * @throws IOException
-	 */
-	public List<LocationNode> getPage(LocationNode node) throws IOException {
-		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
-		String toFind = node.id.substring(0, 12);
-		List<LocationNode> result = new LinkedList<LocationNode>();
 
-		file.seek(0);
-		long start = readOneLine(file).length();
-		long end = (file.length() - 1);
-		long mid = (start + end)/2;
-		while (end > start) {
-			file.seek(mid);
-			String[] currentLine = readOneLine(file).split("\t");
-
-			int difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
-			if (difference == 0) {
-				LocationNode toAdd = createLocationNode(currentLine);
-				result.add(toAdd);
-			}
-			else if (difference > 0) 
-				start = mid + 1;
-			else 
-				end = mid - 1;
-			mid = (start + end)/2;
-		} 
-
-		long lowMid = mid - 1;
-
-		int difference = 0;
-		while (true) { 
-			file.seek(lowMid);
-			String[] currentLine = readOneLine(file).split("\t");
-			difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
-			lowMid -= 1;
-			if (difference == 0) {
-				LocationNode toAdd = createLocationNode(currentLine);
-				result.add(toAdd);
-			} else break;
-		}
-		
-
-		long highMid = mid + 1;
-		difference = 0;
-		while (true) { 
-			file.seek(highMid);
-			String[] currentLine = readOneLine(file).split("\t");
-			difference = toFind.compareTo(currentLine[nodes_idCol].substring(0, 12));
-			highMid +=1;
-			
-			if (difference == 0) {
-				LocationNode toAdd = createLocationNode(currentLine);
-				result.add(toAdd);
-			} else break;
-		}
-
-		file.close();
-		return result;
-	}
 
 
 	/** for finding column info @mcashton */
