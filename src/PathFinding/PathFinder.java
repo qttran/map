@@ -258,6 +258,7 @@ public class PathFinder {
 			}
 			// else, if node is in my pagedMap
 			else if(_pagedNodes.containsKey(oppositeNodeID)) {
+				System.out.println("NOT calling file utility because I already have node!!!");
 				neighbor = new Node(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
 				neighbor.setPredecessor(start, wayID);
 				
@@ -285,21 +286,20 @@ public class PathFinder {
 	 * return the found LocationNode of original nodeID
 	 */
 	private LocationNode getLocationNode(String nodeID) throws IOException {
-		LocationNode n = fileUtility.getLocationNode(nodeID);
-		return n;
-//		List<LocationNode> pageOfNodes = fileUtility.getPage(nodeID);
-//		LocationNode toReturn = null;
-//		for(LocationNode ln : pageOfNodes) {
-//			if(ln.id.equals(nodeID)) {
-//				toReturn = ln;
-//			}
-//			else {
-//				_pagedNodes.put(ln.id, ln);	
-//			}
-//		}
-//		Preconditions.checkNotNull(toReturn);
-//		System.out.printf("Paged in %s new location nodes. Size of _pagedNodes is %s", pageOfNodes.size(), _pagedNodes.size());
-//		return toReturn;
+
+		List<LocationNode> pageOfNodes = fileUtility.getNodePage(nodeID);
+		LocationNode toReturn = null;
+		for(LocationNode ln : pageOfNodes) {
+			if(ln.id.equals(nodeID)) {
+				toReturn = ln;
+			}
+			else {
+				_pagedNodes.put(ln.id, ln);	
+			}
+		}
+		Preconditions.checkNotNull(toReturn);
+		System.out.printf("Paged in %s new location nodes. Size of _pagedNodes is %s\n\n", pageOfNodes.size(), _pagedNodes.size());
+		return toReturn;
 	}
 	
 	
