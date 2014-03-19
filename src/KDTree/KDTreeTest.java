@@ -37,5 +37,15 @@ public class KDTreeTest {
 		assertTrue(en.k.searchNumber(1, new Coordinates(40.3768688,-73.5255778)).get(0).equals("/n/4037.7352.527767969"));
 		assertTrue(en.k.searchNumber(1, new Coordinates(40.3768,-73.5255)).get(0).equals("/n/4037.7352.527767969"));
 		assertTrue(!en.k.searchNumber(1, new Coordinates(41.3768,-75.5255)).get(0).equals("/n/4037.7352.527767969"));
+		
+
+		Coordinates coor1 = new Coordinates(40.1581762,-73.7485663);
+		assertTrue(en.k.searchNumberCoordinates(0, coor1).size() == 0);
+
+		Coordinates coor2 = new Coordinates(40.1581762,-73.7485663);
+		assertTrue(en.k.searchNumberCoordinates(1, coor2).get(0).x == 40.1581762);
+		assertTrue(en.k.searchNumberCoordinates(1, coor2).get(0).y == -73.7485663);
+
 	}
+	
 }
