@@ -1,17 +1,21 @@
 package cs32.maps;
 
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import KDTree.Coordinates;
 import KDTree.KDTree;
 import PathFinding.PathFinder;
 import cs32.maps.FileReader.MapsIO;
+import cs32.maps.gui.StreetNode;
 
 public class MapsEngine {
 	String fpWays;
@@ -124,5 +128,18 @@ public class MapsEngine {
 		}
 		br.close();
 		return k;
+	}
+	
+	public Set<StreetNode> getAllStreetNodes() throws IOException{
+		List<Way> ws = fileReader.getAllWays();
+		Set<StreetNode> hs = new HashSet<StreetNode>();
+		for(Way w : ws) {
+			//System.out.println("yay!!");
+			LocationNode start = fileReader.getLocationNode(w.startNodeID);
+			LocationNode end = fileReader.getLocationNode(w.endNodeID);
+			hs.add(new StreetNode(new Point2D.Double(start.latlong.lat, start.latlong.lon), 
+				new Point2D.Double(end.latlong.lat, end.latlong.lon), w.name));
+		}
+		return hs;
 	}
 }

@@ -14,6 +14,8 @@ import java.awt.event.MouseWheelListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.util.LinkedList;
+import java.util.Set;
+
 import javax.swing.JPanel;
 import cs32.maps.MapsEngine;
 import cs32.maps.gui.StreetNode;
@@ -24,13 +26,13 @@ public class MapPanel extends JPanel {
 	private static final long serialVersionUID = 1L;
 	
 	private MapsEngine _engine;
-	private LinkedList<StreetNode> _nodes;
-	private Double scale = 1D;
+	private Set<StreetNode> _nodes;
+	private Double scale = 2D;
 	private Point2D.Double _center = new Point2D.Double(100D,100D);
 	private Point2D.Double _location;
 	private Point2D.Double _destination;
 	
-	public MapPanel(MapsEngine en, LinkedList<StreetNode> nodes) {
+	public MapPanel(MapsEngine en, Set<StreetNode> nodes) {
 		_engine = en;
 		_nodes = nodes;
 		final MapPanel _map = this;
@@ -76,7 +78,7 @@ public class MapPanel extends JPanel {
 		Graphics2D g2D = (Graphics2D) g;
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.setColor(Color.LIGHT_GRAY);
-		g2D.setStroke(new BasicStroke((int)(6*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		g2D.setStroke(new BasicStroke((int)(0.6*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		for (StreetNode node: _nodes){
 			Point p1 = getCoordinates(node.startingPoint);
 			Point p2 = getCoordinates(node.endPoint);
