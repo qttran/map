@@ -30,7 +30,7 @@ public class MapsEngine {
 
 
 
-
+	//CLI version
 	public String getOutputFromIntersection(List<String> streetnames) throws IOException {
 		// find nearest start node (kdtree)
 		String intersection1 = fileReader.getIntersection(streetnames.get(0), streetnames.get(1));
@@ -49,6 +49,22 @@ public class MapsEngine {
 		}
 		return result;
 	}
+
+	//GUI version
+	// node1 - node2    ...   node2 - node3
+	// set of StreetNodes that have starting point (2d double), ending point (name not  necessary)
+	
+	
+	//User-Click backend:
+	// input: latitude and longitude
+	// output: latitude and longitude that is nearest real point
+	
+	
+	//Get Directions backend:
+	// input: two pairs of latitude and longitude (that are REAL POINTS)
+	// output: set of StreetNodes
+	
+	
 
 	public String getOutputFromLatLongs(LatLong s, LatLong e) throws IOException {
 		MapsIO fileReader = new MapsIO(fpWays, fpNodes, fpIndex);

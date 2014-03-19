@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/gpfs/main/home/mcashton/course/cs032/map/lib/guava-16.0.jar"/>
+	<classpathentry kind="lib" path="/gpfs/main/home/mcashton/course/cs032/map/lib/junit-4.11.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
