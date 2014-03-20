@@ -1,5 +1,7 @@
 package cs32.maps;
 
+import com.google.common.base.Preconditions;
+
 public class Way {
 	public final String id;
 	public final String startNodeID;
@@ -11,6 +13,7 @@ public class Way {
 		startNodeID = sn;
 		endNodeID = en;
 		name = nm;
+		Preconditions.checkState(id.startsWith("/w/"));
 	}
 	
 	@Override
