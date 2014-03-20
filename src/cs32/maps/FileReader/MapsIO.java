@@ -22,9 +22,9 @@ import cs32.maps.Way;
 
 public class MapsIO {
 
-	private final String waysFile;
-	private final String nodesFile;
-	private final String indexFile;
+	protected final String waysFile;
+	protected final String nodesFile;
+	protected final String indexFile;
 	public int ways_idCol, ways_startCol, ways_endCol, ways_nameCol;  //public for testing right now
 	public int nodes_idCol, nodes_latCol, nodes_lonCol, nodes_waysCol;
 	public int index_nameCol, index_nodesCol;
@@ -95,7 +95,7 @@ public class MapsIO {
 	 * @return Read one line from a file, starting at the file pointer
 	 * @throws IOException
 	 */
-	private String[] readOneLine(RandomAccessFile f) throws IOException {
+	protected String[] readOneLine(RandomAccessFile f) throws IOException {
 		// seek start of line
 		boolean start = false;
 		long pointer = f.getFilePointer();
@@ -208,6 +208,7 @@ public class MapsIO {
 		raf.close();
 		if(line==null) {
 			System.out.printf("No such way ID: %s\n", wayID);
+			raf.close();
 			return null;
 		}
 
@@ -218,6 +219,9 @@ public class MapsIO {
 		String name = line[ways_nameCol];
 
 		Preconditions.checkState(id.equals(wayID)); // id should be the same one that was requested
+
+
+		raf.close();
 		return new Way(id, startID, endID, name);
 	}
 
