@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.io.*;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -14,7 +13,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import com.google.common.base.Preconditions;
 import KDTree.*;
 import PathFinding.PathFinder;
@@ -27,7 +25,7 @@ public class MapsEngine {
 	public MapsIO fileReader;
 
 	private Set<String> streetNames; //autocomplete will get
-
+	private LinkedList<Node> recentlyFoundKDNodes; //FOR GUI so dont have to keep kd-treeing
 
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 
@@ -35,6 +33,7 @@ public class MapsEngine {
 		this.k = buildKDTree(fpNodes);
 
 		streetNames = fileReader.getAllStreetNames();
+		recentlyFoundKDNodes = new LinkedList<>();
 	}
 
 	// get nearest neighbor (x, y) --> lat, long, id
@@ -83,8 +82,6 @@ public class MapsEngine {
 
 	/*************** for use with GUI ***************/
 
-	private Map<Point2D.Double, String> recentlySelectedPointsIDs;
-
 	/**
 	 * For GUI: get the nearest Point2D.Double lat/long that is a real node
 	 * @param pt
@@ -94,6 +91,11 @@ public class MapsEngine {
 		Node c = k.KDSearch(new Node("", pt.x, pt.y),1)[0];
 		// can modify coordinates so it has ID? then can add to recentlyselectedpoints ETC.
 		Point2D.Double nearestPt = new Point2D.Double(c.x, c.y);
+		
+		recentlyFoundKDNodes.addFirst(c);
+		if(recentlyFoundKDNodes.size()>3){
+			recentlyFoundKDNodes.removeLast();
+		}
 		return nearestPt;
 
 	}
@@ -107,10 +109,20 @@ public class MapsEngine {
 	 */
 	public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
 		Set<StreetNode> pathSet = new HashSet<>();
-		//TODO populate recentlyselectedpointsids
-
-		Node n1 = k.KDSearch(new Node("", start.x, start.y), 1)[0];
-		Node n2 = k.KDSearch(new Node("", end.x, end.y), 1)[0];
+		Node n1 = null, n2 = null;
+		for(Node kdnode : recentlyFoundKDNodes) {
+			if(kdnode.x == start.x && kdnode.y == start.y) {
+				n1 = kdnode;
+			}
+			if(kdnode.x == end.x && kdnode.y == end.y) {
+				n2 = kdnode;
+			}
+		}
+		// if for some reasong we dont have them, find id with KD search
+		if(n1==null)
+			n1 = k.KDSearch(new Node("", start.x, start.y), 1)[0];
+		if(n2==null)
+			n2 = k.KDSearch(new Node("", end.x, end.y), 1)[0];
 
 
 		LocationNode startNode = fileReader.getLocationNode(n1.ID);
@@ -130,6 +142,44 @@ public class MapsEngine {
 
 	}
 
+	// Should be called by the GUI, take in 2 bounding latlongs, return a set of nodes inside the bounding box 
+	public Set<StreetNode> getStreetNodes (Point2D.Double topLeft, Point2D.Double botRight) throws IOException {
+		int maxLat = this.fileReader.maxLat;
+		int minLat = this.fileReader.minLat;
+		int maxLon = this.fileReader.maxLon;
+		int minLon = this.fileReader.minLon;
+		
+		Set<StreetNode> result = new HashSet<StreetNode>();
+		//note: the direction  x/y - lat/long - ?? could be wrong ... not sure
+		String xRight = Double.toString(botRight.x+0.01).substring(0,2) + Double.toString(botRight.x+0.01).substring(3,5);
+		
+		
+		String xLeft = Double.toString(topLeft.x).substring(0,2) + Double.toString(topLeft.x).substring(3,5);
+		
+		String yTop = Double.toString(topLeft.y-0.01).substring(1,3) + Double.toString(topLeft.y+0.01).substring(4,6);
+		String yBot = Double.toString(botRight.y).substring(0,2) + Double.toString(botRight.y).substring(3,5);
+		
+		//ensure that does not go out of the borders of map:
+		xRight = Math.min(Integer.parseInt(xRight),maxLat) + "";
+		xRight = Math.max(Integer.parseInt(xRight),minLat) + "";
+		xLeft = Math.min(Integer.parseInt(xLeft),maxLat) + "";
+		xLeft = Math.max(Integer.parseInt(xLeft),minLat) + "";
+		
+		yTop = Math.min(Integer.parseInt(yTop),maxLon) + "";
+		yTop = Math.max(Integer.parseInt(yTop),minLon) + "";
+		yBot = Math.min(Integer.parseInt(yBot),maxLon) + "";
+		yBot = Math.max(Integer.parseInt(yBot),minLon) + "";
+		
+		
+		for (int lat = Integer.parseInt(xLeft); lat < Integer.parseInt(xRight); lat++) {
+			String topChunk = lat + "." + yBot;
+			String bottomChunk = lat + "." + yTop;
+			Set<StreetNode> toAdd = getStreetNodesWithin(topChunk, bottomChunk);
+			for (StreetNode node: toAdd) 
+				result.add(node);
+		}
+		return result;
+	}
 
 	/**
 	 * takes in "chunks" ( ex "1111.2222" )

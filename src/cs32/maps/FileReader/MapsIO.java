@@ -32,10 +32,10 @@ public class MapsIO {
 	public HashMap<String, List<Long>> nodeLatLongPointers;
 	public HashMap<String, Long> nodeLatPointers;
 	
-	private int maxLat;
-	private int minLat;
-	private int maxLon;
-	private int minLon;
+	public int maxLat;
+	public int minLat;
+	public int maxLon;
+	public int minLon;
 	
 	
 	private long nodes_maxLat = Long.MIN_VALUE;

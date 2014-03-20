@@ -3,8 +3,6 @@ package KDTree;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 
 import org.junit.Test;
 
@@ -18,7 +16,7 @@ public class KDTreeTest {
 
 
 	@Test
-	public void buildKDTree() throws IOException {
+	public void buildKDTreeTest() throws IOException {
 		MapsEngine en = new MapsEngine (ways,nodes,index);
 		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4015.7374"));
 		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
