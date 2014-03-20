@@ -88,30 +88,30 @@ public class MapsEngineTest {
 		System.out.println(pts[1]);
 		
 		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7374", "4016.7389");
-		for(String n :ln.keySet()) {
-			System.out.println(n);
-		}
-		System.out.println("next");
-		
-		ln = e.nodesChunkTest("4018.7372", "4018.7379");
-		for(String n :ln.keySet()) {
-			System.out.println(n);
-		}
-		
-		
-		System.out.println("next");
-		
-		ln = e.nodesChunkTest("4152.7143", "4152.7145"); //INCLUSIVE these 2 chunks and between
-		
-		
-		List<String> lt = new ArrayList<String>();
-		for(String n :ln.keySet()) {
-			lt.add(n);
-		}
-		Collections.sort(lt);
-		for(String s : lt) {
-			System.out.println(s);
-		}
+//		for(String n :ln.keySet()) {
+//			System.out.println(n);
+//		}
+//		System.out.println("next");
+//		
+//		ln = e.nodesChunkTest("4018.7372", "4018.7379");
+//		for(String n :ln.keySet()) {
+//			System.out.println(n);
+//		}
+//		
+//		
+//		System.out.println("next");
+//		
+//		ln = e.nodesChunkTest("4152.7143", "4152.7145"); //INCLUSIVE these 2 chunks and between
+//		
+//		
+//		List<String> lt = new ArrayList<String>();
+//		for(String n :ln.keySet()) {
+//			lt.add(n);
+//		}
+//		Collections.sort(lt);
+//		for(String s : lt) {
+//			System.out.println(s);
+//		}
 	}
 	
 	@Test
@@ -128,6 +128,26 @@ public class MapsEngineTest {
 
 		
 		
+	}
+	
+	@Test
+	public void getPathStreetNames() throws IOException {
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		System.out.println("-- engine created --");
+		List<String> streets = new ArrayList<>();
+		streets.add("Bowen Street");
+		streets.add("brown STREET");
+		streets.add("waterman street");
+		streets.add("Thayer Street");
+		String s = e.getOutputFromIntersection(streets);
+		System.out.println(s);
+	}
+	
+	@Test
+	public void expandDoubleTest() {
+		Point2D.Double d = new Point2D.Double(50, 50);
+		Point2D.Double exp = MapsEngine.expandPoint(d, .50);
+		assertTrue(exp.x==75.0 && exp.y == 75.0);
 	}
 //	
 //	

@@ -1,41 +1,35 @@
 package KDTree;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Stack;
 import KDTree.Node;
 
 public class KDTree {
 
 	private Hashtable<String, Node> _starsWithNames;
-	private Hashtable<String, Node> _stars;
-	private ArrayList<Node> _starsToAdd;
-	private ArrayList<Node> _starsForNaive;
+	private List<Node> _starsToAdd;
+	private List<Node> _starsForNaive;
 	public final Node _root;
 
-	public KDTree(Hashtable<String, Node> stars, ArrayList<Node> starsToAdd) {
+	public KDTree(List<Node> starsToAdd) {
 		_starsWithNames = new Hashtable<String, Node>();
-		_stars = stars;
 		_starsToAdd = starsToAdd;
 		_starsForNaive = new ArrayList<Node>();
-		//this.ParseStarData(fileLocation);
 		_root = RecursiveKDBuilder(_starsToAdd, 0);
 	}
 
-	private Node RecursiveKDBuilder(ArrayList<Node> stars, Integer depth){
+	private Node RecursiveKDBuilder(List<Node> stars, Integer depth){
 		if (stars.size() == 1) return stars.get(0);
 		Axis axis = Axis.getAxis(depth);
 		Node median = MedianHeuristic(stars, axis);
 		stars.remove(median);
 
-		ArrayList<Node> leftStars = new ArrayList<Node>();
-		ArrayList<Node> rightStars = new ArrayList<Node>();
+		List<Node> leftStars = new ArrayList<Node>();
+		List<Node> rightStars = new ArrayList<Node>();
 
 		switch (axis){
 		case X:
@@ -56,8 +50,8 @@ public class KDTree {
 		return median;
 	}
 
-	private Node naiveHeuristic(ArrayList<Node> stars, Axis axis){
-		ArrayList<Integer> indices = new ArrayList<Integer>();
+	private Node naiveHeuristic(List<Node> stars, Axis axis){
+		List<Integer> indices = new ArrayList<Integer>();
 
 		for (Integer index = 0; index< stars.size(); index++) {
 			indices.add(index);
@@ -87,8 +81,8 @@ public class KDTree {
 		else return sample[(sampleSize - 1) / 2].n;
 	}
 
-	private Node MedianHeuristic(ArrayList<Node> stars, Axis axis){
-		ArrayList<Integer> indices = new ArrayList<Integer>();
+	private Node MedianHeuristic(List<Node> stars, Axis axis){
+		List<Integer> indices = new ArrayList<Integer>();
 
 		for (Integer index = 0; index< stars.size(); index++) {
 			indices.add(index);
@@ -182,7 +176,7 @@ public class KDTree {
 	}
 
 	public Node[] NaiveSearch(Node target, Integer range){
-		ArrayList<Node> nodes = KDSearcher.NaiveSearch(_starsForNaive, target, range);
+		List<Node> nodes = KDSearcher.NaiveSearch(_starsForNaive, target, range);
 		return nodes.toArray(new Node[nodes.size()]);
 	}
 
@@ -193,12 +187,12 @@ public class KDTree {
 			Node[] temp = new Node[0];
 			return temp;
 		}
-		ArrayList<Node> nodes = KDSearcher.NaiveSearch(_starsForNaive, target, range);
+		List<Node> nodes = KDSearcher.NaiveSearch(_starsForNaive, target, range);
 		return nodes.toArray(new Node[nodes.size()]);
 	}
 
 	public Node[] NaiveRangeSearch(Node target, Double range){
-		ArrayList<Node> nodes = KDSearcher.NaiveRangeSearch(_starsForNaive, target, range);
+		List<Node> nodes = KDSearcher.NaiveRangeSearch(_starsForNaive, target, range);
 		return nodes.toArray(new Node[nodes.size()]);
 	}
 
@@ -209,7 +203,7 @@ public class KDTree {
 			Node[] temp = new Node[0];
 			return temp;
 		}
-		ArrayList<Node> nodes = KDSearcher.NaiveRangeSearch(_starsForNaive, target, range);
+		List<Node> nodes = KDSearcher.NaiveRangeSearch(_starsForNaive, target, range);
 		return nodes.toArray(new Node[nodes.size()]);
 	}
 }
