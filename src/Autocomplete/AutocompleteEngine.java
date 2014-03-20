@@ -2,6 +2,7 @@ package Autocomplete;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class AutocompleteEngine {
 	
@@ -25,8 +26,8 @@ public class AutocompleteEngine {
 	 *  
 	 */
 
-	public void addAllWords(String fileLocation) {
-		_ac.addCorpus(fileLocation);
+	public void addAllWords(Set<String> words) {
+		_ac.addCorpus(words);
 	}
 
 	public List<String> getCompletions(String input) {		

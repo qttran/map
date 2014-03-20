@@ -427,7 +427,7 @@ public class MapsIO {
 			line = readOneLine(raf);
 			id = line[ways_idCol];
 			name = line[ways_nameCol];
-		
+			name = name.toLowerCase();
 			// add street name to set
 			streets.add(name);
 			
