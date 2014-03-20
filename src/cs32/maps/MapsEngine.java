@@ -98,6 +98,21 @@ public class MapsEngine {
 
 	}
 
+	public Point2D.Double getNodeFromIntersection(String name1, String name2) {
+		// find intersection
+		String intersection1;
+		try {
+			intersection1 = fileReader.getIntersection(name1, name2);
+			if (intersection1.compareTo("") == 0) return null; 
+			LocationNode ln = fileReader.getLocationNode(intersection1);
+			return new Point2D.Double(ln.latlong.lat, ln.latlong.lon);
+			
+		} catch (IOException e) {
+			return null;
+		}
+	}
+		
+	
 
 	/**
 	 * For GUI: get directions in the form of a set of StreetNodes
@@ -121,11 +136,11 @@ public class MapsEngine {
 
 		List<LatLong[]> resultList = pF.getPathLatLongs(startNode,endNode);
 		
+		if (resultList == null) return null;
 		for(LatLong[] leg : resultList) {
 			Preconditions.checkState(leg.length == 2); //should be a pair of latlongs
 			pathSet.add(new StreetNode(leg[0].lat, leg[0].lon,  leg[1].lat, leg[1].lon, ""));
 		}
-		System.out.println(pathSet);
 		return pathSet;
 
 	}

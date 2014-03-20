@@ -200,8 +200,10 @@ public class OptionPanel extends JPanel {
 				listModel.clear();
 				_gui.setCurrentLocation(null);
 				_gui.setDestination(null);
+				_gui.setPath();
 				street1Box.setText("");
 				street2Box.setText("");
+				_map.repaint();
 			}
         	
         });
@@ -210,11 +212,20 @@ public class OptionPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e){
-				try {
-					_gui.setPath();
-				} catch (IOException e1) {
-					System.out.println("ERROR: Unknown error");
-				}
+				_gui.setPath();
+				_map.repaint();
+			}
+        	
+        });
+        
+        intersection1Button.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				_gui.setCurrentLocation(_engine.getNodeFromIntersection(street1Box.getText(),street2Box.getText()));
+				street1Box.setText(null);
+				street2Box.setText(null);
+				_map.repaint();
 			}
         	
         });
