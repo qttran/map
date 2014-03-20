@@ -32,7 +32,7 @@ public class PathFinderTest {
 		PathFinder pf = new PathFinder(io);
 		LocationNode s = io.getLocationNode("/n/4016.7374.527767846");
 		LocationNode e = io.getLocationNode("/n/4016.7374.527767845");
-		List<String> path = pf.getPath(s, e);
+		List<String> path = pf.getPathIds(s, e);
 		
 		assertTrue(path.size()==1);
 		assertTrue(path.get(0).endsWith("/w/4016.7374.42295268.1.2"));
@@ -45,7 +45,7 @@ public class PathFinderTest {
 		PathFinder pf = new PathFinder(io);
 		LocationNode s = io.getLocationNode("/n/4017.7374.527767851");
 		LocationNode e = io.getLocationNode("/n/4020.7373.527767853");
-		List<String> path = pf.getPath(s, e);
+		List<String> path = pf.getPathIds(s, e);
 		System.out.println("Path: ");
 		for(String str : path) {
 			System.out.println(str);
@@ -63,7 +63,7 @@ public class PathFinderTest {
 		LocationNode s = io.getLocationNode("/n/1111.2222.333333333");
 		LocationNode e = io.getLocationNode("/n/5555.6666.333333333");
 
-		List<String> path = pf.getPath(s, e);
+		List<String> path = pf.getPathIds(s, e);
 		assertTrue(path.size()==3);
 		assertTrue(path.get(0).endsWith("/w/7777.7777.77777777.7.7"));
 		assertTrue(path.get(1).endsWith("/w/8888.8888.88888888.8.8"));
@@ -84,25 +84,25 @@ public class PathFinderTest {
 		LocationNode s = io.getLocationNode(two); 
 		LocationNode e = io.getLocationNode(six);
 
-		List<String> path = pf.getPath(s, e);
+		List<String> path = pf.getPathIds(s, e);
 		assertTrue(path.size()==2);
 		assertTrue(path.get(0).endsWith("/w/22"));
 		assertTrue(path.get(1).endsWith("/w/66"));
 
 		
 		e = io.getLocationNode(three);
-		path = pf.getPath(s, e);
+		path = pf.getPathIds(s, e);
 		assertTrue(path.size()==1);
 		assertTrue(path.get(0).endsWith("/w/11"));
 		
 		e = io.getLocationNode(four);
-		path = pf.getPath(s, e);
+		path = pf.getPathIds(s, e);
 		assertTrue(path.size()==1);
 		assertTrue(path.get(0).endsWith("/w/22"));
 		
 		s = io.getLocationNode(six);
 		e = io.getLocationNode(two);
-		path = pf.getPath(s, e);
+		path = pf.getPathIds(s, e);
 		assertTrue(path.size()==3);
 		assertTrue(path.get(0).endsWith("/w/99"));
 		assertTrue(path.get(1).endsWith("/w/44"));

@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
@@ -196,7 +197,6 @@ public class OptionPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-//				_isShifting = true;
 				listModel.clear();
 				_gui.setCurrentLocation(null);
 				_gui.setDestination(null);
@@ -209,7 +209,12 @@ public class OptionPanel extends JPanel {
         directionsButton.addActionListener(new ActionListener(){
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e){
+				try {
+					_gui.setPath();
+				} catch (IOException e1) {
+					System.out.println("ERROR: Unknown error");
+				}
 			}
         	
         });
@@ -278,7 +283,6 @@ public class OptionPanel extends JPanel {
 			}
 			
 			else if (key == KeyEvent.VK_ENTER) {
-				//doStuff!!!!!!!!!!!!<<<<<<<
 				if (_boxNo == 1) street2Box.requestFocus();
 				else directionsButton.requestFocus();
 			}

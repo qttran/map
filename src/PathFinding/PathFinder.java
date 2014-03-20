@@ -1,12 +1,10 @@
 package PathFinding;
 
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -74,7 +72,7 @@ public class PathFinder {
 
 
 
-	private final MapsIO fileUtility;
+	private final MapsIO _mapsIO;
 	private Map<String, Node> _nodeMap;
 	private Map<String, LocationNode> _pagedNodes;
 	
@@ -82,22 +80,14 @@ public class PathFinder {
 	public PathFinder(MapsIO f){
 		_nodeMap = new HashMap<>(); // the priority queue of A-STAR
 		_pagedNodes = new HashMap<>(); 
-		fileUtility = f;
+		_mapsIO = f;
 	}
 
 
 	/**
-	 * getPath(...)
-	 * 
-	 * - get path in the form of a list of Strings in the format "name -> name : filme"
-	 * - if no path, return null
-	 * 
-	 * @param name1
-	 * @param name2
-	 * @return List<String> 
-	 * @throws IOException
+	 * getPathIds --- for use with CLI (returns output ready to be printed
 	 */
-	public List<String> getPath(LocationNode start, LocationNode end) throws IOException {
+	public List<String> getPathIds(LocationNode start, LocationNode end) throws IOException {
 		_nodeMap = new HashMap<>();
 		Node ret  = aStarSearch(new Node(start), new Node(end));
 
@@ -109,7 +99,7 @@ public class PathFinder {
 			Node pred = ret.predecessor;
 			
 			while(pred != null) {
-				String connection = getConnectionString(pred.locNode.id, curr.locNode.id, curr.predConnection);
+				String connection = pred.locNode.id+" -> "+curr.locNode.id+" : "+curr.predConnection;
 				path.add(0, connection);
 				curr = pred;
 				pred = curr.predecessor;
@@ -119,37 +109,28 @@ public class PathFinder {
 
 		return null; //no path
 	}
-
-	private static String getConnectionString(String nodeid1, String nodeid2, String wayid){
-		return nodeid1 + " -> " + nodeid2 + " : " + wayid;
-	}
-
-	public class Connection {
-		public final LatLong s;
-		public final LatLong e;
-		public Connection(LatLong loc1, LatLong loc2) {
-			s = loc1;
-			e = loc2;
-		}
-	}
-	public List<Connection> getPathSet(LocationNode start, LocationNode end) throws IOException {
+	
+	
+	
+	/**
+	 * get path in the form of a list of pairs of lat longs
+	 * each pair represents a 'leg' of the path
+	 */
+	public List<LatLong[]> getPathLatLongs(LocationNode start, LocationNode end) throws IOException {
 		_nodeMap = new HashMap<>();
 		Node ret  = aStarSearch(new Node(start), new Node(end));
 
-		
-		
 		// trace path back
 		if(ret!=null){
-			List<Connection> path = new ArrayList<>();
-			Connection connection;
+			List<LatLong[]> path = new ArrayList<>();
 			
 			
 			Node curr = ret;
 			Node pred = ret.predecessor;
-			
+			LatLong[] connection;
 			while(pred != null) {
-				connection = new Connection(pred.locNode.latlong, curr.locNode.latlong);
 
+				connection = new LatLong[]{pred.locNode.latlong, curr.locNode.latlong};
 				path.add(connection);
 				curr = pred;
 				pred = curr.predecessor;
@@ -160,8 +141,12 @@ public class PathFinder {
 		return null; //no path
 	}
 
+	
+	/**
+	 * A STAR
+	 */
 	private Node aStarSearch(Node start, Node goal) throws IOException {
-
+		
 		start.g_score = 0;
 		start.f_score = start.g_score + heuristic(start, goal);
 
@@ -212,8 +197,6 @@ public class PathFinder {
 //					System.out.print(s+", ");
 //				}
 //				System.out.println("<><><<>");
-				
-				
 				
 				boolean isInPQ = pq.contains(b);
 
@@ -276,14 +259,19 @@ public class PathFinder {
 
 
 
-	// map (NODE => wayID) that connects it to 'start'
+	/**
+	 * 
+	 * @param start
+	 * @return
+	 * @throws IOException
+	 */
 	private Map<Node, String> getConnectedNodes(Node start) throws IOException {
 		
 		Map<Node, String> neighbors = new HashMap<>();
 
 		for(String wayID : start.locNode.ways) { // for every WAY connected to 'start'
 
-			Way way = fileUtility.getWay(wayID); // "id"  "start node ID"    "end node ID"
+			Way way = _mapsIO.getWay(wayID); // "id"  "start node ID"    "end node ID"
 			
 			Preconditions.checkState(start.locNode.id.equals(way.startNodeID));
 			
@@ -295,7 +283,6 @@ public class PathFinder {
 			}
 			// else, if node is in my pagedMap
 			else if(_pagedNodes.containsKey(oppositeNodeID)) {
-				System.out.println("NOT calling file utility because I already have node!!!");
 				neighbor = new Node(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
 				neighbor.setPredecessor(start, wayID);
 				
@@ -323,8 +310,9 @@ public class PathFinder {
 	 * return the found LocationNode of original nodeID
 	 */
 	private LocationNode getLocationNode(String nodeID) throws IOException {
-
-		List<LocationNode> pageOfNodes = fileUtility.getNodePage(nodeID);
+		//System.out.println("PAGING");
+		List<LocationNode> pageOfNodes = _mapsIO.getNodePage(nodeID);
+		//System.out.println("--");
 		LocationNode toReturn = null;
 		for(LocationNode ln : pageOfNodes) {
 			if(ln.id.equals(nodeID)) {
@@ -335,14 +323,13 @@ public class PathFinder {
 			}
 		}
 		Preconditions.checkNotNull(toReturn);
-		System.out.printf("Paged in %s new location nodes. Size of _pagedNodes is %s\n\n", pageOfNodes.size(), _pagedNodes.size());
 		return toReturn;
 	}
 	
 	
 	/*** for testing only ***/
 	public Set<LocationNode> dummyGetReceivers(String nodeID) throws IOException{
-		LocationNode a = fileUtility.getLocationNode(nodeID);
+		LocationNode a = _mapsIO.getLocationNode(nodeID);
 		Map<Node, String> map = getConnectedNodes(new Node(a));
 		Set<LocationNode> as = new HashSet<>();
 		for(Node nn : map.keySet()){
@@ -358,27 +345,5 @@ public class PathFinder {
 	
 	
 	
-	
-	
-	
-	
-	/**
-	 * given a priority queue and an LocationNode,
-	 * return the node in the priority queue that contains the
-	 * same LocationNode.
-	 * 
-	 * if no such node, return null.
-	 * 
-	 * @param pq
-	 * @param LocationNode
-	 * @return node containing LocationNode, or null
-	 */
-	private Node getNodeWithLocationNode(PriorityQueue<Node> pq, LocationNode locNodeToGet){
-		for(Node n : pq) {
-			if(n.locNode.equals(locNodeToGet)){
-				return n;
-			}
-		}
-		return null;
-	}
+
 }

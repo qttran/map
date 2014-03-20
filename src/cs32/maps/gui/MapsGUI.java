@@ -27,6 +27,8 @@ public class MapsGUI extends JFrame {
 	private static final long serialVersionUID = 1L;
 	private Point2D.Double _location;
 	private Point2D.Double _destination;
+	private Set<StreetNode> _path;
+	private MapsEngine _engine;
 	
 	public MapsGUI(MapsEngine en) throws IOException {
 /*		
@@ -39,6 +41,7 @@ public class MapsGUI extends JFrame {
 		"MapsEngine" contains all logic methods, give OptionPanel and MapPanel references to it
 */
 		super();
+		_engine = en;
 		this.setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
 		
 		Set<StreetNode> set =  en.getStreetsFromFile("/home/qttran/course/cs032/map/all_ways.txt");
@@ -73,5 +76,15 @@ public class MapsGUI extends JFrame {
 	
 	public Point2D.Double getDestination(){
 		return _destination;
+	}
+	
+	public void setPath() throws IOException{
+		if (_location != null && _destination != null) {
+			_path = _engine.getPathStreetNodes(_location, _destination);
+		}
+	}
+	
+	public Set<StreetNode> getPath(){
+		return _path;
 	}
 }

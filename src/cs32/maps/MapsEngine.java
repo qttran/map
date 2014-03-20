@@ -14,10 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import KDTree.Coordinates;
+//import KDTree.Coordinates;
 import KDTree.KDTree;
 import PathFinding.PathFinder;
-import PathFinding.PathFinder.Connection;
+//import PathFinding.PathFinder.Connection;
 import cs32.maps.FileReader.MapsIO;
 import cs32.maps.gui.StreetNode;
 
@@ -32,7 +32,7 @@ public class MapsEngine {
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
-		this.k = buildKDTree(fpNodes);
+		//this.k = buildKDTree(fpNodes);
 
 		streetNames = fileReader.getAllStreetNames();
 	}
@@ -41,7 +41,7 @@ public class MapsEngine {
 	/************** for use with CLI ******************/
 
 	//CLI version
-	public String getOutputFromIntersection(List<String> streetnames) throws IOException {
+/*	public String getOutputFromIntersection(List<String> streetnames) throws IOException {
 		// find nearest start node (kdtree)
 		String intersection1 = fileReader.getIntersection(streetnames.get(0), streetnames.get(1));
 		LocationNode nearestStartNode = fileReader.getLocationNode(intersection1);
@@ -80,7 +80,7 @@ public class MapsEngine {
 		return result;
 	}
 
-
+*/
 	/*************** for use with GUI ***************/
 
 	/**
@@ -88,12 +88,12 @@ public class MapsEngine {
 	 * @param pt
 	 * @return
 	 */
-	public Point2D.Double getNearestPoint(Point2D.Double pt) {
+	/*public Point2D.Double getNearestPoint(Point2D.Double pt) {
 		Coordinates c = k.searchNumberCoordinates(1, new Coordinates(pt.x, pt.y)).get(0);
 		Point2D.Double nearestPt = new Point2D.Double(c.x, c.y);
 		return nearestPt;
 
-	}
+	}*/
 
 
 	/**
@@ -102,7 +102,7 @@ public class MapsEngine {
 	 * @param end Point2D.Double
 	 * @return Set<StreetNode> 
 	 */
-	public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
+	/*public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
 		Set<StreetNode> pathSet = new HashSet<>();
 
 		// find nearest start node (kdtree)
@@ -120,7 +120,7 @@ public class MapsEngine {
 			pathSet.add(new StreetNode(leg.s.getPt().x, leg.s.getPt().y,  leg.e.getPt().x, leg.e.getPt().y, ""));
 		}
 		return pathSet;
-	}
+	}*/
 
 
 
@@ -180,8 +180,7 @@ public class MapsEngine {
 
 
 
-
-
+/*
 	private KDTree buildKDTree(String nodeFile) throws IOException {
 		HashMap<String, List<Long>> nodeLatLongPointers = new HashMap<>();
 		HashMap<String, Long> nodeLatPointers = new HashMap<>();
@@ -251,7 +250,7 @@ public class MapsEngine {
 				if(!nodeLatPointers.containsKey(currLatLong)) {
 					nodeLatPointers.put(currLat, bytes);
 				}
-				//update Lat
+				//update
 				lat = currLat;
 			}
 			bytes += line.getBytes().length +1;
@@ -279,7 +278,7 @@ public class MapsEngine {
 		fileReader.setMaxMinLatLong(maxLat, minLat, maxLon, minLon); //send bounding latlons to filereader
 		return k;
 	}
-
+*/
 
 
 	/**

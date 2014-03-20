@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import KDTree.Coordinates;
 
 import cs32.maps.MapsEngine;
 import cs32.maps.gui.StreetNode;
@@ -71,7 +70,48 @@ public class MapsEngineTest {
 		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
 		System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
 		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374"));
+		//System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
+		//System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374") == 907);
 	}
 	
+	
+	@Test
+	public void testGetBytePointers() throws IOException {
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		long[] pts = (e.forTestingGetBytes("4016.7374", "4017.7374"));
+		assertTrue(pts[0] == 183);
+		assertTrue(pts[1] == 907);
+		
+		pts = e.forTestingGetBytes("4038.7349", "4042.7319");
+		System.out.println(pts[0]);
+		System.out.println(pts[1]);
+		//16665
+		//28675
+	}
+	
+	
+	@Test
+	public void getPathFromNodeID() throws IOException {
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		System.out.println("-- engine created --");
+		String idStart = "/n/4104.7079.527768981";
+		String idEnd = "/n/4104.7078.527769006";
+		String path = e.getBestPathNodeIDs(idStart, idEnd);
+		System.out.println(path);
+		
+		idStart = "/n/4073.7215.527768450";
+		idEnd = "/n/4074.7212.527768452";
+		path = e.getBestPathNodeIDs(idStart, idEnd);
+		System.out.println(path);
+		System.out.println("DONE");
+	}
+	
+	@Test
+	public void pagingTime() throws IOException{
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		System.out.println("<---------->");
+		Set<StreetNode> sn = e.getStreetNodesWithin("4072.7218", "4115.7154");
+		System.out.println("DONE "+sn.size());
+	}
 
 }
