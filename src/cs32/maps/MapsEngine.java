@@ -210,7 +210,7 @@ public class MapsEngine {
 		String yBot = Double.toString(botRight.y).substring(1,3) + Double.toString(botRight.y).substring(4,6);
 
 
-
+		System.out.println(xRight + ", " + xLeft + ", " + yTop + ", " + yBot );
 		//ensure that does not go out of the borders of map:
 		xRight = Math.min(Integer.parseInt(xRight),maxLat) + "";
 		xRight = Math.max(Integer.parseInt(xRight),minLat) + "";
@@ -224,7 +224,8 @@ public class MapsEngine {
 
 		//Test
 /*
-		System.out.println("xLeft: " + xLeft);
+		System.out.println("xLeft: " + xLeft);(yTop),minLon) + "";
+		yBot = Math.min(Integer.parseInt
 
 		System.out.println("xRight: " + xRight);
 
