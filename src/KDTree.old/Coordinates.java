@@ -1,4 +1,4 @@
-package KDTree;
+package KDTree.old;
 
 public class Coordinates{
 	public final double x;

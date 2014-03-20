@@ -1,4 +1,4 @@
-/*package KDTree;
+package KDTree;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -212,4 +212,4 @@ public class KDTree {
 		ArrayList<Node> nodes = KDSearcher.NaiveRangeSearch(_starsForNaive, target, range);
 		return nodes.toArray(new Node[nodes.size()]);
 	}
-}*/
+}
