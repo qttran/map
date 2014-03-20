@@ -41,12 +41,13 @@ public class MapsEngine {
 
 	//CLI version
 	public String getOutputFromIntersection(List<String> streetnames) throws IOException {
+
 		// find nearest start node (kdtree)
-		String intersection1 = fileReader.getIntersection(streetnames.get(0), streetnames.get(1));
+		String intersection1 = fileReader.getIntersection(streetnames.get(0).toLowerCase(), streetnames.get(1).toLowerCase());
 		LocationNode nearestStartNode = fileReader.getLocationNode(intersection1);
 
 		// find nearest end node (kdtree)
-		String intersection2 = fileReader.getIntersection(streetnames.get(2), streetnames.get(3));
+		String intersection2 = fileReader.getIntersection(streetnames.get(2).toLowerCase(), streetnames.get(3).toLowerCase());
 		LocationNode nearestEndNode = fileReader.getLocationNode(intersection2);
 
 		// get shortest path between them (PathFinder)
@@ -141,6 +142,18 @@ public class MapsEngine {
 		return pathSet;
 
 	}
+	
+	//gui
+	public Point2D.Double getIntersectionLatLong(String s1, String s2) throws IOException {
+
+
+		String intersectionID = fileReader.getIntersection(s1.toLowerCase(), s2.toLowerCase());
+		Preconditions.checkState(intersectionID.startsWith("/n/"));
+		LocationNode intersectionNode = fileReader.getLocationNode(intersectionID);
+
+		return intersectionNode.latlong.getPt();
+	}
+	
 
 	// Should be called by the GUI, take in 2 bounding latlongs, return a set of nodes inside the bounding box 
 	public Set<StreetNode> getStreetNodes (Point2D.Double topLeft, Point2D.Double botRight) throws IOException {
