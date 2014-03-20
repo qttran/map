@@ -157,14 +157,12 @@ public class MapsEngine {
 					opposite = nodeMap.get(oppositeNodeID).latlong;
 				}
 				else {
-					System.out.println(":((( node was NOT already in set (getStreetNodesWithin)");
-					//LocationNode opp = fileReader.getLocationNode(oppositeNodeID);
-					//opposite = opp.latlong;
-					continue; //FOR NOW WE DONT CARE
+					// node was not already in set, so find it
+					LocationNode opp = fileReader.getLocationNode(oppositeNodeID);
+					opposite = opp.latlong;
 				}
 				LatLong start = node.latlong;
 				snSet.add(new StreetNode(start.lat,start.lon, opposite.lat,opposite.lon, w.name));
-				//System.out.println("------ADDED");
 
 			}
 		}
