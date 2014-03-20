@@ -78,10 +78,15 @@ public class MapsGUI extends JFrame {
 		return _destination;
 	}
 	
-	public void setPath() throws IOException{
+	public void setPath(){
 		if (_location != null && _destination != null) {
-			_path = _engine.getPathStreetNodes(_location, _destination);
+			try {
+				_path = _engine.getPathStreetNodes(_location, _destination);
+			} catch (IOException e) {
+				_path = null;
+			}
 		}
+		else _path = null;
 	}
 	
 	public Set<StreetNode> getPath(){

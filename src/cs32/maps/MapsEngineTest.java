@@ -13,6 +13,7 @@ import org.junit.Test;
 
 
 import cs32.maps.MapsEngine;
+import cs32.maps.FileReader.MapsIO;
 import cs32.maps.gui.StreetNode;
 
 public class MapsEngineTest {
@@ -63,72 +64,88 @@ public class MapsEngineTest {
 //	}
 	
 
+//	@Test
+//	public void testKDTreeLatLongBuild() throws IOException {
+//		MapsEngine en = new MapsEngine(ways, nodes, index);
+//		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4015.7374"));
+//		assertTrue(!en.fileReader.nodeLatLongPointers.containsKey("4999.6766"));
+//		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
+//		System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
+//		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374"));
+//		//System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
+//		//System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374") == 907);
+//	}
+//	
+//	
+//	@Test
+//	public void testGetBytePointers() throws IOException {
+//		MapsEngine e = new MapsEngine(ways, nodes, index);
+//		System.out.println("---");
+//		long[] pts = (e.forTestingGetBytes("4016.7374", "4016.7389")); //first one is in HM, second not
+//		System.out.println(pts[0]); // should be 183
+//		System.out.println(pts[1]);
+//		
+//		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7374", "4016.7389");
+//		for(String n :ln.keySet()) {
+//			System.out.println(n);
+//		}
+//		System.out.println("next");
+//		
+//		ln = e.nodesChunkTest("4018.7372", "4018.7379");
+//		for(String n :ln.keySet()) {
+//			System.out.println(n);
+//		}
+//		
+//		
+//		System.out.println("next");
+//		
+//		ln = e.nodesChunkTest("4152.7143", "4152.7145");
+//		for(String n :ln.keySet()) {
+//			System.out.println(n);
+//		}
+//		
+//		
+//	}
+//	
+//	
+//	@Test
+//	public void getPathFromNodeID() throws IOException {
+//		MapsEngine e = new MapsEngine(ways, nodes, index);
+//		System.out.println("-- engine created --");
+//		String idStart = "/n/4104.7079.527768981";
+//		String idEnd = "/n/4104.7078.527769006";
+//		String path = e.getBestPathNodeIDs(idStart, idEnd);
+//		System.out.println(path);
+//		
+//		idStart = "/n/4073.7215.527768450";
+//		idEnd = "/n/4074.7212.527768452";
+//		path = e.getBestPathNodeIDs(idStart, idEnd);
+//		System.out.println(path);
+//		System.out.println("DONE");
+//	}
+//	
+//	@Test
+//	public void pagingTime() throws IOException{
+//		MapsEngine e = new MapsEngine(ways, nodes, index);
+//		System.out.println("<---------->");
+//		Set<StreetNode> sn = e.getStreetNodesWithin("4072.7218", "4072.7328");
+//		System.out.println("DONE "+sn.size());
+//	}
+	
 	@Test
-	public void testKDTreeLatLongBuild() throws IOException {
+	public void getStreetNodesTest() throws IOException {
 		MapsEngine en = new MapsEngine(ways, nodes, index);
-		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4015.7374"));
-		assertTrue(!en.fileReader.nodeLatLongPointers.containsKey("4999.6766"));
-		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
-		System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
-		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374"));
-		//System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
-		//System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374") == 907);
-	}
-	
-	
-	@Test
-	public void testGetBytePointers() throws IOException {
-		MapsEngine e = new MapsEngine(ways, nodes, index);
-		System.out.println("---");
-		long[] pts = (e.forTestingGetBytes("4016.7374", "4016.7389")); //first one is in HM, second not
-		System.out.println(pts[0]); // should be 183
-		System.out.println(pts[1]);
-		
-		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7374", "4016.7389");
-		for(String n :ln.keySet()) {
-			System.out.println(n);
+		System.out.println("kdTree built");
+		Point2D.Double topLeft = new Point2D.Double();
+		topLeft.setLocation(40.1581762, -72.7485663);
+		Point2D.Double botRight = new Point2D.Double();
+		botRight.setLocation(40.190990, -73.900080);
+		Set<StreetNode> set = en.getStreetNodes(topLeft, botRight);
+		for (StreetNode node: set) {
+			System.out.println("x1: " + node.x1);
+			System.out.println("x2: " + node.x2);
+			System.out.println("y1: " + node.y1);
+			System.out.println("y2: " + node.y2);
 		}
-		System.out.println("next");
-		
-		ln = e.nodesChunkTest("4018.7372", "4018.7379");
-		for(String n :ln.keySet()) {
-			System.out.println(n);
-		}
-		
-		
-		System.out.println("next");
-		
-		ln = e.nodesChunkTest("4152.7143", "4152.7145");
-		for(String n :ln.keySet()) {
-			System.out.println(n);
-		}
-		
-		
 	}
-	
-	
-	@Test
-	public void getPathFromNodeID() throws IOException {
-		MapsEngine e = new MapsEngine(ways, nodes, index);
-		System.out.println("-- engine created --");
-		String idStart = "/n/4104.7079.527768981";
-		String idEnd = "/n/4104.7078.527769006";
-		String path = e.getBestPathNodeIDs(idStart, idEnd);
-		System.out.println(path);
-		
-		idStart = "/n/4073.7215.527768450";
-		idEnd = "/n/4074.7212.527768452";
-		path = e.getBestPathNodeIDs(idStart, idEnd);
-		System.out.println(path);
-		System.out.println("DONE");
-	}
-	
-	@Test
-	public void pagingTime() throws IOException{
-		MapsEngine e = new MapsEngine(ways, nodes, index);
-		System.out.println("<---------->");
-		Set<StreetNode> sn = e.getStreetNodesWithin("4072.7218", "4072.7328");
-		System.out.println("DONE "+sn.size());
-	}
-
 }
