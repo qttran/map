@@ -27,6 +27,10 @@ public class MapsEngine {
 	private Set<String> streetNames; //autocomplete will get
 	private LinkedList<Node> recentlyFoundKDNodes; //FOR GUI so dont have to keep kd-treeing
 
+	
+	private Map<String, Set<StreetNode>> streetNodesOnScreen; 
+	// map "4-lat""4-long" to streetNodes
+	
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
@@ -34,6 +38,7 @@ public class MapsEngine {
 
 		streetNames = fileReader.getAllStreetNames();
 		recentlyFoundKDNodes = new LinkedList<>();
+		streetNodesOnScreen = new HashMap<>();
 	}
 
 	// get nearest neighbor (x, y) --> lat, long, id
@@ -41,12 +46,21 @@ public class MapsEngine {
 
 	//CLI version
 	public String getOutputFromIntersection(List<String> streetnames) throws IOException {
+
 		// find nearest start node (kdtree)
-		String intersection1 = fileReader.getIntersection(streetnames.get(0), streetnames.get(1));
+		String intersection1 = fileReader.getIntersection(streetnames.get(0).toLowerCase(), streetnames.get(1).toLowerCase());
+		if(intersection1.length()<1) {
+			System.out.printf("No intersection found between %s and %s\n", streetnames.get(0), streetnames.get(1));
+			return null;
+		}
 		LocationNode nearestStartNode = fileReader.getLocationNode(intersection1);
 
 		// find nearest end node (kdtree)
-		String intersection2 = fileReader.getIntersection(streetnames.get(2), streetnames.get(3));
+		String intersection2 = fileReader.getIntersection(streetnames.get(2).toLowerCase(), streetnames.get(3).toLowerCase());
+		if(intersection2.length()<1) {
+			System.out.printf("No intersection found between %s and %s\n", streetnames.get(2), streetnames.get(3));
+			return null;
+		}
 		LocationNode nearestEndNode = fileReader.getLocationNode(intersection2);
 
 		// get shortest path between them (PathFinder)
@@ -147,7 +161,13 @@ public class MapsEngine {
 		PathFinder pF = new PathFinder(fileReader);
 
 		List<LatLong[]> resultList = pF.getPathLatLongs(startNode,endNode);
+<<<<<<< HEAD
 		if (resultList == null) return null;
+=======
+
+		if (resultList == null) return null;
+
+>>>>>>> 939d777189887efdc0c769ef88184f4bc7d43170
 		for(LatLong[] leg : resultList) {
 			Preconditions.checkState(leg.length == 2); //should be a pair of latlongs
 			pathSet.add(new StreetNode(leg[0].lat, leg[0].lon, leg[1].lat, leg[1].lon, ""));
@@ -155,6 +175,20 @@ public class MapsEngine {
 		return pathSet;
 
 	}
+	
+	//gui
+	public Point2D.Double getIntersectionLatLong(String s1, String s2) throws IOException {
+
+
+		String intersectionID = fileReader.getIntersection(s1.toLowerCase(), s2.toLowerCase());
+		if(intersectionID.length()<1)
+			return null;
+		Preconditions.checkState(intersectionID.startsWith("/n/"));
+		LocationNode intersectionNode = fileReader.getLocationNode(intersectionID);
+
+		return intersectionNode.latlong.getPt();
+	}
+	
 
 	// Should be called by the GUI, take in 2 bounding latlongs, return a set of nodes inside the bounding box 
 	public Set<StreetNode> getStreetNodes (Point2D.Double topLeft, Point2D.Double botRight) throws IOException {
@@ -196,13 +230,35 @@ public class MapsEngine {
 
 		System.out.println("yBot: " + yBot);*/
 
-
+		/**
+		 * loop through all mini chunks -- if they are already in hashtable, don't get them (get them from hashtable)
+		 */
+//		for (int lat = Integer.parseInt(xLeft); lat < Integer.parseInt(xRight); lat++) {
+//			String topChunk = lat + "." + yBot;
+//			String bottomChunk = lat + "." + yTop;
+//			Set<StreetNode> toAdd = getStreetNodesWithin(topChunk, bottomChunk);
+//			
+//			// if "lat""long" is not in hashmap, hashmap.putt("latlon", toAdd)
+//			for (StreetNode node: toAdd) 
+//				result.add(node);
+//		}
+		
 		for (int lat = Integer.parseInt(xLeft); lat < Integer.parseInt(xRight); lat++) {
-			String topChunk = lat + "." + yBot;
-			String bottomChunk = lat + "." + yTop;
-			Set<StreetNode> toAdd = getStreetNodesWithin(topChunk, bottomChunk);
-			for (StreetNode node: toAdd) 
-				result.add(node);
+			for (int lon = Integer.parseInt(yBot); lon < Integer.parseInt(yTop); lon ++) {
+				String topChunk = lat + "." + lon;
+				String bottomChunk = lat + "." + (lon+1);
+				Set<StreetNode> toAdd;
+				if (streetNodesOnScreen.containsKey(topChunk)) {
+					toAdd = streetNodesOnScreen.get(topChunk);
+				}
+				else {
+					toAdd = getStreetNodesWithin(topChunk, bottomChunk);
+					streetNodesOnScreen.put(topChunk, toAdd);
+				}
+				
+				result.addAll(toAdd);
+			}
+			
 		}
 		return result;
 	}

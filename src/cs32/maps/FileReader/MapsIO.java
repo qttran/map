@@ -190,6 +190,7 @@ public class MapsIO {
 		String[] line = binarySearch(raf, ways_idCol, wayID);
 		if(line==null) {
 			System.out.printf("No such way ID: %s\n", wayID);
+			raf.close();
 			return null;
 		}
 
@@ -237,7 +238,7 @@ public class MapsIO {
 		previousNewLine(raf);
 		previousNewLine(raf);
 		String nameHere = getWordAt(raf);
-		while(nameHere.equals(streetName)) {
+		while(nameHere.compareToIgnoreCase(streetName)==0) {
 			Collections.addAll(nodeIDset, readOneLine(raf)[index_nodesCol].split(","));
 			previousNewLine(raf);
 			previousNewLine(raf);
@@ -249,12 +250,11 @@ public class MapsIO {
 		// get everything below
 		nextNewLine(raf);
 		nameHere = getWordAt(raf);
-		while(nameHere.equals(streetName)) {
+		while(nameHere.compareToIgnoreCase(streetName)==0) {
 			Collections.addAll(nodeIDset, readOneLine(raf)[index_nodesCol].split(","));
 			nextNewLine(raf); 
 			nameHere = getWordAt(raf);
 		}
-
 		return nodeIDset;
 	}
 
@@ -381,7 +381,7 @@ public class MapsIO {
 				return id;
 			}
 		}
-		System.out.printf("No intersection found between %s and %s\n", street1, street2);
+		
 		return "";
 	}
 
@@ -520,7 +520,6 @@ public class MapsIO {
 
 		file.seek(filePointerTop); // points to beginning of first line of chunk
 		foundLine = binarySearch(file, nodes_idCol, nodeID);
-
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;

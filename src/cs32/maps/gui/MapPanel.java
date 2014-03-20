@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -44,16 +43,10 @@ public class MapPanel extends JPanel {
 		_nodes = nodes;
 		_gui = gui;
 		
-		Timer _timer = new Timer(3000, new ActionListener(){
-
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+/*		Timer _timer = new Timer(3000, new ActionListener(){
 			
 		});
-		_timer.start();
+		_timer.start();*/
 		
 		final MapPanel _map = this;
 		this.setBackground(Color.WHITE);
@@ -128,8 +121,13 @@ public class MapPanel extends JPanel {
 		//g2D.setStroke(new BasicStroke((int)(0.0002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
 		Point2D.Double b = getCoordinates(MAP_WIDTH, 0);
-		
 		Point2D.Double a = getCoordinates(0, MAP_HEIGHT);
+		try {
+			_nodes = _engine.getStreetNodes(a, b);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		for (StreetNode node: _nodes){
 			if(bb.intersectsLine(node)){

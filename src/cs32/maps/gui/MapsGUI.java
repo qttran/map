@@ -67,7 +67,7 @@ public class MapsGUI extends JFrame {
 	
 	public void setDestination(Point2D.Double p){
 		_destination = p;
-//		System.out.println("D:" + _destination);
+		System.out.println("D:" + _destination);
 	}
 	
 	public Point2D.Double getCurrentLocation(){
