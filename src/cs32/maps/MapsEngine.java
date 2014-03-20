@@ -130,6 +130,44 @@ public class MapsEngine {
 
 	}
 
+	// Should be called by the GUI, take in 2 bounding latlongs, return a set of nodes inside the bounding box 
+	public Set<StreetNode> getStreetNodes (Point2D.Double topLeft, Point2D.Double botRight) throws IOException {
+		int maxLat = this.fileReader.maxLat;
+		int minLat = this.fileReader.minLat;
+		int maxLon = this.fileReader.maxLon;
+		int minLon = this.fileReader.minLon;
+		
+		Set<StreetNode> result = new HashSet<StreetNode>();
+		//note: the direction  x/y - lat/long - ?? could be wrong ... not sure
+		String xRight = Double.toString(botRight.x+0.01).substring(0,2) + Double.toString(botRight.x+0.01).substring(3,5);
+		
+		
+		String xLeft = Double.toString(topLeft.x).substring(0,2) + Double.toString(topLeft.x).substring(3,5);
+		
+		String yTop = Double.toString(topLeft.y-0.01).substring(1,3) + Double.toString(topLeft.y+0.01).substring(4,6);
+		String yBot = Double.toString(botRight.y).substring(0,2) + Double.toString(botRight.y).substring(3,5);
+		
+		//ensure that does not go out of the borders of map:
+		xRight = Math.min(Integer.parseInt(xRight),maxLat) + "";
+		xRight = Math.max(Integer.parseInt(xRight),minLat) + "";
+		xLeft = Math.min(Integer.parseInt(xLeft),maxLat) + "";
+		xLeft = Math.max(Integer.parseInt(xLeft),minLat) + "";
+		
+		yTop = Math.min(Integer.parseInt(yTop),maxLon) + "";
+		yTop = Math.max(Integer.parseInt(yTop),minLon) + "";
+		yBot = Math.min(Integer.parseInt(yBot),maxLon) + "";
+		yBot = Math.max(Integer.parseInt(yBot),minLon) + "";
+		
+		
+		for (int lat = Integer.parseInt(xLeft); lat < Integer.parseInt(xRight); lat++) {
+			String topChunk = lat + "." + yBot;
+			String bottomChunk = lat + "." + yTop;
+			Set<StreetNode> toAdd = getStreetNodesWithin(topChunk, bottomChunk);
+			for (StreetNode node: toAdd) 
+				result.add(node);
+		}
+		return result;
+	}
 
 	/**
 	 * takes in "chunks" ( ex "1111.2222" )
