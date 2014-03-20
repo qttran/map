@@ -152,6 +152,12 @@ public class MapsIO {
 			}
 		}
 		String line = new String(result);
+		f.seek(pointer+length);
+/*		String k = f.readLine();
+		if (line.compareTo(k) != 0) {
+			System.out.println("ours: " + line);
+			System.out.println("theirs: " + k);
+		}*/
 		return line.split("\t", -1);
 		
 /*		// read bytes of line

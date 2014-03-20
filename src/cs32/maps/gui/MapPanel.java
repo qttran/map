@@ -34,13 +34,13 @@ public class MapPanel extends JPanel {
 	private Set<StreetNode> _nodes;
 	private Set<StreetNode> _path;
 	private MapsGUI _gui;
-	private Double scale = 46000D;
+	private Double scale = 60000D;
 	private Point2D.Double _center = new Point2D.Double(41.82163534608988, -71.38882713291805);
 	private int _currentVariable = 1;
 	
-	public MapPanel(MapsEngine en, MapsGUI gui, Set<StreetNode> nodes) {
+	public MapPanel(MapsEngine en, MapsGUI gui) {
 		_engine = en;
-		_nodes = nodes;
+//		/_nodes = nodes;
 		_gui = gui;
 		
 /*		Timer _timer = new Timer(3000, new ActionListener(){
@@ -73,7 +73,7 @@ public class MapPanel extends JPanel {
 
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
-				scale = Math.pow(scale, 1 - e.getWheelRotation()*0.08);
+				scale = Math.pow(scale, 1 - e.getWheelRotation()*0.02);
 				if (scale < 0.1D) scale = 0.1D;
 				_map.repaint();
 			}
