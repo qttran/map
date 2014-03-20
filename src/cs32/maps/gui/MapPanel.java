@@ -125,6 +125,7 @@ public class MapPanel extends JPanel {
 		g2D.setColor(Color.BLACK);
 		//g2D.setStroke(new BasicStroke((int)(0.0002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
+
 		bottomRight = getCoordinates(MAP_WIDTH, 0);
 		topLeft = getCoordinates(0, MAP_HEIGHT);
 		
@@ -133,13 +134,6 @@ public class MapPanel extends JPanel {
 			_umthread = new UpdateMapThread(this);
 			_umthread.start();
 		}
-		
-/*		try {
-			_nodes = _engine.getStreetNodes(bottomRight, topLeft);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
 		
 		for (StreetNode node: _nodes){
 			if(bb.intersectsLine(node)){

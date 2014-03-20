@@ -150,7 +150,6 @@ public class MapsIOTest {
 			if (!rafLine[i].equals(line.split("\t")[i])) {
 				bool = false;
 			}
-
 		}
 		assertTrue(bool);
 	}
