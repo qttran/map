@@ -192,6 +192,7 @@ public class MapsIO {
 		String[] line = binarySearch(raf, ways_idCol, wayID);
 		if(line==null) {
 			System.out.printf("No such way ID: %s\n", wayID);
+			raf.close();
 			return null;
 		}
 
@@ -203,6 +204,7 @@ public class MapsIO {
 
 		Preconditions.checkState(id.equals(wayID)); // id should be the same one that was requested
 
+		raf.close();
 		return new Way(id, startID, endID, name);
 	}
 

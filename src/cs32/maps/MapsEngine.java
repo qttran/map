@@ -190,6 +190,7 @@ public class MapsEngine {
 			for (StreetNode node: toAdd) 
 				result.add(node);
 		}
+		System.out.println(result.size());
 		return result;
 	}
 
