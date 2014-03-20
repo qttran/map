@@ -2,6 +2,7 @@ package KDTree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Stack;
 import KDTree.KDTree.Axis;
 
@@ -130,8 +131,8 @@ public class KDSearcher {
 			return KDRangeSearch(target, range, current.getLeftChild(), depth + 1, nodes);
 		}
 		
-		ArrayList<Node> inRange = new ArrayList<Node>();
-		ArrayList<Double> distances = new ArrayList<Double>();
+		List<Node> inRange = new ArrayList<Node>();
+		List<Double> distances = new ArrayList<Double>();
 		inRange.add(new Node("", 0.0, 0.0));
 		distances.add(Double.NEGATIVE_INFINITY);
 		
@@ -275,9 +276,9 @@ public class KDSearcher {
 		return bestNode;
 	}
 	
-	static ArrayList<Node> NaiveSearch(ArrayList<Node> stars, Node target, Integer range) {
-		ArrayList<Node> bestNodes = new ArrayList<Node>();
-		ArrayList<Double> bestDistances = new ArrayList<Double>();
+	static List<Node> NaiveSearch(List<Node> stars, Node target, Integer range) {
+		List<Node> bestNodes = new ArrayList<Node>();
+		List<Double> bestDistances = new ArrayList<Double>();
 		bestNodes.add(new Node("", 0.0, 0.0));
 		bestDistances.add(Double.POSITIVE_INFINITY);
 		
@@ -299,10 +300,10 @@ public class KDSearcher {
 		return bestNodes;
 	}
 	
-	static ArrayList<Node> NaiveRangeSearch(ArrayList<Node> stars, Node target, Double range) {
+	static List<Node> NaiveRangeSearch(List<Node> stars, Node target, Double range) {
 		range = Math.pow(range, 2);
-		ArrayList<Node> bestNodes = new ArrayList<Node>();
-		ArrayList<Double> bestDistances = new ArrayList<Double>();
+		List<Node> bestNodes = new ArrayList<Node>();
+		List<Double> bestDistances = new ArrayList<Double>();
 		bestNodes.add(new Node("", 0.0, 0.0));
 		bestDistances.add(Double.NEGATIVE_INFINITY);
 		
