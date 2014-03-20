@@ -20,9 +20,9 @@ public class KDTreeTest {
 
 	@Test
 	public void buildKDTree() throws IOException {
-		MapsEngine en = new MapsEngine (ways,nodes,index);
-		assertTrue(en.k.lookup(new Coordinates(40.1581762,-73.7485663)));
-		assertTrue(en.k.lookup(new Coordinates(-1000,-100000)) == false);
+		//MapsEngine en = new MapsEngine (ways,nodes,index);
+		//assertTrue(en.k.lookup(new Coordinates(40.1581762,-73.7485663)));
+		//assertTrue(en.k.lookup(new Coordinates(-1000,-100000)) == false);
 	}
 	
 	@Test
@@ -45,6 +45,11 @@ public class KDTreeTest {
 		Coordinates coor2 = new Coordinates(40.1581762,-73.7485663);
 		assertTrue(en.k.searchNumberCoordinates(1, coor2).get(0).x == 40.1581762);
 		assertTrue(en.k.searchNumberCoordinates(1, coor2).get(0).y == -73.7485663);
+		
+		Coordinates coor3 = new Coordinates(41.821135346089875,-71.38717713291805);
+		System.out.println(en.k.searchNumberCoordinates(1, coor3).get(0).x);
+		System.out.println(en.k.searchNumberCoordinates(1, coor3).get(0).y);
+		//assertTrue(en.k.searchNumberCoordinates(1, coor2).get(0).x == 41.7297416);
 
 	}
 	

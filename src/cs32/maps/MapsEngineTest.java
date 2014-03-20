@@ -6,12 +6,14 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Test;
 
 import KDTree.Coordinates;
 
 import cs32.maps.MapsEngine;
+import cs32.maps.gui.StreetNode;
 
 public class MapsEngineTest {
 	
@@ -40,20 +42,25 @@ public class MapsEngineTest {
 //		System.out.println(en.nodeLatPointers.get("2222"));
 //	}
 	
-	@Test
-	public void waysWithinTest() throws IOException {
-		MapsEngine en = new MapsEngine(ways, nodes, index);
-		Point2D.Double t = new Point2D.Double(40.1631743, -73.747346);
-		Point2D.Double b = new Point2D.Double(40.1881004, -73.7385398);
-		en.getStreetNodesWithin(t, b);
-		
-		
-		
-		
-		t = new Point2D.Double(40.1631743, -73.747346);
-		b = new Point2D.Double(41.404415, -71.4636);
-		en.getStreetNodesWithin(t, b);
-	}
+//	@Test
+//	public void waysWithinTest() throws IOException {
+//		System.out.println(" street node getting test ");
+//		MapsEngine en = new MapsEngine(ways, nodes, index);
+//		System.out.println("done creating engine");
+//		Point2D.Double t = new Point2D.Double(40.1631743, -73.747346);
+//		Point2D.Double b = new Point2D.Double(40.1881004, -73.7385398);
+//		Set<StreetNode> sn = en.getStreetNodesWithin(t, b);
+//		for(StreetNode s : sn) {
+//			System.out.println(sn.toString());
+//		}
+//		
+//		
+//		
+//		
+//		t = new Point2D.Double(40.1631743, -73.747346);
+//		b = new Point2D.Double(41.404415, -71.4636);
+//		sn = en.getStreetNodesWithin(t, b);
+//	}
 	
 
 	@Test

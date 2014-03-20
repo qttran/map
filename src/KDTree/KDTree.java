@@ -154,13 +154,13 @@ public class KDTree {
 			}
 			//add the big
 			KDNode newClosestSmall = searchClosestSmall(closest.x);
-			if ((newClosestSmall != null)  && (!result.contains(newClosestSmall.id))) {
+			if ((newClosestSmall != null)  && (!result.contains(newClosestSmall.item))) {
 				double newClosestSmallScore = Math.abs(newClosestSmall.item.compareTo(node.item));
 				Tuple<KDNode,Double> newSmallTuple = new Tuple<KDNode,Double> (newClosestSmall,newClosestSmallScore);
 				pQueue.add(newSmallTuple);
 			}
 			//poll
-			while (result.contains(closest.x.id)) {
+			while (result.contains(closest.x.item)) {
 				if (pQueue.size() == 0) {
 					return result;
 				}
