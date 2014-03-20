@@ -24,15 +24,15 @@ public class MapsEngine {
 
 	public KDTree k;
 	private MapsIO fileReader;
-		
+	private Set<String> streetNames; //autocomplete will get
+	
+	
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 		
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
 		this.k = buildKDTree(fpNodes);
-		
-		
-		//fileReader.getAllWays(); // send to autocomplete??? TODO
-		//System.out.println("-- done reading all ways --");
+
+		streetNames = fileReader.getAllStreetNames();
 	}
 
 
@@ -81,21 +81,6 @@ public class MapsEngine {
 
 	/*************** for use with GUI ***************/
 
-	//GUI version
-	// node1 - node2    ...   node2 - node3
-	// set of StreetNodes that have starting point (2d double), ending point (name not  necessary)
-	
-	
-	//User-Click backend:
-	// input: latitude and longitude
-	// output: latitude and longitude that is nearest real point
-	
-	
-	//Get Directions backend:
-	// input: two pairs of latitude and longitude (that are REAL POINTS)
-	// output: set of StreetNodes...
-
-
 	/**
 	 * For GUI: get the nearest Point2D.Double lat/long that is a real node
 	 * @param pt
@@ -126,7 +111,6 @@ public class MapsEngine {
 		String nearestEndNodeID = k.searchNumber(1, new Coordinates(end.x, start.y)).get(0);
 		LocationNode nearestEndNode = fileReader.getLocationNode(nearestEndNodeID);
 
-
 		// get shortest path between them (PathFinder)
 		PathFinder pF = new PathFinder(fileReader);
 		List<Connection> resultList = pF.getPathSet(nearestStartNode,nearestEndNode);
@@ -139,51 +123,43 @@ public class MapsEngine {
 	}
 
 
-	public Set<StreetNode> getAllStreetNodes() throws IOException{
-		List<Way> ws = fileReader.getAllWays();
-		Set<StreetNode> hs = new HashSet<StreetNode>();
-		for(Way w : ws) {
-			//System.out.println("yay!!");
-			LocationNode start = fileReader.getLocationNode(w.startNodeID);
-			LocationNode end = fileReader.getLocationNode(w.endNodeID);
-			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
-		}
-		return hs;
-	}
-
-
+	/**
+	 * create a set of StreetNodes in a bounding box
+	 * @param topLeft
+	 * @param botRight
+	 * @return
+	 * @throws IOException
+	 */
 	public Set<StreetNode> getStreetNodesWithin(Point2D.Double topLeft, Point2D.Double botRight) throws IOException{
-		// read within specific bytes of nodes file
-		// have a list of all node objects within
-		//   from that list, create a list of all way IDs
-		// fileReader.getWay for every single way ID
+
+		// get all LocationNodes within latlong
+		// locationNodes = new Set
 		
-		// ---------
+		// for N in locationNodes:
+			// for /w/id of N:
+				// fileReader.getOppositeNodeID(/w/id)
+				// if already in locationNodes:
+					// new StreetNode
+				// else:
+					// fileReader.getLocationNode(id)  ==>   new StreetNode
 		
-		// read within specific bytes of WAYS file based on bounds
-		// have a list of way objects
-		//   for each node connected to each way, search (WITHIN BOUNDS) and create node object
-		           //create streetnode object
+		//--DONE
+
+		
+		
 		String top = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
 		String bottom =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
 
-		List<Way> ws = fileReader.getWaysWithin(top, bottom);
+		List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
 		
 		Set<StreetNode> hs = new HashSet<StreetNode>();
 		for(Way w : ws) {
+
+			// both looking in same general area --- optimize
 			
-//			String startTopLat = w.startNodeID.substring(3, 7);
-//			String startBotLat = Integer.toString(Integer.parseInt(startTopLat)+1);
-//			long t = nodeLatPointers.get(startTopLat);
-//			long b = nodeLatPointers.get(startBotLat);
-			LocationNode start = fileReader.getLocationNodeWithin(w.startNodeID);//, t, b);
-			
-			
-//			String endTopLat = w.endNodeID.substring(3, 7);
-//			String endBotLat = Integer.toString(Integer.parseInt(endTopLat)+1);
-//			t = nodeLatPointers.get(endTopLat);
-//			b = nodeLatPointers.get(endBotLat);
-			LocationNode end = fileReader.getLocationNodeWithin(w.endNodeID);//, t, b);
+			// if (nodeID last 4 digits are in scope)
+			LocationNode start = fileReader.getLocationNode(w.startNodeID);
+			LocationNode end = fileReader.getLocationNode(w.endNodeID);
 			
 			
 			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
@@ -193,7 +169,11 @@ public class MapsEngine {
 	}
 
 
-
+	/**
+	 * create kDTree by reading entire nodes file
+	 * 
+	 * populate hashmap about node-file-chunks and send it to FileReader
+	 */
 	private KDTree buildKDTree(String nodeFile) throws IOException {
 		HashMap<String, Long> nodeLatPointers = new HashMap<>();
 		
@@ -202,10 +182,6 @@ public class MapsEngine {
 		KDTree k = new KDTree();
 		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
 		long bytes = 0;
-		
-
-		//String tosplit = "a,b,c,";
-		//System.out.println(tosplit.split(",",-1).length);
 
 		String line = br.readLine();
 		bytes += line.getBytes().length + 1;
@@ -247,6 +223,11 @@ public class MapsEngine {
 		return k;
 	}
 	
+	
+	
+	/**
+	 * for testing
+	 */
 	public Set<StreetNode> getStreetsFromFile(String fileLocation){
 		BufferedReader bufferedReader = null;
 		String string;
@@ -275,5 +256,10 @@ public class MapsEngine {
 	    	return null;
 	    }
 	    return streetSet;
+	}
+	
+	
+	public Set<String> getStreetNames() {
+		return streetNames;
 	}
 }
