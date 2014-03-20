@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import KDTree.Coordinates;
@@ -23,7 +24,8 @@ import cs32.maps.gui.StreetNode;
 public class MapsEngine {
 
 	public KDTree k;
-	private MapsIO fileReader;
+	protected MapsIO fileReader;
+		
 	private Set<String> streetNames; //autocomplete will get
 	
 	
@@ -124,69 +126,78 @@ public class MapsEngine {
 
 
 	/**
-	 * create a set of StreetNodes in a bounding box
-	 * @param topLeft
-	 * @param botRight
-	 * @return
-	 * @throws IOException
+	 * takes in "chunks"  ( ex "1111.2222" )
 	 */
-	public Set<StreetNode> getStreetNodesWithin(Point2D.Double topLeft, Point2D.Double botRight) throws IOException{
+	public Set<StreetNode> getStreetNodesWithin(String topChunk, String bottomChunk) throws IOException{
+		Set<StreetNode> snSet = new HashSet<>();
 
-		// get all LocationNodes within latlong
-		// locationNodes = new Set
+		Map<String, LocationNode> nodeMap = fileReader.getAllLocationNodesWithin(topChunk, bottomChunk);
+		Set<String> ids = nodeMap.keySet();
 		
-		// for N in locationNodes:
-			// for /w/id of N:
-				// fileReader.getOppositeNodeID(/w/id)
-				// if already in locationNodes:
-					// new StreetNode
-				// else:
-					// fileReader.getLocationNode(id)  ==>   new StreetNode
-		
-		//--DONE
+		// for each node
+		for(String n : ids) {
+			LocationNode node = nodeMap.get(n);
 
-		
-		
-		String top = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
-		String bottom =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
+			// for each way ID, get opposide node and to snSet
+			for(String wID : node.ways) {
+				Way w = fileReader.getWay(wID);
+				String oppositeNodeID = w.endNodeID;
+				LatLong opposite;
+				if(ids.contains(oppositeNodeID)) {
+					opposite = nodeMap.get(oppositeNodeID).latlong;
+				}
+				else {
+					System.out.println(":((( node was NOT already in set (getStreetNodesWithin)");
+					LocationNode opp = fileReader.getLocationNode(oppositeNodeID);
+					opposite = opp.latlong;
+				}
+				LatLong start = node.latlong;
+				snSet.add(new StreetNode(start.lat,start.lon, opposite.lat,opposite.lon, w.name));
 
-		List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
-		
-		Set<StreetNode> hs = new HashSet<StreetNode>();
-		for(Way w : ws) {
-
-			// both looking in same general area --- optimize
-			
-			// if (nodeID last 4 digits are in scope)
-			LocationNode start = fileReader.getLocationNode(w.startNodeID);
-			LocationNode end = fileReader.getLocationNode(w.endNodeID);
-			
-			
-			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
+			}
 		}
-		System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
-		return hs;
+		
+		return snSet;
+		
+//		
+//		String top = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
+//		String bottom =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
+//
+//		List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
+//		
+//		Set<StreetNode> hs = new HashSet<StreetNode>();
+//		for(Way w : ws) {
+//
+//			// both looking in same general area --- optimize
+//			
+//			// if (nodeID last 4 digits are in scope)
+//			LocationNode start = fileReader.getLocationNode(w.startNodeID);
+//			LocationNode end = fileReader.getLocationNode(w.endNodeID);
+//			
+//			
+//			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
+//		}
+//		System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
+//		return hs;
 	}
 
-
-	/**
-	 * create kDTree by reading entire nodes file
-	 * 
-	 * populate hashmap about node-file-chunks and send it to FileReader
-	 */
+	
+	
 	private KDTree buildKDTree(String nodeFile) throws IOException {
-		HashMap<String, Long> nodeLatPointers = new HashMap<>();
+		HashMap<String, Long> nodeLatLongPointers = new HashMap<>();
 		
 		
 		//Create a KDTree from the file
 		KDTree k = new KDTree();
 		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
 		long bytes = 0;
-
+		
+		// read the first - unnecessary line
 		String line = br.readLine();
+		
 		bytes += line.getBytes().length + 1;
 				
-		String lat = "9999";
+		String latLong = "9999.9999";
 
 		while (line != null) {
 			line = br.readLine();
@@ -202,24 +213,24 @@ public class MapsEngine {
 			String id = list[0];
 			k.insert(id, coordinate);
 
-			String currLat = list[0].substring(3,7);
-			//keep track of lat pointers:
-			if (!lat.equals(currLat)) {
-				if(!nodeLatPointers.containsKey(currLat)) {
-					nodeLatPointers.put(currLat, bytes);
+			String currLatLong = list[0].substring(3,12) ;
+			//keep track of latLong pointers:
+			if (!latLong.equals(currLatLong)) {
+				if(!nodeLatLongPointers.containsKey(currLatLong)) {
+					nodeLatLongPointers.put(currLatLong, bytes);
 				}
-				lat = currLat;
+				latLong = currLatLong;
 			} 
 
-			bytes += line.length() +1;
+			bytes += line.getBytes().length +1;
 		}
 
-		if(!nodeLatPointers.containsKey(lat)) {
-			nodeLatPointers.put(lat,bytes);
+		if(!nodeLatLongPointers.containsKey(latLong)) {
+			nodeLatLongPointers.put(latLong,bytes);
 		}
 		br.close();
 		
-		fileReader.setNodeLatPtrs(nodeLatPointers); //send hashmap to file reader
+		fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
 		return k;
 	}
 	

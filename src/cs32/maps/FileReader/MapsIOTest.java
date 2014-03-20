@@ -47,16 +47,7 @@ public class MapsIOTest {
 		//System.out.println(way.toString());
 	}
 	
-	@Test
-	public void streetNameAggregation() throws IOException {
-		MapsIO io = new MapsIO(ways, nodes, index);
-		Set<String> streetNames = io.getStreetNames();
-		//for(String s : streetNames) {
-			//System.out.println(s);
-		//}
-		//System.out.printf("%s street names in total.\n", streetNames.size());
-	}
-	
+
 	@Test
 	public void getIntersectionBigFile() throws IOException {
 		MapsIO io = new MapsIO(ways, nodes, index);
