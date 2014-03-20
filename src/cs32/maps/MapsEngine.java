@@ -148,12 +148,9 @@ public class MapsEngine {
 		PathFinder pF = new PathFinder(fileReader);
 
 		List<LatLong[]> resultList = pF.getPathLatLongs(startNode,endNode);
-<<<<<<< HEAD
-		
-		if (resultList == null) return null;
-=======
 
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
+		if (resultList == null) return null;
+
 		for(LatLong[] leg : resultList) {
 			Preconditions.checkState(leg.length == 2); //should be a pair of latlongs
 			pathSet.add(new StreetNode(leg[0].lat, leg[0].lon, leg[1].lat, leg[1].lon, ""));
@@ -167,6 +164,8 @@ public class MapsEngine {
 
 
 		String intersectionID = fileReader.getIntersection(s1.toLowerCase(), s2.toLowerCase());
+		if(intersectionID.length()<1)
+			return null;
 		Preconditions.checkState(intersectionID.startsWith("/n/"));
 		LocationNode intersectionNode = fileReader.getLocationNode(intersectionID);
 

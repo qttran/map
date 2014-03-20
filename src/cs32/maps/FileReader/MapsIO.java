@@ -179,11 +179,7 @@ public class MapsIO {
 		return null;
 	}
 
-<<<<<<< HEAD
-=======
 
-
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 	/**
 	 * Given a wayID, search the *ways file* for correct line
 	 * and return a Way object with all relevant info
@@ -524,20 +520,12 @@ public class MapsIO {
 //		long[] bounds = getByteBoundsNodeID(nodeID);
 //		long latTop = bounds[0];
 //		long latBottom = bounds[1];
-		
-		
-<<<<<<< HEAD
-		// do a BINARY search
-=======
-		// do a binary search
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
+	
 		String foundLine[] = null;
 
 		file.seek(filePointerTop); // points to beginning of first line of chunk
 		foundLine = binarySearch(file, nodes_idCol, nodeID);
-<<<<<<< HEAD
-		
-=======
+
 //		foundLine = binarySearchID(file, nodes_idCol, chunkID);
 /*		while (file.getFilePointer() < fileSize) {
 			System.out.println("not over yet!.");
@@ -565,15 +553,10 @@ public class MapsIO {
 		} 
 		file.close();
 		*/
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
 		}
-<<<<<<< HEAD
-=======
-		
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 		return createLocationNode(foundLine);
 	}
 
