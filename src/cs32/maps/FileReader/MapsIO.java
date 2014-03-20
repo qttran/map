@@ -371,22 +371,17 @@ public class MapsIO {
 	private LocationNode createLocationNode(String[] line) {
 		//convert 'line' to LocationNode object
 		String id = line[nodes_idCol];
-		try {
 		String ways = line[nodes_waysCol];
 		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
 		//create ways list
 		List<String> wayList = new ArrayList<>();
-		for(String s : ways.split(",")) {
-			wayList.add(s);
-		}
-		return new LocationNode(id, wayList, latlong);
-		} catch (java.lang.ArrayIndexOutOfBoundsException e){
-			for (String word : line) {
-				System.out.println(word);	
+		if(ways.length()>1) {
+			for(String s : ways.split(",")) {
+				wayList.add(s);
 			}
-			System.exit(0);
 		}
-		return null;
+		
+		return new LocationNode(id, wayList, latlong);
 	}
 
 

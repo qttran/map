@@ -127,7 +127,7 @@ public class MapsEngineTest {
 	public void pagingTime() throws IOException{
 		MapsEngine e = new MapsEngine(ways, nodes, index);
 		System.out.println("<---------->");
-		Set<StreetNode> sn = e.getStreetNodesWithin("4072.7218", "4115.7154");
+		Set<StreetNode> sn = e.getStreetNodesWithin("4072.7218", "4072.7328");
 		System.out.println("DONE "+sn.size());
 	}
 

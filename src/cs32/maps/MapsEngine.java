@@ -135,6 +135,9 @@ public class MapsEngine {
 	 * takes in "chunks" ( ex "1111.2222" )
 	 */
 	public Set<StreetNode> getStreetNodesWithin(String topChunk, String bottomChunk) throws IOException{
+		Preconditions.checkArgument(topChunk.length()==9);
+		Preconditions.checkArgument(bottomChunk.length()==9);
+		Preconditions.checkArgument(bottomChunk.substring(0,4).equals(topChunk.substring(0,4)));
 		Set<StreetNode> snSet = new HashSet<>();
 
 		Map<String, LocationNode> nodeMap = fileReader.getAllLocationNodesWithin(topChunk, bottomChunk);
@@ -167,27 +170,6 @@ public class MapsEngine {
 		}
 
 		return snSet;
-
-		//
-		// String top = Double.toString(topLeft.x).substring(0, 2) + Double.toString(topLeft.x).substring(3,5);
-		// String bottom = Double.toString(botRight.x).substring(0, 2) + Double.toString(botRight.x).substring(3,5);
-		//
-		// List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
-		//
-		// Set<StreetNode> hs = new HashSet<StreetNode>();
-		// for(Way w : ws) {
-		//
-		// // both looking in same general area --- optimize
-		//
-		// // if (nodeID last 4 digits are in scope)
-		// LocationNode start = fileReader.getLocationNode(w.startNodeID);
-		// LocationNode end = fileReader.getLocationNode(w.endNodeID);
-		//
-		//
-		// hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
-		// }
-		// System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
-		// return hs;
 	}
 
 
