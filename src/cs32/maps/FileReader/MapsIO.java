@@ -566,18 +566,26 @@ public class MapsIO {
 
 
 		raf.seek(top);
+		long bytesToRead = bottom-top;
+		byte[] chunk = new byte[(int) bytesToRead];
+		raf.read(chunk);
+		
+		
 		
 		Map<String, LocationNode> nodeMap = new HashMap<>();
-		
-		while(raf.getFilePointer() < bottom) {
+		String chunkAsString = new String(chunk);
+		String[] lines = chunkAsString.split("\\n");
+		for(String oneLine : lines){
 			
-			String[] line = readOneLine(raf);
-			LocationNode node = createLocationNode(line);
+			String[] currLine = oneLine.split("\\t",-1);
+			LocationNode node = createLocationNode(currLine);
 			nodeMap.put(node.id, node);
 			
 			nextNewLine(raf);
 		}
 		raf.close();
+		
+		
 
 		
 		return nodeMap;
