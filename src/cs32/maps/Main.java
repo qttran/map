@@ -51,7 +51,6 @@ public class Main {
 				
 				MapsEngine e = new MapsEngine(ways,nodes,index);
 				
-				System.out.println(" adsfa");
 				new MapsGUI(e);
 				return;
 			}

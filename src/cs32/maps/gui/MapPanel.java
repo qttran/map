@@ -7,6 +7,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -15,8 +16,10 @@ import java.awt.event.MouseWheelListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.Set;
+import javax.swing.Timer;
 
 import javax.swing.JPanel;
 import cs32.maps.MapsEngine;
@@ -31,15 +34,20 @@ public class MapPanel extends JPanel {
 	private Set<StreetNode> _nodes;
 	private Set<StreetNode> _path;
 	private MapsGUI _gui;
-	private Double scale = 20000D;
+	private Double scale = 46000D;
 	private Point2D.Double _center = new Point2D.Double(41.82163534608988, -71.38882713291805);
 	private int _currentVariable = 1;
-	private Point2D.Double _clickedPoint;
 	
 	public MapPanel(MapsEngine en, MapsGUI gui, Set<StreetNode> nodes) {
 		_engine = en;
 		_nodes = nodes;
 		_gui = gui;
+		
+/*		Timer _timer = new Timer(3000, new ActionListener(){
+			
+		});
+		_timer.start();*/
+		
 		final MapPanel _map = this;
 		this.setBackground(Color.WHITE);
 		this.setPreferredSize(new Dimension(MAP_WIDTH, MAP_HEIGHT));
@@ -78,16 +86,12 @@ public class MapPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (_currentVariable == 1){
 					_gui.setCurrentLocation(_engine.getNearestPoint(getCoordinates(e.getPoint().x, e.getPoint().y)));
-					_clickedPoint = getCoordinates(e.getPoint().x, e.getPoint().y);
-					System.out.println("Clicked: " + getCoordinates(e.getPoint().x, e.getPoint().y));
 					_currentVariable = 2;
 					_map.repaint();
 				}
 				else {
 					_gui.setDestination(_engine.getNearestPoint(getCoordinates(e.getPoint().x, e.getPoint().y)));
 					_currentVariable = 1;
-					_clickedPoint = getCoordinates(e.getPoint().x, e.getPoint().y);
-					System.out.println("Clicked: " + getCoordinates(e.getPoint().x, e.getPoint().y));
 					_map.repaint();
 				}
 			}
@@ -116,6 +120,14 @@ public class MapPanel extends JPanel {
 		g2D.setColor(Color.BLACK);
 		//g2D.setStroke(new BasicStroke((int)(0.0002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
+		Point2D.Double b = getCoordinates(MAP_WIDTH, 0);
+		Point2D.Double a = getCoordinates(0, MAP_HEIGHT);
+		try {
+			_nodes = _engine.getStreetNodes(a, b);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		for (StreetNode node: _nodes){
 			if(bb.intersectsLine(node)){
@@ -155,11 +167,11 @@ public class MapPanel extends JPanel {
 			g2D.fill(new Ellipse2D.Double(des.x-4, des.y-4, 8, 8));
 		}
 		
-		if (_clickedPoint != null) {
-			Point a = getPixelCoordinates(_clickedPoint.x, _clickedPoint.y);
-			g2D.setColor(Color.RED);
-			g2D.fill(new Ellipse2D.Double(a.x-4, a.y-4, 8, 8));
-		}
+//		if (_clickedPoint != null) {
+//			Point a = getPixelCoordinates(_clickedPoint.x, _clickedPoint.y);
+//			g2D.setColor(Color.RED);
+//			g2D.fill(new Ellipse2D.Double(a.x-4, a.y-4, 8, 8));
+//		}
 		
 	}
 

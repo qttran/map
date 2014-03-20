@@ -1,9 +1,11 @@
 package cs32.maps.FileReader;
 
 import java.awt.geom.Point2D;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,9 +22,9 @@ import cs32.maps.Way;
 
 public class MapsIO {
 
-	private final String waysFile;
-	private final String nodesFile;
-	private final String indexFile;
+	protected final String waysFile;
+	protected final String nodesFile;
+	protected final String indexFile;
 	public int ways_idCol, ways_startCol, ways_endCol, ways_nameCol;  //public for testing right now
 	public int nodes_idCol, nodes_latCol, nodes_lonCol, nodes_waysCol;
 	public int index_nameCol, index_nodesCol;
@@ -93,7 +95,7 @@ public class MapsIO {
 	 * @return Read one line from a file, starting at the file pointer
 	 * @throws IOException
 	 */
-	private String[] readOneLine(RandomAccessFile f) throws IOException {
+	protected String[] readOneLine(RandomAccessFile f) throws IOException {
 		// seek start of line
 		boolean start = false;
 		long pointer = f.getFilePointer();
@@ -124,6 +126,8 @@ public class MapsIO {
 
 		pointer = f.getFilePointer();
 
+		byte[] result = new byte[0];
+		
 		int length = 0;
 		boolean end = false;
 		while (!end) {
@@ -132,17 +136,25 @@ public class MapsIO {
 
 			for (int i = 0; i < seg.length; i++) {
 				if (seg[i] == 10) {
+					int l = result.length;
+					result = Arrays.copyOf(result, result.length + i);
+					System.arraycopy(seg, 0, result, l, i);
 					length += i;
 					end = true;
 					break;
 				}
 				if (i == seg.length - 1) {
+					int l = result.length;
+					result = Arrays.copyOf(result, result.length + byteToRead);
+					System.arraycopy(seg, 0, result, l, byteToRead);
 					length += byteToRead;
 				}
 			}
 		}
-
-		// read bytes of line
+		String line = new String(result);
+		return line.split("\t", -1);
+		
+/*		// read bytes of line
 		f.seek(pointer);
 		byte[] bytes = new byte[length];
 		if (f.read(bytes) != length) {
@@ -150,7 +162,7 @@ public class MapsIO {
 		}
 
 		String line = new String(bytes);
-		return line.split("\t", -1);
+		return line.split("\t", -1);*/
 	}
 
 
@@ -179,17 +191,15 @@ public class MapsIO {
 		return null;
 	}
 
-
-
 	/**
 	 * Given a wayID, search the *ways file* for correct line
 	 * and return a Way object with all relevant info
 	 */
 	public Way getWay(String wayID) throws IOException {
-
-		// do binary search
 		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
+		// do binary search
 		String[] line = binarySearch(raf, ways_idCol, wayID);
+		raf.close();
 		if(line==null) {
 			System.out.printf("No such way ID: %s\n", wayID);
 			raf.close();
@@ -203,6 +213,7 @@ public class MapsIO {
 		String name = line[ways_nameCol];
 
 		Preconditions.checkState(id.equals(wayID)); // id should be the same one that was requested
+
 
 		raf.close();
 		return new Way(id, startID, endID, name);
@@ -220,6 +231,7 @@ public class MapsIO {
 	*/
 	private Set<String> getNodeIDsFromStreet(String streetName) throws IOException {
 		RandomAccessFile raf = new RandomAccessFile(indexFile, "r");
+		streetName = streetName.toLowerCase();
 		
 		String[] line = binarySearch(raf, index_nameCol, streetName);
 		if(line==null){
@@ -240,7 +252,7 @@ public class MapsIO {
 		previousNewLine(raf);
 		previousNewLine(raf);
 		String nameHere = getWordAt(raf);
-		while(nameHere.equals(streetName)) {
+		while(nameHere.compareToIgnoreCase(streetName)==0) {
 			Collections.addAll(nodeIDset, readOneLine(raf)[index_nodesCol].split(","));
 			previousNewLine(raf);
 			previousNewLine(raf);
@@ -252,12 +264,11 @@ public class MapsIO {
 		// get everything below
 		nextNewLine(raf);
 		nameHere = getWordAt(raf);
-		while(nameHere.equals(streetName)) {
+		while(nameHere.compareToIgnoreCase(streetName)==0) {
 			Collections.addAll(nodeIDset, readOneLine(raf)[index_nodesCol].split(","));
 			nextNewLine(raf); 
 			nameHere = getWordAt(raf);
 		}
-
 		return nodeIDset;
 	}
 
@@ -384,7 +395,7 @@ public class MapsIO {
 				return id;
 			}
 		}
-		System.out.printf("No intersection found between %s and %s\n", street1, street2);
+		
 		return "";
 	}
 
@@ -519,48 +530,14 @@ public class MapsIO {
 			System.out.println("ERRORRR why does hashtable not contain "+chunkID);
 		}
 
-//		long[] bounds = getByteBoundsNodeID(nodeID);
-//		long latTop = bounds[0];
-//		long latBottom = bounds[1];
-		
-		
-		// do a binary search
 		String foundLine[] = null;
-
 		file.seek(filePointerTop); // points to beginning of first line of chunk
 		foundLine = binarySearch(file, nodes_idCol, nodeID);
-//		foundLine = binarySearchID(file, nodes_idCol, chunkID);
-/*		while (file.getFilePointer() < fileSize) {
-			System.out.println("not over yet!.");
-
-		file.seek(latTop);
-
-		long start = latTop;
-		long end = latBottom;
-		long mid = (start + end)/2;
-		while (end > start) {
-			file.seek(mid);
-			String[] currentLine = readOneLine(file);
-			int difference = nodeID.compareToIgnoreCase(currentLine[nodes_idCol]);
-			if (difference == 0) {
-				file.close();
-				foundLine = currentLine;
-				break;
-				
-			}
-			else if (difference > 0) 
-				start = mid + 1;
-			else 
-				end = mid - 1;
-			mid = (start + end)/2;
-		} 
 		file.close();
-		*/
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
 		}
-		
 		return createLocationNode(foundLine);
 	}
 
@@ -792,8 +769,6 @@ public class MapsIO {
 			raf.seek(raf.getFilePointer()-2);
 		}		
 	}
-	
-
 
 	
 	
