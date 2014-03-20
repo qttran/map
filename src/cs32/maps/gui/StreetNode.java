@@ -8,5 +8,11 @@ public class StreetNode extends Line2D.Double{
 	public StreetNode(double x1, double y1, double x2, double y2, String name){
 		super(x1,y1,x2,y2);
 		this.name = name;
+
+	}
+	
+	
+	public String toString() {
+		return "("+x1+","+y1+") -> ("+x2+","+y2+")";
 	}
 }

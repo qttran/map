@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import KDTree.Coordinates;
@@ -131,41 +132,61 @@ public class MapsEngine {
 	 * @throws IOException
 	 */
 	public Set<StreetNode> getStreetNodesWithin(Point2D.Double topLeft, Point2D.Double botRight) throws IOException{
-
-		// get all LocationNodes within latlong
-		// locationNodes = new Set
-		
-		// for N in locationNodes:
-			// for /w/id of N:
-				// fileReader.getOppositeNodeID(/w/id)
-				// if already in locationNodes:
-					// new StreetNode
-				// else:
-					// fileReader.getLocationNode(id)  ==>   new StreetNode
-		
-		//--DONE
-
+		Set<StreetNode> snSet = new HashSet<>();
 		
 		
 		String top = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
 		String bottom =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
-
-		List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
 		
-		Set<StreetNode> hs = new HashSet<StreetNode>();
-		for(Way w : ws) {
+		//get all location nodes within LAT bounds (//TODO)
+		Map<String, LocationNode> nodeMap = fileReader.getAllLocationNodesWithin(top, bottom);
+		Set<String> ids = nodeMap.keySet();
+		
+		// for each node
+		for(String n : ids) {
+			LocationNode node = nodeMap.get(n);
+			
+			// for each way ID, get opposide node and to snSet
+			for(String wID : node.ways) {
+				Way w = fileReader.getWay(wID);
+				String oppositeNodeID = w.endNodeID;
+				LatLong opposite;
+				if(ids.contains(oppositeNodeID)) {
+					opposite = nodeMap.get(oppositeNodeID).latlong;
+				}
+				else {
+					System.out.println(":((( node was NOT already in set (getStreetNodesWithin)");
+					LocationNode opp = fileReader.getLocationNode(oppositeNodeID);
+					opposite = opp.latlong;
+				}
+				LatLong start = node.latlong;
+				snSet.add(new StreetNode(start.lat,start.lon, opposite.lat,opposite.lon, w.name));
 
-			// both looking in same general area --- optimize
-			
-			// if (nodeID last 4 digits are in scope)
-			LocationNode start = fileReader.getLocationNode(w.startNodeID);
-			LocationNode end = fileReader.getLocationNode(w.endNodeID);
-			
-			
-			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
+			}
 		}
-		System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
-		return hs;
+		
+		return snSet;
+		
+//		
+//		String top = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
+//		String bottom =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
+//
+//		List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
+//		
+//		Set<StreetNode> hs = new HashSet<StreetNode>();
+//		for(Way w : ws) {
+//
+//			// both looking in same general area --- optimize
+//			
+//			// if (nodeID last 4 digits are in scope)
+//			LocationNode start = fileReader.getLocationNode(w.startNodeID);
+//			LocationNode end = fileReader.getLocationNode(w.endNodeID);
+//			
+//			
+//			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
+//		}
+//		System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
+//		return hs;
 	}
 
 
