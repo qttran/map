@@ -1,5 +1,6 @@
 package cs32.maps;
 
+import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -8,7 +9,6 @@ import java.util.List;
 
 public class MapsCLI {
 	
-
 	private MapsEngine _engine;
 
 	public MapsCLI(MapsEngine en) throws IOException {
@@ -38,6 +38,13 @@ public class MapsCLI {
 
 	}
 
+	/**
+	 * getOutput(input)
+	 * 
+	 * - parses input to see what type (street name or coordinate)
+	 * - if it is valid, returns the correct output from MapsEngine
+	 * - if it is invalid, print why and return null
+	 */
 	private String getOutput(String input) throws IOException {
 		//find out which format it's in
 		String[] spaces = input.split(" ");
@@ -59,8 +66,8 @@ public class MapsCLI {
 				return null;
 			}
 			
-			LatLong start = new LatLong(lat1, lon1);
-			LatLong end = new LatLong(lat2, lon2);
+			Point2D.Double start = new Point2D.Double(lat1, lon1);
+			Point2D.Double end = new Point2D.Double(lat2, lon2);
 			
 			return _engine.getOutputFromLatLongs(start, end); // engine
 		}

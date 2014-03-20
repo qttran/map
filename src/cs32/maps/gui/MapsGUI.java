@@ -16,7 +16,6 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-import cs32.maps.LatLong;
 import cs32.maps.LocationNode;
 import cs32.maps.MapsEngine;
 

@@ -2,28 +2,16 @@ package cs32.maps.FileReader;
 
 import java.awt.geom.Point2D;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import KDTree.KDTree;
 import KDTree.Node;
 
 import com.google.common.base.Preconditions;
 
-import cs32.maps.LatLong;
 import cs32.maps.LocationNode;
 import cs32.maps.Way;
 
@@ -46,10 +34,6 @@ public class MapsIO {
 	public int maxLon;
 	public int minLon;
 	
-	
-	private long nodes_maxLat = Long.MIN_VALUE;
-	private long nodes_minLat = Long.MAX_VALUE;
-	private long ways_maxLat = Long.MIN_VALUE;
 
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
 		
@@ -360,7 +344,9 @@ public class MapsIO {
 		//convert 'line' to LocationNode object
 		String id = line[nodes_idCol];
 		String ways = line[nodes_waysCol];
-		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
+		double lat = Double.parseDouble(line[nodes_latCol]);
+		double lon = Double.parseDouble(line[nodes_lonCol]);
+		Point2D.Double latlong = new Point2D.Double(lat, lon);
 		//create ways list
 		List<String> wayList = new ArrayList<>();
 		if(ways.length()>1) {
