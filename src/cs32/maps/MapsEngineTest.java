@@ -4,6 +4,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.awt.geom.Point2D;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -77,35 +79,56 @@ public class MapsEngineTest {
 //	}
 //	
 //	
-//	@Test
-//	public void testGetBytePointers() throws IOException {
-//		MapsEngine e = new MapsEngine(ways, nodes, index);
-//		System.out.println("---");
-//		long[] pts = (e.forTestingGetBytes("4016.7374", "4016.7389")); //first one is in HM, second not
-//		System.out.println(pts[0]); // should be 183
-//		System.out.println(pts[1]);
-//		
-//		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7374", "4016.7389");
-//		for(String n :ln.keySet()) {
-//			System.out.println(n);
-//		}
-//		System.out.println("next");
-//		
-//		ln = e.nodesChunkTest("4018.7372", "4018.7379");
-//		for(String n :ln.keySet()) {
-//			System.out.println(n);
-//		}
-//		
-//		
-//		System.out.println("next");
-//		
-//		ln = e.nodesChunkTest("4152.7143", "4152.7145");
-//		for(String n :ln.keySet()) {
-//			System.out.println(n);
-//		}
-//		
-//		
-//	}
+	@Test
+	public void testGetBytePointers() throws IOException {
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		System.out.println("---");
+		long[] pts = (e.forTestingGetBytes("4016.7374", "4016.7389")); //first one is in HM, second not
+		System.out.println(pts[0]); // should be 183
+		System.out.println(pts[1]);
+		
+		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7374", "4016.7389");
+		for(String n :ln.keySet()) {
+			System.out.println(n);
+		}
+		System.out.println("next");
+		
+		ln = e.nodesChunkTest("4018.7372", "4018.7379");
+		for(String n :ln.keySet()) {
+			System.out.println(n);
+		}
+		
+		
+		System.out.println("next");
+		
+		ln = e.nodesChunkTest("4152.7143", "4152.7145"); //INCLUSIVE these 2 chunks and between
+		
+		
+		List<String> lt = new ArrayList<String>();
+		for(String n :ln.keySet()) {
+			lt.add(n);
+		}
+		Collections.sort(lt);
+		for(String s : lt) {
+			System.out.println(s);
+		}
+	}
+	
+	@Test
+	public void testGetChunk() throws IOException {
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7000", "4016.7399"); //INCLUSIVE these 2 chunks and between		
+		Set<String> idsInChunk = ln.keySet();
+		assertTrue(idsInChunk.size() == 5);
+		assertTrue(idsInChunk.contains("/n/4016.7374.527767844"));
+		assertTrue(idsInChunk.contains("/n/4016.7374.527767845"));
+		assertTrue(idsInChunk.contains("/n/4016.7374.527767846"));
+		assertTrue(idsInChunk.contains("/n/4016.7374.527767850"));
+		assertTrue(idsInChunk.contains("/n/4016.7374.527767852"));
+
+		
+		
+	}
 //	
 //	
 //	@Test

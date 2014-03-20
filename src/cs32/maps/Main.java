@@ -30,13 +30,14 @@ public class Main {
 		String fpWays, fpNodes, fpIndex;
 		
 		if(len!=4 && len!=3){
-			System.exit(0); //print something
-			System.out.println("something");
+			System.out.println("Usage: [--gui] <ways.tsv> <nodes.tsv> <index.tsv>");
+			System.exit(0);
 		}
 	
 		if(len==4){
 			if(!args[0].equals("--gui")) {
-				System.exit(0); //print something
+				System.out.println("Usage: [--gui] <ways.tsv> <nodes.tsv> <index.tsv>");
+				System.exit(0); 
 			}
 			gui = true;
 		}
@@ -65,12 +66,7 @@ public class Main {
 		
 
 		MapsEngine e = new MapsEngine(fpWays,fpNodes,fpIndex);
-		
-		//new MapsFileReader
-		//MapsFileReader, read all latlongs
-		//
-		//new Tree2d(pointlist)
-		//
+
 		if(gui) {
 		//  MapsFileReader, read all street names
 		//  new autocomplete engine
