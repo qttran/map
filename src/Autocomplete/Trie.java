@@ -213,7 +213,7 @@ public class Trie {
 		>Output: --
 		>Throws: -- 
 	*/
-	public void insertToTrie(ArrayList<String> words){
+	public void insertToTrie(Set<String> words){
 		for (String s : words) {
 			if(s.equals("")) { //no letters in this string
 				continue;

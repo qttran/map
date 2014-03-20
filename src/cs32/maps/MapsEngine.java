@@ -119,9 +119,7 @@ public class MapsEngine {
 		for(Connection leg : resultList) {
 			pathSet.add(new StreetNode(leg.s.getPt().x, leg.s.getPt().y,  leg.e.getPt().x, leg.e.getPt().y, ""));
 		}
-
 		return pathSet;
-
 	}
 
 
@@ -137,19 +135,18 @@ public class MapsEngine {
 		int yTop = Integer.parseInt(Double.toString(topLeft.y).substring(1, 3) +  Double.toString(topLeft.y+0.01).substring(4,6));
 		int yBot =  Integer.parseInt(Double.toString(botRight.y).substring(1, 3) +  Double.toString(botRight.y).substring(4,6));
 
-		
+
 		Set<StreetNode> result = new HashSet<StreetNode>();
 		for (int i = yBot; i<yTop; i++) {
 			String bottomRight = Integer.toString(i) + "." + Integer.toString(xRight);
 			if (!fileReader.nodeLatLongPointers.containsKey(bottomRight)) {
-				
 			}
 		}
-		
+
 		return null;
 	}
-	
-	
+
+
 	public Set<StreetNode> getStreetNodesWithin(String topChunk, String bottomChunk) throws IOException{
 		Set<StreetNode> snSet = new HashSet<>();
 
@@ -185,98 +182,141 @@ public class MapsEngine {
 
 
 
-private KDTree buildKDTree(String nodeFile) throws IOException {
-	HashMap<String, Long> nodeLatLongPointers = new HashMap<>();
+	private KDTree buildKDTree(String nodeFile) throws IOException {
+		HashMap<String, List<Long>> nodeLatLongPointers = new HashMap<>();
+		HashMap<String, Long> nodeLatPointers = new HashMap<>();
+		int minLat = 99999;
+		int maxLat = 0;
+		int minLon = 99999;
+		int maxLon = 0;
+
+		//Create a KDTree from the file
+		KDTree k = new KDTree();
+		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
+		long bytes = 0;
+
+		// read the first - unnecessary line
+		String line = br.readLine();
+
+		bytes += line.getBytes().length + 1;
+
+		String latLong = "9999.9999";
+		String lat = "0000";
+
+		while (line != null) {
+			line = br.readLine();
+			if(line==null)
+				break;
 
 
-	//Create a KDTree from the file
-	KDTree k = new KDTree();
-	BufferedReader br = new BufferedReader(new FileReader(nodeFile));
-	long bytes = 0;
+			String[] list = line.split("\t");
+			double x = Double.parseDouble(list[1]);
+			double y  = Double.parseDouble(list[2]);
 
-	// read the first - unnecessary line
-	String line = br.readLine();
+			//put in KDTree
+			Coordinates coordinate = new Coordinates(x,y);
+			String id = list[0];
+			k.insert(id, coordinate);
+			String currLat = list[0].substring(3,7);
+			int currLatNum = Integer.parseInt(currLat);
+			int currLonNum = Integer.parseInt(list[0].substring(8,12));
+			String currLatLong = list[0].substring(3,12) ;
 
-	bytes += line.getBytes().length + 1;
+			//set max min lat lons
+			minLat = Math.min(minLat, currLatNum);
+			maxLat = Math.max(maxLat, currLatNum);
+			minLon = Math.min(minLon, currLonNum);
+			maxLon = Math.max(maxLon, currLonNum);
 
-	String latLong = "9999.9999";
-
-	while (line != null) {
-		line = br.readLine();
-		if(line==null)
-			break;
-
-
-		String[] list = line.split("\t");
-		double x = Double.parseDouble(list[1]);
-		double y  = Double.parseDouble(list[2]);
-		//put in KDTree
-		Coordinates coordinate = new Coordinates(x,y);
-		String id = list[0];
-		k.insert(id, coordinate);
-
-		String currLatLong = list[0].substring(3,12) ;
-		//keep track of latLong pointers:
-		if (!latLong.equals(currLatLong)) {
-			if(!nodeLatLongPointers.containsKey(currLatLong)) {
-				nodeLatLongPointers.put(currLatLong, bytes);
+			//keep track of latLong pointers:
+			if (!latLong.equals(currLatLong)) {
+				//update the previous latlong in the hashMap
+				Long previous = nodeLatLongPointers.get(latLong).get(0);
+				List<Long> toPut = new ArrayList<>(2);
+				toPut.set(0,previous);
+				toPut.set(1, bytes);
+				nodeLatLongPointers.put(latLong, toPut);
+				//update the current latlong in the hashMap
+				List<Long> toPut2 = new ArrayList<>(2);
+				toPut2.set(0, bytes);
+				toPut2.set(1, bytes);
+				nodeLatLongPointers.put(currLatLong, toPut2);
+				
+				//update latLong
+				latLong = currLatLong;
 			}
-			latLong = currLatLong;
-		} 
 
-		bytes += line.getBytes().length +1;
-	}
-
-	// put the final coordinate
-	Integer finalLong = Integer.parseInt(latLong.substring(5,9)) + 1;
-	latLong = latLong.substring(0,5) + finalLong.toString();
-	if(!nodeLatLongPointers.containsKey(latLong)) {
-		nodeLatLongPointers.put(latLong,bytes);
-	}
-	br.close();
-
-
-	fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
-	return k;
-}
-
-
-
-/**
- * for testing
- */
-public Set<StreetNode> getStreetsFromFile(String fileLocation){
-	BufferedReader bufferedReader = null;
-	String string;
-	Set<StreetNode> streetSet;
-
-	streetSet = new HashSet<StreetNode>();
-	try {
-		bufferedReader = new BufferedReader(new FileReader(fileLocation));
-	} catch (FileNotFoundException e) {	
-		return null;
-	}
-	try {
-		string = bufferedReader.readLine();
-		while(string != null) {
-			String[] words = string.split(",");
-			Double a = Double.parseDouble(words[0]);
-			Double b = Double.parseDouble(words[1]);
-			Double c = Double.parseDouble(words[2]);
-			Double d = Double.parseDouble(words[3]);
-			streetSet.add(new StreetNode(a, b, c, d, ""));
-			string = bufferedReader.readLine();
+			//keep track of lat pointers: 
+			if (!lat.equals(currLat)) {
+				if(!nodeLatPointers.containsKey(currLatLong)) {
+					nodeLatPointers.put(currLat, bytes);
+				}
+				//update Lat
+				lat = currLat;
+			}
+			bytes += line.getBytes().length +1;
 		}
-		bufferedReader.close();
-	}
-	catch(IOException e) {
-		return null;
-	}
-	return streetSet;
-}
+
+		// put the final coordinate
+		if(!nodeLatLongPointers.containsKey(latLong)) {
+			List<Long> toPut = new ArrayList<>(2);
+			Long previous = nodeLatLongPointers.get(latLong).get(0);
+			toPut.set(0, previous);
+			toPut.set(1, bytes);
+			nodeLatLongPointers.put(latLong,toPut);
+		}
+
+		Integer finalLat = Integer.parseInt(lat) + 1;
+		lat = finalLat.toString();
+		if(!nodeLatPointers.containsKey(lat)) {
+			nodeLatPointers.put(lat,bytes);
+		}
+		br.close();
 
 
-public Set<String> getStreetNames() {
-	return streetNames;
-}
+		fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
+		fileReader.setNodeLatPtrs(nodeLatPointers);
+		fileReader.setMaxMinLatLong(maxLat, minLat, maxLon, minLon); //send bounding latlons to filereader
+		return k;
+	}
+
+
+
+	/**
+	 * for testing
+	 */
+	public Set<StreetNode> getStreetsFromFile(String fileLocation){
+		BufferedReader bufferedReader = null;
+		String string;
+		Set<StreetNode> streetSet;
+
+		streetSet = new HashSet<StreetNode>();
+		try {
+			bufferedReader = new BufferedReader(new FileReader(fileLocation));
+		} catch (FileNotFoundException e) {	
+			return null;
+		}
+		try {
+			string = bufferedReader.readLine();
+			while(string != null) {
+				String[] words = string.split(",");
+				Double a = Double.parseDouble(words[0]);
+				Double b = Double.parseDouble(words[1]);
+				Double c = Double.parseDouble(words[2]);
+				Double d = Double.parseDouble(words[3]);
+				streetSet.add(new StreetNode(a, b, c, d, ""));
+				string = bufferedReader.readLine();
+			}
+			bufferedReader.close();
+		}
+		catch(IOException e) {
+			return null;
+		}
+		return streetSet;
+	}
+
+
+	public Set<String> getStreetNames() {
+		return streetNames;
+	}
 }

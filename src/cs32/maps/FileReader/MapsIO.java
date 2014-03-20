@@ -1,5 +1,6 @@
 package cs32.maps.FileReader;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -26,9 +27,15 @@ public class MapsIO {
 	public int nodes_idCol, nodes_latCol, nodes_lonCol, nodes_waysCol;
 	public int index_nameCol, index_nodesCol;
 	
-	
+	//1234.0000 1234.5678
 	private HashMap<String, Long> wayLatPointers;
-	public HashMap<String, Long> nodeLatLongPointers;
+	public HashMap<String, List<Long>> nodeLatLongPointers;
+	public HashMap<String, Long> nodeLatPointers;
+	
+	private int maxLat;
+	private int minLat;
+	private int maxLon;
+	private int minLon;
 	
 	
 	private long nodes_maxLat = Long.MIN_VALUE;
@@ -63,8 +70,19 @@ public class MapsIO {
 
 	}
 	
-	public void setNodeLatLongPtrs(HashMap<String, Long> hm) {
+	public void setMaxMinLatLong(int maxLat, int minLat, int maxLon, int minLon) {
+		this.maxLat = maxLat;
+		this.minLat = minLat;
+		this.maxLon = maxLon;
+		this.minLon = minLon;
+	}
+	
+	public void setNodeLatLongPtrs(HashMap<String, List<Long>> hm) {
 		nodeLatLongPointers=hm;
+	}
+	
+	public void setNodeLatPtrs(HashMap<String,Long> hm) {
+		nodeLatPointers=hm;
 	}
 
 
@@ -415,7 +433,7 @@ public class MapsIO {
 			line = readOneLine(raf);
 			id = line[ways_idCol];
 			name = line[ways_nameCol];
-		
+			name = name.toLowerCase();
 			// add street name to set
 			streets.add(name);
 			
@@ -582,10 +600,10 @@ public class MapsIO {
 		long latTop = 0; 
 		long latBottom = length;
 		if(nodeLatLongPointers.containsKey(topChunk)) {
-			latTop = nodeLatLongPointers.get(topChunk);
+			latTop = nodeLatLongPointers.get(topChunk).get(0);
 		}
 		if(nodeLatLongPointers.containsKey(bottomChunk)) {
-			latBottom = nodeLatLongPointers.get(bottomChunk);
+			latBottom = nodeLatLongPointers.get(bottomChunk).get(1);
 		}
 		return new long[]{latTop, latBottom};
 	}
@@ -740,10 +758,10 @@ public class MapsIO {
 		long latTop = 0; 
 		long latBottom = length;
 		if(nodeLatLongPointers.containsKey(topChunk)) {
-			latTop = nodeLatLongPointers.get(topChunk);
+			latTop = nodeLatLongPointers.get(topChunk).get(0);
 		}
 		if(nodeLatLongPointers.containsKey(bottomChunk)) {
-			latBottom = nodeLatLongPointers.get(bottomChunk);
+			latBottom = nodeLatLongPointers.get(bottomChunk).get(1);
 		}
 		return new long[]{latTop, latBottom};
 	}

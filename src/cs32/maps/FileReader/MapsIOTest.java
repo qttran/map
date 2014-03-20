@@ -120,6 +120,4 @@ public class MapsIOTest {
 		assertTrue(ids.contains("/n/2222.3333.77"));
 		assertTrue(ids.contains("/n/2222.3333.00"));
 	}
-	
-	
 }

@@ -11,6 +11,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -35,6 +36,7 @@ public class OptionPanel extends JPanel {
 	private MapsEngine _engine;
 	private MapPanel _map;
 	private AutocompleteEngine _ac;
+	private MapsGUI _gui;
 	private DefaultListModel<String> listModel;
 	private JList<String> suggestionList;
 	private JTextField street1Box;
@@ -44,13 +46,15 @@ public class OptionPanel extends JPanel {
 	private int _currentBox = 1;
 	private boolean _isShifting = false;
 	
-	public OptionPanel(MapsEngine en, MapPanel mp) { //also needs to know about Autocomplete engine
+	public OptionPanel(MapsEngine en, MapsGUI gui, MapPanel mp) { //also needs to know about Autocomplete engine
 		_engine = en;
+		_gui = gui;
 		_map = mp;
 		_ac = new AutocompleteEngine();
 		
 		//this.setPreferredSize(new Dimension(80,80));
-		_ac.addAllWords("/course/cs032/data/maps/ways.tsv");
+		Set<String> names = _engine.getStreetNames();
+		_ac.addAllWords(names);
         
         listModel = new DefaultListModel<String>();
         
@@ -194,8 +198,18 @@ public class OptionPanel extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 //				_isShifting = true;
 				listModel.clear();
+				_gui.setCurrentLocation(null);
+				_gui.setDestination(null);
 				street1Box.setText("");
 				street2Box.setText("");
+			}
+        	
+        });
+        
+        directionsButton.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
 			}
         	
         });

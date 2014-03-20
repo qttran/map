@@ -128,16 +128,17 @@ public class KDTree {
 		result.add("");
 		return result;
 	}
-
 	
 	/** SEARCH NUMBER COORDINATES */
 	public List<Coordinates> searchNumberCoordinates(int n, Coordinates item) {
-		
+
 		KDNode node = search(item).x;
 		PriorityQueue<Tuple<KDNode,Double>> pQueue = new PriorityQueue<Tuple<KDNode, Double>>();
-		List<Coordinates> result = new ArrayList<>();
+		List<String> result = new ArrayList<String>();
+		List<Coordinates> resultC = new ArrayList<Coordinates>();
 		if (n == 0) {
-			return result;
+			result.add("");
+			return resultC;
 		}
 
 		Tuple<KDNode, Double> closest = new Tuple<KDNode, Double>(node,0.0);
@@ -154,22 +155,38 @@ public class KDTree {
 			}
 			//add the big
 			KDNode newClosestSmall = searchClosestSmall(closest.x);
-			if ((newClosestSmall != null)  && (!result.contains(newClosestSmall.item))) {
+			if ((newClosestSmall != null)  && (!result.contains(newClosestSmall.id))) {
 				double newClosestSmallScore = Math.abs(newClosestSmall.item.compareTo(node.item));
 				Tuple<KDNode,Double> newSmallTuple = new Tuple<KDNode,Double> (newClosestSmall,newClosestSmallScore);
 				pQueue.add(newSmallTuple);
 			}
 			//poll
-			while (result.contains(closest.x.item)) {
+			while (result.contains(closest.x.id)) {
 				if (pQueue.size() == 0) {
-					return result;
+					result.add("");
+					return resultC;
 				}
 				closest = pQueue.poll();
 			}
-			result.add(closest.x.item);
+			result.add(closest.x.id);
+			resultC.add(closest.x.item);
 		} 
 		while (result.size() < n);
-		return result;
+		result.add("");
+		return resultC;
+	}
+
+	public Coordinates searchClosest(Coordinates coor) {
+		KDNode node = search(coor).x;
+		KDNode smaller = searchClosestSmall(node);
+		KDNode bigger = searchClosestBig(node);
+		double differentSmall = smaller.item.distance(node.item);
+		double differentBig = bigger.item.distance(node.item);
+		
+		if (differentSmall < differentBig) 
+			return smaller.item;
+		else 
+			return bigger.item;
 	}
 
 	/**SEARCH THE CLOSEST NODE THAT 
