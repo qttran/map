@@ -1,12 +1,10 @@
 package PathFinding;
 
-import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
@@ -161,7 +159,7 @@ public class PathFinder {
 	}
 
 	private Node aStarSearch(Node start, Node goal) throws IOException {
-
+		
 		start.g_score = 0;
 		start.f_score = start.g_score + heuristic(start, goal);
 
@@ -295,7 +293,6 @@ public class PathFinder {
 			}
 			// else, if node is in my pagedMap
 			else if(_pagedNodes.containsKey(oppositeNodeID)) {
-				System.out.println("NOT calling file utility because I already have node!!!");
 				neighbor = new Node(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
 				neighbor.setPredecessor(start, wayID);
 				
@@ -335,7 +332,6 @@ public class PathFinder {
 			}
 		}
 		Preconditions.checkNotNull(toReturn);
-		System.out.printf("Paged in %s new location nodes. Size of _pagedNodes is %s\n\n", pageOfNodes.size(), _pagedNodes.size());
 		return toReturn;
 	}
 	

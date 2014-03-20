@@ -5,9 +5,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
@@ -83,6 +80,8 @@ public class MapsEngine {
 
 	/*************** for use with GUI ***************/
 
+	private Map<Point2D.Double, String> recentlySelectedPointsIDs;
+	
 	/**
 	 * For GUI: get the nearest Point2D.Double lat/long that is a real node
 	 * @param pt
@@ -90,6 +89,7 @@ public class MapsEngine {
 	 */
 	public Point2D.Double getNearestPoint(Point2D.Double pt) {
 		Coordinates c = k.searchNumberCoordinates(1, new Coordinates(pt.x, pt.y)).get(0);
+		// can modify coordinates so it has ID? then can add to recentlyselectedpoints ETC.
 		Point2D.Double nearestPt = new Point2D.Double(c.x, c.y);
 		return nearestPt;
 
@@ -105,17 +105,32 @@ public class MapsEngine {
 	public Set<StreetNode> getPathStreetNodes(Point2D.Double start, Point2D.Double end) throws IOException {
 		Set<StreetNode> pathSet = new HashSet<>();
 
-		// find nearest start node (kdtree)
-		String nearestStartNodeID = k.searchNumber(1, new Coordinates(start.x, start.y)).get(0);
-		LocationNode nearestStartNode = fileReader.getLocationNode(nearestStartNodeID);
+		//TODO populate recentlyselectedpointsids
+		
+		String startID;
+		String endID;
+		
+		if(recentlySelectedPointsIDs.containsKey(start)) {
+			startID = recentlySelectedPointsIDs.get(start);
+		}
+		else {
+			startID = k.searchNumber(1, new Coordinates(start.x, start.y)).get(0);
+		}
+		
+		if(recentlySelectedPointsIDs.containsKey(end)) {
+			endID = recentlySelectedPointsIDs.get(end);
+		}
+		else {
+			endID = k.searchNumber(1, new Coordinates(end.x, start.y)).get(0);
+		}
+		
+		LocationNode startNode = fileReader.getLocationNode(startID);
 
-		// find nearest end node (kdtree)
-		String nearestEndNodeID = k.searchNumber(1, new Coordinates(end.x, start.y)).get(0);
-		LocationNode nearestEndNode = fileReader.getLocationNode(nearestEndNodeID);
+		LocationNode endNode = fileReader.getLocationNode(endID);
 
 		// get shortest path between them (PathFinder)
 		PathFinder pF = new PathFinder(fileReader);
-		List<Connection> resultList = pF.getPathSet(nearestStartNode,nearestEndNode);
+		List<Connection> resultList = pF.getPathSet(startNode,endNode);
 		for(Connection leg : resultList) {
 			pathSet.add(new StreetNode(leg.s.getPt().x, leg.s.getPt().y,  leg.e.getPt().x, leg.e.getPt().y, ""));
 		}
@@ -272,5 +287,28 @@ public class MapsEngine {
 	
 	public Set<String> getStreetNames() {
 		return streetNames;
+	}
+	
+	/************* FOR TESTING *************/
+	public String getBestPathNodeIDs(String id1, String id2) throws IOException {
+
+		LocationNode startNode = fileReader.getLocationNode(id1);
+
+		LocationNode endNode = fileReader.getLocationNode(id2);
+	
+	
+		// get shortest path between them (PathFinder)
+		PathFinder pF = new PathFinder(fileReader);
+		List<String> resultList = pF.getPath(startNode, endNode);
+		String result = "";
+		for (String x: resultList) {
+			result += x + "\n";
+		}
+		
+		return result;
+	}
+	
+	public long[] forTestingGetBytes(String s, String s2) throws IOException{
+		return fileReader.getByteBounds(s, s2);
 	}
 }

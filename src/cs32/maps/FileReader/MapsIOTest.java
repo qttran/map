@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Test;
 
@@ -23,6 +22,12 @@ public class MapsIOTest {
 	public static final String smallnodes2 = home + "/course/cs032/map/testfiles/smallNodes2.tsv";
 	public static final String smallindex2 = home + "/course/cs032/map/testfiles/smallIndex2.tsv";
 	
+	@Test
+	public void conversionTest() throws IOException {
+		assertTrue(MapsIO.getKeyValue(11112222).equals("1111.2222"));
+
+		assertTrue(MapsIO.getLongValue("1234.4321") == (12344321));				
+	}
 	@Test
 	public void testColumnFinder() {
 		MapsIO io = new MapsIO(ways, nodes, index);
