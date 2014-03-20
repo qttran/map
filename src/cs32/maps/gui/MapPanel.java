@@ -79,7 +79,7 @@ public class MapPanel extends JPanel {
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
 				scale = Math.pow(scale, 1 - e.getWheelRotation()*0.02);
-				if (scale < 0.1D) scale = 0.1D;
+				if (scale < 35000D) scale = 35000D;
 				_map.repaint();
 			}
 			
