@@ -27,6 +27,10 @@ public class MapsEngine {
 	private Set<String> streetNames; //autocomplete will get
 	private LinkedList<Node> recentlyFoundKDNodes; //FOR GUI so dont have to keep kd-treeing
 
+	
+	private Map<String, Set<StreetNode>> streetNodesOnScreen; 
+	// map "4-lat""4-long" to streetNodes
+	
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
@@ -34,6 +38,7 @@ public class MapsEngine {
 
 		streetNames = fileReader.getAllStreetNames();
 		recentlyFoundKDNodes = new LinkedList<>();
+		streetNodesOnScreen = new HashMap<>();
 	}
 
 	// get nearest neighbor (x, y) --> lat, long, id
@@ -221,13 +226,35 @@ public class MapsEngine {
 
 		System.out.println("yBot: " + yBot);
 
-
+		/**
+		 * loop through all mini chunks -- if they are already in hashtable, don't get them (get them from hashtable)
+		 */
+//		for (int lat = Integer.parseInt(xLeft); lat < Integer.parseInt(xRight); lat++) {
+//			String topChunk = lat + "." + yBot;
+//			String bottomChunk = lat + "." + yTop;
+//			Set<StreetNode> toAdd = getStreetNodesWithin(topChunk, bottomChunk);
+//			
+//			// if "lat""long" is not in hashmap, hashmap.putt("latlon", toAdd)
+//			for (StreetNode node: toAdd) 
+//				result.add(node);
+//		}
+		
 		for (int lat = Integer.parseInt(xLeft); lat < Integer.parseInt(xRight); lat++) {
-			String topChunk = lat + "." + yBot;
-			String bottomChunk = lat + "." + yTop;
-			Set<StreetNode> toAdd = getStreetNodesWithin(topChunk, bottomChunk);
-			for (StreetNode node: toAdd) 
-				result.add(node);
+			for (int lon = Integer.parseInt(yBot); lon < Integer.parseInt(yTop); lon ++) {
+				String topChunk = lat + "." + lon;
+				String bottomChunk = lat + "." + (lon+1);
+				Set<StreetNode> toAdd;
+				if (streetNodesOnScreen.containsKey(topChunk)) {
+					toAdd = streetNodesOnScreen.get(topChunk);
+				}
+				else {
+					toAdd = getStreetNodesWithin(topChunk, bottomChunk);
+					streetNodesOnScreen.put(topChunk, toAdd);
+				}
+				
+				result.addAll(toAdd);
+			}
+			
 		}
 		return result;
 	}
