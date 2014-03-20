@@ -248,7 +248,7 @@ public class MapsEngine {
 		}
 		br.close();
 		
-		fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
+		//fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
 		return k;
 	}
 	
