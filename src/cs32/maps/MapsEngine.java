@@ -271,14 +271,14 @@ public class MapsEngine {
 		Map<String, LocationNode> nodeMap = fileReader.getAllLocationNodesWithin(topChunk, bottomChunk);
 		//System.out.println("read all location nodes done");
 		Set<String> ids = nodeMap.keySet();
-		RandomAccessFile raf = fileReader.getRAF();
+		//RandomAccessFile raf = fileReader.getRAF();
 		// for each node
 		for(String n : ids) {
 			LocationNode node = nodeMap.get(n);
 			//System.out.println(node.toString());
 			// for each way ID, get opposide node and to snSet
 			for(String wID : node.ways) {
-				Way w = fileReader.getWay(wID, raf);
+				Way w = fileReader.getWay(wID);
 				String oppositeNodeID = w.endNodeID;
 				LatLong opposite;
 				if(ids.contains(oppositeNodeID)) {
@@ -294,7 +294,7 @@ public class MapsEngine {
 
 			}
 		}
-		raf.close();
+		//raf.close();
 		return snSet;
 	}
 

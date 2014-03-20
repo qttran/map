@@ -195,10 +195,11 @@ public class MapsIO {
 	 * Given a wayID, search the *ways file* for correct line
 	 * and return a Way object with all relevant info
 	 */
-	public Way getWay(String wayID, RandomAccessFile raf) throws IOException {
-
+	public Way getWay(String wayID) throws IOException {
+		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
 		// do binary search
 		String[] line = binarySearch(raf, ways_idCol, wayID);
+		raf.close();
 		if(line==null) {
 			System.out.printf("No such way ID: %s\n", wayID);
 			return null;
@@ -763,14 +764,6 @@ public class MapsIO {
 				break;
 			raf.seek(raf.getFilePointer()-2);
 		}		
-	}
-	
-	public RandomAccessFile getRAF() {
-		try {
-			return new RandomAccessFile(waysFile, "r");
-		} catch (FileNotFoundException e) {
-			return null;
-		}
 	}
 
 	
