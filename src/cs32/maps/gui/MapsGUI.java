@@ -1,22 +1,13 @@
 package cs32.maps.gui;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import cs32.maps.LocationNode;
 import cs32.maps.MapsEngine;
 
 public class MapsGUI extends JFrame {
@@ -56,6 +47,9 @@ public class MapsGUI extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+	/*
+	 * Getters and Setters for current location (starting node) and destination (end node).
+	 */
 	public void setCurrentLocation(Point2D.Double p){
 		_location = p;
 	}
@@ -72,6 +66,10 @@ public class MapsGUI extends JFrame {
 		return _destination;
 	}
 	
+	/*
+	 * setPath uses MapEngine's getPathStreetNodes method to set the streets that are going to be
+	 * highlighted as a part of a path.
+	 */
 	public void setPath(){
 		if (_location != null && _destination != null) {
 			try {

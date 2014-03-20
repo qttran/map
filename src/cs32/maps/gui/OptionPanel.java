@@ -10,10 +10,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
@@ -25,9 +23,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
-
 import Autocomplete.AutocompleteEngine;
 import cs32.maps.MapsEngine;
 
@@ -174,9 +169,6 @@ public class OptionPanel extends JPanel {
 					}
 					listModel.clear();
 				}
-				
-				//System.out.println(string);
-				//DOSTUFF!!!!!
 			}
 
 			@Override
