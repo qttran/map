@@ -123,6 +123,8 @@ public class MapsEngine {
 
 	}
 
+	
+	
 
 	/**
 	 * create a set of StreetNodes in a bounding box
@@ -131,44 +133,16 @@ public class MapsEngine {
 	 * @return
 	 * @throws IOException
 	 */
-	public Set<StreetNode> getStreetNodesWithin(Point2D.Double topLeft, Point2D.Double botRight) throws IOException{
-
-		// get all LocationNodes within latlong
-		// locationNodes = new Set
-		
-		// for N in locationNodes:
-			// for /w/id of N:
-				// fileReader.getOppositeNodeID(/w/id)
-				// if already in locationNodes:
-					// new StreetNode
-				// else:
-					// fileReader.getLocationNode(id)  ==>   new StreetNode
-		
-		//--DONE
+	public Set<StreetNode> getStreetNodes(Point2D.Double topLeft, Point2D.Double botRight) throws IOException{
 
 		
+		String xTop = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
+		String xBot =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
 		
-		String top = Double.toString(topLeft.x).substring(0, 2) +  Double.toString(topLeft.x).substring(3,5);
-		String bottom =  Double.toString(botRight.x).substring(0, 2) +  Double.toString(botRight.x).substring(3,5);
+		String yTop = Double.toString(topLeft.y).substring(0, 2) +  Double.toString(topLeft.y).substring(3,5);
+		String yBot =  Double.toString(botRight.y).substring(0, 2) +  Double.toString(botRight.y).substring(3,5);
 
-		List<Way> ws = fileReader.getAllWaysWithin(top, bottom);
-		
-		Set<StreetNode> hs = new HashSet<StreetNode>();
-		for(Way w : ws) {
-
-			// both looking in same general area --- optimize
-
-			LocationNode start = fileReader.getLocationNodeWithin(w.startNodeID);//, t, b);
-			
-			LocationNode end = fileReader.getLocationNodeWithin(w.endNodeID);//, t, b);
-
-
-			
-			
-			hs.add(new StreetNode(start.latlong.lat, start.latlong.lon, end.latlong.lat, end.latlong.lon, w.name));
-		}
-		System.out.printf("Done. %s StreetNodes between lats %s and %s\n", hs.size(), top, bottom);
-		return hs;
+		return null;
 	}
 
 	
@@ -215,10 +189,14 @@ public class MapsEngine {
 			bytes += line.getBytes().length +1;
 		}
 
+		// put the final coordinate
+		Integer finalLong = Integer.parseInt(latLong.substring(5,9)) + 1;
+		latLong = latLong.substring(0,5) + finalLong.toString();
 		if(!nodeLatLongPointers.containsKey(latLong)) {
 			nodeLatLongPointers.put(latLong,bytes);
 		}
 		br.close();
+		
 		
 		fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
 		return k;
