@@ -6,6 +6,7 @@ import java.awt.geom.Point2D;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
@@ -68,6 +69,8 @@ public class MapsEngineTest {
 		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4015.7374"));
 		assertTrue(!en.fileReader.nodeLatLongPointers.containsKey("4999.6766"));
 		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
+		System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
+		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374"));
 		//System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
 		//System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374") == 907);
 	}
@@ -76,15 +79,31 @@ public class MapsEngineTest {
 	@Test
 	public void testGetBytePointers() throws IOException {
 		MapsEngine e = new MapsEngine(ways, nodes, index);
-		long[] pts = (e.forTestingGetBytes("4016.7374", "4017.7374"));
-		assertTrue(pts[0] == 183);
-		assertTrue(pts[1] == 907);
-		
-		pts = e.forTestingGetBytes("4038.7349", "4042.7319");
-		System.out.println(pts[0]);
+		System.out.println("---");
+		long[] pts = (e.forTestingGetBytes("4016.7374", "4016.7389")); //first one is in HM, second not
+		System.out.println(pts[0]); // should be 183
 		System.out.println(pts[1]);
-		//16665
-		//28675
+		
+		Map<String, LocationNode> ln = e.nodesChunkTest("4016.7374", "4016.7389");
+		for(String n :ln.keySet()) {
+			System.out.println(n);
+		}
+		System.out.println("next");
+		
+		ln = e.nodesChunkTest("4018.7372", "4018.7379");
+		for(String n :ln.keySet()) {
+			System.out.println(n);
+		}
+		
+		
+		System.out.println("next");
+		
+		ln = e.nodesChunkTest("4152.7143", "4152.7145");
+		for(String n :ln.keySet()) {
+			System.out.println(n);
+		}
+		
+		
 	}
 	
 	

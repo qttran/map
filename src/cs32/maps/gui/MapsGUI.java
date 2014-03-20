@@ -44,7 +44,7 @@ public class MapsGUI extends JFrame {
 		_engine = en;
 		this.setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
 		
-		Set<StreetNode> set =  en.getStreetsFromFile("/home/bsenturk/course/cs032/map/all_ways.txt");
+		Set<StreetNode> set =  en.getStreetsFromFile("/home/qttran/course/cs032/map/all_ways.txt");
 		MapPanel mp = new MapPanel(en, this, set);
 		
 		//mp.setCurrentLocation(new Point2D.Double(15,0));
