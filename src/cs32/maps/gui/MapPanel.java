@@ -123,6 +123,7 @@ public class MapPanel extends JPanel {
 		Point2D.Double b = getCoordinates(MAP_WIDTH, 0);
 		Point2D.Double a = getCoordinates(0, MAP_HEIGHT);
 		try {
+			
 			_nodes = _engine.getStreetNodes(a, b);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
