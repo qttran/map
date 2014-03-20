@@ -2,6 +2,7 @@ package cs32.maps.FileReader;
 
 import static org.junit.Assert.assertTrue;
 
+import java.awt.geom.Point2D;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -125,4 +126,6 @@ public class MapsIOTest {
 		assertTrue(ids.contains("/n/2222.3333.77"));
 		assertTrue(ids.contains("/n/2222.3333.00"));
 	}
+	
+	
 }
