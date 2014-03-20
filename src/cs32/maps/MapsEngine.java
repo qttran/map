@@ -44,10 +44,18 @@ public class MapsEngine {
 
 		// find nearest start node (kdtree)
 		String intersection1 = fileReader.getIntersection(streetnames.get(0).toLowerCase(), streetnames.get(1).toLowerCase());
+		if(intersection1.length()<1) {
+			System.out.printf("No intersection found between %s and %s\n", streetnames.get(0), streetnames.get(1));
+			return null;
+		}
 		LocationNode nearestStartNode = fileReader.getLocationNode(intersection1);
 
 		// find nearest end node (kdtree)
 		String intersection2 = fileReader.getIntersection(streetnames.get(2).toLowerCase(), streetnames.get(3).toLowerCase());
+		if(intersection2.length()<1) {
+			System.out.printf("No intersection found between %s and %s\n", streetnames.get(2), streetnames.get(3));
+			return null;
+		}
 		LocationNode nearestEndNode = fileReader.getLocationNode(intersection2);
 
 		// get shortest path between them (PathFinder)
