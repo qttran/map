@@ -17,6 +17,8 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
+import java.lang.Thread.State;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 import javax.swing.Timer;
@@ -37,10 +39,13 @@ public class MapPanel extends JPanel {
 	private Double scale = 60000D;
 	private Point2D.Double _center = new Point2D.Double(41.82163534608988, -71.38882713291805);
 	private int _currentVariable = 1;
+	private Point2D.Double topLeft;
+	private Point2D.Double bottomRight;
+	private UpdateMapThread _umthread;
 	
 	public MapPanel(MapsEngine en, MapsGUI gui) {
 		_engine = en;
-//		/_nodes = nodes;
+		_nodes = new HashSet<StreetNode>();
 		_gui = gui;
 		
 /*		Timer _timer = new Timer(3000, new ActionListener(){
@@ -120,14 +125,21 @@ public class MapPanel extends JPanel {
 		g2D.setColor(Color.BLACK);
 		//g2D.setStroke(new BasicStroke((int)(0.0002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
-		Point2D.Double b = getCoordinates(MAP_WIDTH, 0);
-		Point2D.Double a = getCoordinates(0, MAP_HEIGHT);
-		try {
-			_nodes = _engine.getStreetNodes(a, b);
+		bottomRight = getCoordinates(MAP_WIDTH, 0);
+		topLeft = getCoordinates(0, MAP_HEIGHT);
+		
+		if(_umthread == null || _umthread.getState() == State.TERMINATED) {
+			System.out.println("Hello");
+			_umthread = new UpdateMapThread(this);
+			_umthread.start();
+		}
+		
+/*		try {
+			_nodes = _engine.getStreetNodes(bottomRight, topLeft);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		
 		for (StreetNode node: _nodes){
 			if(bb.intersectsLine(node)){
@@ -181,5 +193,12 @@ public class MapPanel extends JPanel {
 	
 	private Point2D.Double getCoordinates(int x, int y){
 		return new Point2D.Double(_center.x + (-y + MAP_HEIGHT/2)/scale, _center.y + (x - MAP_WIDTH/2)/scale);
+	}
+	
+	public void updateMap() {
+		try {
+			_nodes = _engine.getStreetNodes(topLeft, bottomRight);
+			System.out.println(_nodes.size());
+		} catch (IOException e) {}
 	}
 }

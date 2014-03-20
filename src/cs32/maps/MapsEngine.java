@@ -256,7 +256,6 @@ public class MapsEngine {
 			}
 			
 		}
-		System.out.println(result.size());
 		return result;
 	}
 
