@@ -29,12 +29,18 @@ public class MapsIO {
 	public HashMap<String, List<Long>> nodeLatLongPointers;
 	public HashMap<String, Long> nodeLatPointers;
 	
-	public int maxLat;
-	public int minLat;
-	public int maxLon;
-	public int minLon;
-	
+	public int minLatChunk = 99999;
+	public int maxLatChunk = 0;
+	public int minLonChunk = 99999;
+	public int maxLonChunk = 0;
 
+	public double minLat = Long.MAX_VALUE;
+	public double maxLat = Long.MIN_VALUE;
+	public double minLon = Long.MAX_VALUE;
+	public double maxLon = Long.MIN_VALUE;
+
+	
+	
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
 		
 		//wayLatPointers = new HashMap<>(); //getAllWays fills this up
@@ -685,12 +691,6 @@ public class MapsIO {
 	public List<Node> getKDNodes() throws IOException {
 		ArrayList<Node> kdNodes = new ArrayList<Node>();
 		
-		int minLat = 99999;
-		int maxLat = 0;
-		int minLon = 99999;
-		int maxLon = 0;
-
-
 		//Create list of all latlongs and IDs from file
 
 		BufferedReader br = new BufferedReader(new FileReader(nodesFile));
@@ -729,11 +729,16 @@ public class MapsIO {
 			String currLatLong = list[0].substring(3,12) ;
 
 			//set max min lat lons
-			minLat = Math.min(minLat, currLatNum);
-			maxLat = Math.max(maxLat, currLatNum);
-			minLon = Math.min(minLon, currLonNum);
-			maxLon = Math.max(maxLon, currLonNum);
+			minLatChunk = Math.min(minLatChunk, currLatNum);
+			maxLatChunk = Math.max(maxLatChunk, currLatNum);
+			minLonChunk = Math.min(minLonChunk, currLonNum);
+			maxLonChunk = Math.max(maxLonChunk, currLonNum);
 
+			minLat = Math.min(minLat, x);
+			maxLat = Math.max(maxLat, x);
+			minLon = Math.min(minLon, y);
+			maxLon = Math.max(maxLon, y);
+			
 			//keep track of latLong pointers:
 			if (!latLong.equals(currLatLong)) {
 				//update the previous latlong in the hashMap
