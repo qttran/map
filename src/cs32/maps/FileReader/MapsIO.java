@@ -207,26 +207,6 @@ public class MapsIO {
 	}
 
 
-	/**
-	 * Given a nodeID, search the *nodes file* for correct line
-	 * and return a single LocationNode object with all relevant info
-	 */
-//	public LocationNode getLocationNode(String nodeID) throws IOException {
-//		// do binary search
-//		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
-//		String[] line = binarySearch(raf, nodes_idCol, nodeID);
-//		if(line==null) {
-//			System.out.printf("No such node ID: %s\n", nodeID);
-//			return null;
-//		}
-//
-//		LocationNode ln = createLocationNode(line);
-//
-//		Preconditions.checkState(ln.id.equals(nodeID)); // id should be the same one that was requested
-//		raf.close();////
-//		return ln;		
-//	}
-
 	/* given a street name,
 	   read the INDEX file. Find ALL 
 	   the streets with this name and create 
