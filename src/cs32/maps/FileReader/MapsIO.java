@@ -1,9 +1,11 @@
 package cs32.maps.FileReader;
 
 import java.awt.geom.Point2D;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -124,6 +126,8 @@ public class MapsIO {
 
 		pointer = f.getFilePointer();
 
+		byte[] result = new byte[0];
+		
 		int length = 0;
 		boolean end = false;
 		while (!end) {
@@ -132,17 +136,25 @@ public class MapsIO {
 
 			for (int i = 0; i < seg.length; i++) {
 				if (seg[i] == 10) {
+					int l = result.length;
+					result = Arrays.copyOf(result, result.length + i);
+					System.arraycopy(seg, 0, result, l, i);
 					length += i;
 					end = true;
 					break;
 				}
 				if (i == seg.length - 1) {
+					int l = result.length;
+					result = Arrays.copyOf(result, result.length + byteToRead);
+					System.arraycopy(seg, 0, result, l, byteToRead);
 					length += byteToRead;
 				}
 			}
 		}
-
-		// read bytes of line
+		String line = new String(result);
+		return line.split("\t", -1);
+		
+/*		// read bytes of line
 		f.seek(pointer);
 		byte[] bytes = new byte[length];
 		if (f.read(bytes) != length) {
@@ -150,7 +162,7 @@ public class MapsIO {
 		}
 
 		String line = new String(bytes);
-		return line.split("\t", -1);
+		return line.split("\t", -1);*/
 	}
 
 
@@ -183,14 +195,12 @@ public class MapsIO {
 	 * Given a wayID, search the *ways file* for correct line
 	 * and return a Way object with all relevant info
 	 */
-	public Way getWay(String wayID) throws IOException {
+	public Way getWay(String wayID, RandomAccessFile raf) throws IOException {
 
 		// do binary search
-		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
 		String[] line = binarySearch(raf, ways_idCol, wayID);
 		if(line==null) {
 			System.out.printf("No such way ID: %s\n", wayID);
-			raf.close();
 			return null;
 		}
 
@@ -201,7 +211,6 @@ public class MapsIO {
 		String name = line[ways_nameCol];
 
 		Preconditions.checkState(id.equals(wayID)); // id should be the same one that was requested
-		raf.close();
 		return new Way(id, startID, endID, name);
 	}
 
@@ -517,9 +526,9 @@ public class MapsIO {
 		}
 
 		String foundLine[] = null;
-
 		file.seek(filePointerTop); // points to beginning of first line of chunk
 		foundLine = binarySearch(file, nodes_idCol, nodeID);
+		file.close();
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
@@ -756,7 +765,13 @@ public class MapsIO {
 		}		
 	}
 	
-
+	public RandomAccessFile getRAF() {
+		try {
+			return new RandomAccessFile(waysFile, "r");
+		} catch (FileNotFoundException e) {
+			return null;
+		}
+	}
 
 	
 	

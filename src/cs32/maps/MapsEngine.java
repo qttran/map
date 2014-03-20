@@ -5,6 +5,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -161,13 +162,8 @@ public class MapsEngine {
 		PathFinder pF = new PathFinder(fileReader);
 
 		List<LatLong[]> resultList = pF.getPathLatLongs(startNode,endNode);
-<<<<<<< HEAD
-		if (resultList == null) return null;
-=======
-
 		if (resultList == null) return null;
 
->>>>>>> 939d777189887efdc0c769ef88184f4bc7d43170
 		for(LatLong[] leg : resultList) {
 			Preconditions.checkState(leg.length == 2); //should be a pair of latlongs
 			pathSet.add(new StreetNode(leg[0].lat, leg[0].lon, leg[1].lat, leg[1].lon, ""));
@@ -275,14 +271,14 @@ public class MapsEngine {
 		Map<String, LocationNode> nodeMap = fileReader.getAllLocationNodesWithin(topChunk, bottomChunk);
 		//System.out.println("read all location nodes done");
 		Set<String> ids = nodeMap.keySet();
-
+		RandomAccessFile raf = fileReader.getRAF();
 		// for each node
 		for(String n : ids) {
 			LocationNode node = nodeMap.get(n);
 			//System.out.println(node.toString());
 			// for each way ID, get opposide node and to snSet
 			for(String wID : node.ways) {
-				Way w = fileReader.getWay(wID);
+				Way w = fileReader.getWay(wID, raf);
 				String oppositeNodeID = w.endNodeID;
 				LatLong opposite;
 				if(ids.contains(oppositeNodeID)) {
@@ -298,7 +294,7 @@ public class MapsEngine {
 
 			}
 		}
-
+		raf.close();
 		return snSet;
 	}
 
