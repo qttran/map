@@ -27,12 +27,12 @@ public class MapsIO {
 	public int index_nameCol, index_nodesCol;
 	
 	
-	private HashMap<Integer, Long> wayLatPointers; //TODO PROBS WILL DELETE THIS
+	private HashMap<Integer, Long> wayLatPointers;
 	public HashMap<String, Long> nodeLatLongPointers;
 	
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
 		
-		wayLatPointers = new HashMap<>(); //getAllWays fills this up
+		wayLatPointers = new HashMap<>(); 
 		nodeLatLongPointers = new HashMap<>();
 		
 		
@@ -140,6 +140,7 @@ public class MapsIO {
 		while (end > start) {
 			file.seek(mid);
 			String[] currentLine = readOneLine(file);
+			System.out.println(currentLine[whichCol]+ ", " + toFind);
 			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
 			if (difference == 0) {
 				//file.close();
@@ -155,6 +156,29 @@ public class MapsIO {
 		return null;
 	}
 
+	public String[] binarySearchID(RandomAccessFile file, int whichCol, String toFind) throws IOException {
+		file.seek(0);
+		nextNewLine(file);
+		long start = file.getFilePointer();
+		long end = (file.length() - 1);
+		long mid = (start + end)/2;
+		while (end > start) {
+			file.seek(mid);
+			String[] currentLine = readOneLine(file);
+			int difference = toFind.compareToIgnoreCase(currentLine[whichCol].substring(3,12));
+			if (difference == 0) {
+				//file.close();
+				return currentLine;
+			}
+			else if (difference > 0) 
+				start = mid + 1;
+			else 
+				end = mid - 1;
+			mid = (start + end)/2;
+		} 
+		file.close();
+		return null;
+	}
 
 
 	/**
@@ -162,7 +186,7 @@ public class MapsIO {
 	 * and return a Way object with all relevant info
 	 */
 	public Way getWay(String wayID) throws IOException {
-		
+		//  /w/4115.7154.2343242
 		String firstFour = wayID.substring(3, 7);
 		int firstFourLat = Integer.parseInt(firstFour);
 		int count = 0;
@@ -196,7 +220,7 @@ public class MapsIO {
 		if(wayLatPointers.containsKey(bottomChunk))
 			bottomFP = wayLatPointers.get(bottomChunk);
 		
-		
+	
 		raf.seek(topFP);
 		long start = topFP;
 		long end = bottomFP;
@@ -296,7 +320,10 @@ public class MapsIO {
 	public List<LocationNode> getNodePage(String nodeID) throws IOException {
 		// do binary search
 		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+		long fileSize = raf.length();
+		
 		String[] line = binarySearch(raf, nodes_idCol, nodeID);
+		//TODO IS IT FASTER TO CALL getLocationNode()   [[it does linear using pointers]]
 		if(line==null) {
 			System.out.printf("No such node ID: %s\n", nodeID);
 			return null;
@@ -318,7 +345,6 @@ public class MapsIO {
 		String nodeIDhere;
 
 		previousNewLine(raf);
-		//previousNewLine(raf);
 		
 		//if anything above, get it
 		if(raf.getFilePointer()!=topOfFile) {
@@ -331,7 +357,7 @@ public class MapsIO {
 			while(areOnSamePage(nodeID, nodeIDhere)) {
 				
 				pageList.add(createLocationNode(nodeLine));
-				//previousNewLine(raf); 
+
 				previousNewLine(raf);
 
 				if(raf.getFilePointer()==topOfFile) //if at top of file
@@ -340,9 +366,6 @@ public class MapsIO {
 				previousNewLine(raf);
 				nodeLine = readOneLine(raf);
 				nodeIDhere = nodeLine[nodes_idCol];
-				//previousNewLine(raf);
-				//previousNewLine(raf);
-				
 			}
 		}
 		// seek original
@@ -350,11 +373,11 @@ public class MapsIO {
 		
 		// if anything below, get it
 		nextNewLine(raf);
-		if(raf.getFilePointer() < raf.length()) {
+		if(raf.getFilePointer() < fileSize) {
 			nodeLine = readOneLine(raf);
 			nodeIDhere = nodeLine[nodes_idCol];
 			
-			while(areOnSamePage(nodeID, nodeIDhere) && raf.getFilePointer()<raf.length()) {
+			while(areOnSamePage(nodeID, nodeIDhere) && raf.getFilePointer()<fileSize) {
 				pageList.add(createLocationNode(nodeLine));
 				nextNewLine(raf); 
 				
@@ -375,8 +398,10 @@ public class MapsIO {
 		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
 		//create ways list
 		List<String> wayList = new ArrayList<>();
-		for(String s : ways.split(",")) {
-			wayList.add(s);
+		if(ways.length()!=0) {
+			for(String s : ways.split(",")) {
+				wayList.add(s);
+			}
 		}
 		return new LocationNode(id, wayList, latlong);
 
@@ -479,27 +504,30 @@ public class MapsIO {
 		
 		// do a LINEAR search
 		String foundLine[] = null;
-		//TODO WTF it works when I add towo to the file ptr
 		file.seek(filePointerTop); // points to beginning of first line of chunk
-		while (file.getFilePointer() < fileSize) {
-
+		foundLine = binarySearchID(file, nodes_idCol, chunkID);
+/*		while (file.getFilePointer() < fileSize) {
+			System.out.println("not over yet!.");
 			String[] currentLine = readOneLine(file);
 			String IDhere = currentLine[nodes_idCol];
 			if(IDhere.equals(nodeID)) {
 				foundLine = currentLine;
 				break; // found node
-			}
+			}System.out.println(foundLine);
 			if(!getKeyValueFromID(IDhere).equals(chunkID)) {
 				// IF NO longer in this chunk (BADDD)
 				break;
 			}
 			
 		} 
-		file.close();
+		file.close();*/
 		
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
+		}
+		for (String s : foundLine) {
+			System.out.println(s);
 		}
 		
 		return createLocationNode(foundLine);
@@ -516,7 +544,8 @@ public class MapsIO {
 	
 	
 	
-	
+	// "4017.7343"  "4018.9347"
+	// "....7342  7346..
 	public Map<String, LocationNode> getAllLocationNodesWithin(String topEight, String bottomEight) throws IOException {
 
 		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
@@ -592,13 +621,17 @@ public class MapsIO {
 	}
 	
 
-
+	
+	// first = "1234.7777"
+	// second = "1235.7777"   1235.7700    "1235"
+	// top = 8hashmap contains "1234.7777" ?  pointer   :   get from 4-dig hashtable ("1234")
+	// bottom = 8hashmap contains "1235.7777?    pointer   :   get from 4-dig hashtable ("1236") -> end of 1235
 	
 	
 	
 	
 	
-	/************* LIIITTLE HELPERS *************/
+	/************* LIIITTLE HELPERIntegerS *************/
 	public static long getLongValue(String mapKey) {
 		Preconditions.checkState(mapKey.length() == 9);
 		mapKey = mapKey.substring(0, 4) + mapKey.substring(5, 9);

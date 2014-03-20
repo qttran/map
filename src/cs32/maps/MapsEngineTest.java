@@ -97,6 +97,20 @@ public class MapsEngineTest {
 		String idEnd = "/n/4104.7078.527769006";
 		String path = e.getBestPathNodeIDs(idStart, idEnd);
 		System.out.println(path);
+		
+		idStart = "/n/4073.7215.527768450";
+		idEnd = "/n/4074.7212.527768452";
+		path = e.getBestPathNodeIDs(idStart, idEnd);
+		System.out.println(path);
+		System.out.println("DONE");
+	}
+	
+	@Test
+	public void pagingTime() throws IOException{
+		MapsEngine e = new MapsEngine(ways, nodes, index);
+		System.out.println("<---------->");
+		Set<StreetNode> sn = e.getStreetNodesWithin("4072.7218", "4115.7154");
+		System.out.println("DONE "+sn.size());
 	}
 
 }
