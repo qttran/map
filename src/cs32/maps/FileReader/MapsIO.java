@@ -70,6 +70,10 @@ public class MapsIO {
 
 	}
 	
+
+	public void setNodeLatLongPtrs(HashMap<String, List<Long>> pointerMap) {
+		nodeLatLongPointers = pointerMap;
+	}
 	public void setMaxMinLatLong(int maxLat, int minLat, int maxLon, int minLon) {
 		this.maxLat = maxLat;
 		this.minLat = minLat;
@@ -77,9 +81,6 @@ public class MapsIO {
 		this.minLon = minLon;
 	}
 	
-	public void setNodeLatLongPtrs(HashMap<String, List<Long>> hm) {
-		nodeLatLongPointers=hm;
-	}
 	
 	public void setNodeLatPtrs(HashMap<String,Long> hm) {
 		nodeLatPointers=hm;
@@ -287,6 +288,7 @@ public class MapsIO {
 		// do binary search
 		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
 		String[] line = binarySearch(raf, nodes_idCol, nodeID);
+
 		if(line==null) {
 			System.out.printf("No such node ID: %s\n", nodeID);
 			return null;
@@ -369,22 +371,17 @@ public class MapsIO {
 	private LocationNode createLocationNode(String[] line) {
 		//convert 'line' to LocationNode object
 		String id = line[nodes_idCol];
-		try {
 		String ways = line[nodes_waysCol];
 		LatLong latlong = new LatLong(line[nodes_latCol], line[nodes_lonCol]);
 		//create ways list
 		List<String> wayList = new ArrayList<>();
-		for(String s : ways.split(",")) {
-			wayList.add(s);
-		}
-		return new LocationNode(id, wayList, latlong);
-		} catch (java.lang.ArrayIndexOutOfBoundsException e){
-			for (String word : line) {
-				System.out.println(word);	
+		if(ways.length()>1) {
+			for(String s : ways.split(",")) {
+				wayList.add(s);
 			}
-			System.exit(0);
 		}
-		return null;
+		
+		return new LocationNode(id, wayList, latlong);
 	}
 
 
@@ -526,13 +523,34 @@ public class MapsIO {
 		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
 	
 		// get the bounds of where to look
-		long[] bounds = getByteBoundsNodeID(nodeID);
-		long latTop = bounds[0];
-		long latBottom = bounds[1];
+
+		String chunkID = getKeyValueFromID(nodeID);
+		
+		long filePointerTop = 0; 
+		long filePointerBottom = 0;//fileSize;
+		// set top file pointer
+		if(nodeLatLongPointers.containsKey(chunkID)) {
+			filePointerTop = nodeLatLongPointers.get(chunkID).get(0);
+			filePointerBottom = nodeLatLongPointers.get(chunkID).get(1);
+		}
+		else {
+			System.out.println("ERRORRR why does hashtable not contain "+chunkID);
+		}
+
+//		long[] bounds = getByteBoundsNodeID(nodeID);
+//		long latTop = bounds[0];
+//		long latBottom = bounds[1];
 		
 		
 		// do a binary search
 		String foundLine[] = null;
+
+		file.seek(filePointerTop); // points to beginning of first line of chunk
+		foundLine = binarySearch(file, nodes_idCol, nodeID);
+//		foundLine = binarySearchID(file, nodes_idCol, chunkID);
+/*		while (file.getFilePointer() < fileSize) {
+			System.out.println("not over yet!.");
+
 		file.seek(latTop);
 
 		long start = latTop;
@@ -555,7 +573,7 @@ public class MapsIO {
 			mid = (start + end)/2;
 		} 
 		file.close();
-		
+		*/
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
@@ -565,54 +583,168 @@ public class MapsIO {
 	}
 
 	
+	
+	
+	
+	
+	/**
+	 * get all location nodes
+	 * input:   "4023.4323" "4023.8909"
+	 */
+	public Map<String, LocationNode> getAllLocationNodesWithin(String topEight, String bottomEight) throws IOException {
+
+		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+		
+		long[] bounds = getByteBounds(topEight, bottomEight);
+		long top = bounds[0];
+		long bottom = bounds[1];
+
+
+		raf.seek(top);
+		
+		Map<String, LocationNode> nodeMap = new HashMap<>();
+		
+		while(raf.getFilePointer() < bottom) {
+			
+			String[] line = readOneLine(raf);
+			LocationNode node = createLocationNode(line);
+			nodeMap.put(node.id, node);
+			
+			nextNewLine(raf);
+		}
+		raf.close();
+
+		
+		return nodeMap;
+	}
+	
+
+	
 	/**
 	 * helper for getLocationNode to find which bounds to look between
 	 * (by looking in the hashmap)
 	 */
-	public long[] getByteBoundsNodeID(String id) throws IOException{
+	public long[] getByteBounds(String top8, String bottom8) throws IOException {
+
 		// find max length
 		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
-		long length = raf.length();
 		raf.close();
 		
-		// set top and bottom bounds
-		String givenLat = getFirstFourFromID(id);
-		Long longVal = Long.parseLong(givenLat);
+		String first4 = top8.substring(0,4);
+		
+		// given that they will start with same four (?)
+		Preconditions.checkState(first4.equals(bottom8.substring(0,4)));
+		
+		long topFilePointer; 
+		long bottomFilePointer;
+		
+		if(nodeLatLongPointers.containsKey(top8)) {
+			topFilePointer = nodeLatLongPointers.get(top8).get(0); //upper bound of thie 8seq
+		}
+		else {
+			// if it didnt contain "1234.4223"
+			// look in "1234"
+			// binary search, -- the byte bounds of t.ex.  "1234.4222"
+			
+			//binary search in this 4-chunk of the latitude I want, return its FP (by finding it in HM)
+			List<Long> ptrs = getFilePtrsFrom4(first4, top8.substring(5));
+			
+			//top points to top of first4
+			topFilePointer = ptrs.get(0);
+			
+		}
+		
+		
+		if(nodeLatLongPointers.containsKey(bottom8)) {
+			bottomFilePointer = nodeLatLongPointers.get(bottom8).get(1); //lower bound of this 8seq
+		}
+		else {
+			// if it didn't contain "1234.4278"
+			// look in "1235"
+			// binary search, -- the byt bounds of t.ex. 
+			
+			//bottom points to top of (first4+1)
+			int val = Integer.parseInt(first4);
+			String incremented = Integer.toString(val+1);
+			
+			List<Long> ptr = getFilePtrsFrom4(incremented, bottom8.substring(5));
+			
+			bottomFilePointer = ptr.get(0);
+		}
+		
+		
+	
+		//System.out.printf("%s mapped to %s\n%s mapped to %s\n\n", topChunk, topFilePointer, bottomChunk, bottomFilePointer);
+		return new long[]{topFilePointer, bottomFilePointer};
+	}
+	
+		// first = "1234.7777"
+	// second = "1235.7777" 
+	// top = 8hashmap contains "1234.7777" ?  pointer   :   get from 4-dig hashtable ("1234")
+	// bottom = 8hashmap contains "1235.7777?    pointer   :   get from 4-dig hashtable ("1236") -> end of 1235
 
+	// "1234","2234"   -->  find the closest 8-digit thing
+	public List<Long> getFilePtrsFrom4(String firstFour, String secondFour) throws IOException {
+		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
+		String toFind = "/n/"+firstFour+"."+secondFour;
+		String incremented = Integer.toString(Integer.parseInt(firstFour)+1);
+		long start = nodeLatPointers.get(firstFour);
+		long end = nodeLatPointers.get(incremented);
+		long mid = (start + end)/2;
 		
-		// to find upper bound, decrement lat until it is min OR until it is in hashtable
-		Long upper = longVal;
-		while(!(nodeLatLongPointers.containsKey(Long.toString(upper)) && upper > nodes_minLat)) {
-			upper--;
-		}
+		file.seek(start);
 		
-		// to find lower bound, increment lat until it is max OR until it is in hashtable
-		
-		Long lower = longVal+1;
-		while(!(nodeLatLongPointers.containsKey(Long.toString(lower)) && lower < nodes_maxLat)) {
-			longVal++;
-		}
-		
-		String topChunk = Long.toString(upper);
-		String bottomChunk = Long.toString(lower);
 
-		// now that you know chunks, get bounds (LONGS) from hashtable 
-		long latTop = 0; 
-		long latBottom = length;
-		if(nodeLatLongPointers.containsKey(topChunk)) {
-			latTop = nodeLatLongPointers.get(topChunk).get(0);
-		}
-		if(nodeLatLongPointers.containsKey(bottomChunk)) {
-			latBottom = nodeLatLongPointers.get(bottomChunk).get(1);
-		}
-		return new long[]{latTop, latBottom};
+		String[] currentLine = null;
+		while (end > start) {
+			file.seek(mid);
+			currentLine = readOneLine(file);
+			if(areOnSamePage(toFind, currentLine[nodes_idCol])) {
+				break; //shouldnt happen (it would already be in the 8pt hashmap)
+			}
+			int difference = toFind.compareToIgnoreCase(currentLine[nodes_idCol]);
+			if (difference == 0) {
+				break; //shouldnt happen
+			}
+			else if (difference > 0) 
+				start = mid + 1;
+			else 
+				end = mid - 1;
+			mid = (start + end)/2;
+		} 
+		file.close();
+		// currentline -- is it above or below?
+		String chunk8 = getKeyValueFromID(currentLine[nodes_idCol]);
+		return nodeLatLongPointers.get(chunk8);
 	}
 	
 	
 	
+	/************* LIIITTLE HELPERS *************/
+	public static long getLongValue(String mapKey) {
+		Preconditions.checkState(mapKey.length() == 9);
+		mapKey = mapKey.substring(0, 4) + mapKey.substring(5, 9);
+		return Long.parseLong(mapKey);
+	}
 	
+	public static String getKeyValue(long num) {
+		String s = Long.toString(num);
+		Preconditions.checkState(s.length() == 8);
+		s = s.substring(0, 4) + "." + s.substring(4, 8);
+		return s;
+	}
 	
+	//  "/w/1122.23453454"  ==>   "1122.2345"
+	public static String getKeyValueFromID(String id) {
+		return id.substring(3,7) + "." + id.substring(8, 12);
+	}
 	
+	//helper for getNodePage
+	private boolean areOnSamePage(String origID, String queryID) {
+		return getKeyValueFromID(origID).equals(getKeyValueFromID(queryID));
+	}
+	
+	/********* manipulating the RandomAccessFile pointer, and finding columns *****/
 	
 	
 	
@@ -688,83 +820,8 @@ public class MapsIO {
 	
 	
 	
+
 	
-	
-	
-	public Map<String, LocationNode> getAllLocationNodesWithin(String topEight, String bottomEight) throws IOException {
-
-		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
-		
-		long[] bounds = getByteBounds(topEight, bottomEight);
-		long top = bounds[0];
-		long bottom = bounds[1];
-
-
-		raf.seek(top);
-
-		Map<String, LocationNode> nodeMap = new HashMap<>();
-		
-		while(raf.getFilePointer() < bottom) {
-			
-			String[] line = readOneLine(raf);
-			LocationNode node = createLocationNode(line);
-			nodeMap.put(node.id, node);
-			
-			nextNewLine(raf);
-		}
-		raf.close();
-
-		
-		return nodeMap;
-	}
-	
-	private static long getLongValue(String mapKey) {
-		mapKey.replaceAll(".", "");
-		return Long.parseLong(mapKey);
-	}
-	
-	/**
-	 * helper for getLocationNode to find which bounds to look between
-	 * (by looking in the hashmap)
-	 * 
-	 * uses FIRST 8 DIGITS OF ID
-	 */
-	public long[] getByteBounds(String topEightMapKey, String bottomEightMapKey) throws IOException {
-		// find max length
-		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
-		long length = raf.length();
-		raf.close();
-		
-		// set top and bottom bounds
-		Long givenUp = getLongValue(topEightMapKey);
-		Long givenBottom = getLongValue(bottomEightMapKey);
-
-		//"1111.2222"
-		// to find upper bound, decrement lat until it is min OR until it is in hashtable
-		while(!(nodeLatLongPointers.containsKey(Long.toString(givenUp)) && givenUp > nodes_minLat)) {
-			givenUp--;
-		}
-		
-		
-		// to find lower bound, increment lat until it is max OR until it is in hashtable
-		while(!(nodeLatLongPointers.containsKey(Long.toString(givenBottom)) && givenBottom < nodes_maxLat)) {
-			givenBottom++;
-		}
-		
-		String topChunk = Long.toString(givenUp);
-		String bottomChunk = Long.toString(givenBottom);
-
-		// now that you know chunks, get bounds (LONGS) from hashtable 
-		long latTop = 0; 
-		long latBottom = length;
-		if(nodeLatLongPointers.containsKey(topChunk)) {
-			latTop = nodeLatLongPointers.get(topChunk).get(0);
-		}
-		if(nodeLatLongPointers.containsKey(bottomChunk)) {
-			latBottom = nodeLatLongPointers.get(bottomChunk).get(1);
-		}
-		return new long[]{latTop, latBottom};
-	}
 }
 //	
 //	
