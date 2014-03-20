@@ -29,6 +29,7 @@ public class MapPanel extends JPanel {
 	
 	private MapsEngine _engine;
 	private Set<StreetNode> _nodes;
+	private Set<StreetNode> _path;
 	private MapsGUI _gui;
 	private Double scale = 20000D;
 	private Point2D.Double _center = new Point2D.Double(41.82163534608988, -71.38882713291805);
@@ -126,6 +127,19 @@ public class MapPanel extends JPanel {
 			}
 		}
 
+		if (_gui.getPath() != null) {
+			g2D.setColor(Color.GREEN);
+			g2D.setStroke(new BasicStroke((int) 3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			_path = _gui.getPath();
+			
+			for (StreetNode node: _path){
+				if(bb.intersectsLine(node)){
+					Point p1 = getPixelCoordinates(node.x1, node.y1);
+					Point p2 = getPixelCoordinates(node.x2, node.y2);
+					g2D.drawLine(p1.x, p1.y, p2.x, p2.y);
+				}
+			}
+		}
 		
 		Point2D.Double location = _gui.getCurrentLocation();
 		Point2D.Double destination = _gui.getDestination();
@@ -146,13 +160,6 @@ public class MapPanel extends JPanel {
 			g2D.setColor(Color.RED);
 			g2D.fill(new Ellipse2D.Double(a.x-4, a.y-4, 8, 8));
 		}
-		
-	}
-	
-	// engine.getSHortestPath(x, x2)
-	
-	
-	public void highlightPath(/* some path */) { //called by option panel
 		
 	}
 
