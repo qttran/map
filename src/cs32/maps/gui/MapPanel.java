@@ -124,7 +124,7 @@ public class MapPanel extends JPanel {
 
 		if (_gui.getPath() != null) {
 			g2D.setColor(Color.GREEN);
-			g2D.setStroke(new BasicStroke((int) 3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+			g2D.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 			_path = _gui.getPath();
 			
 			for (StreetNode node: _path){
