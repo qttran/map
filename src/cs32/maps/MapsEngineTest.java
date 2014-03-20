@@ -157,12 +157,28 @@ public class MapsEngineTest {
 	
 	@Test
 	public void getStreetNodesTest() throws IOException {
+//		MapsEngine en = new MapsEngine(ways, nodes, index);
+//		System.out.println("kdTree built");
+//		Point2D.Double topLeft = new Point2D.Double();
+//		topLeft.setLocation(40.1581762, -72.7485663);
+//		Point2D.Double botRight = new Point2D.Double();
+//		botRight.setLocation(40.190990, -73.900080);
+//		Set<StreetNode> set = en.getStreetNodes(topLeft, botRight);
+//		for (StreetNode node: set) {
+//			System.out.println("x1: " + node.x1);
+//			System.out.println("x2: " + node.x2);
+//			System.out.println("y1: " + node.y1);
+//			System.out.println("y2: " + node.y2);
+		
+		
+//		}
+		
 		MapsEngine en = new MapsEngine(ways, nodes, index);
 		System.out.println("kdTree built");
 		Point2D.Double topLeft = new Point2D.Double();
-		topLeft.setLocation(40.1581762, -72.7485663);
+		topLeft.setLocation(41.837835346089896, -71.40527713291807);
 		Point2D.Double botRight = new Point2D.Double();
-		botRight.setLocation(40.190990, -73.900080);
+		botRight.setLocation(41.798835346089895, -71.36627713291809);
 		Set<StreetNode> set = en.getStreetNodes(topLeft, botRight);
 		for (StreetNode node: set) {
 			System.out.println("x1: " + node.x1);
