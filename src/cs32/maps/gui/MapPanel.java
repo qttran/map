@@ -40,6 +40,10 @@ public class MapPanel extends JPanel {
 	private Point2D.Double bottomRight;
 	private UpdateMapThread _umthread;
 	
+	/*
+	 * MapPanel communicates with MapsEngine and MapsGUI to display the streets, selected nodes and the returned path.
+	 */
+	
 	public MapPanel(MapsEngine en, MapsGUI gui) {
 		_engine = en;
 		_nodes = new HashSet<StreetNode>();
@@ -48,6 +52,8 @@ public class MapPanel extends JPanel {
 		final MapPanel _map = this;
 		this.setBackground(Color.WHITE);
 		this.setPreferredSize(new Dimension(MAP_WIDTH, MAP_HEIGHT));
+		
+		//MouseMotionListener allows the map to respond to mouse dragging.
 		this.addMouseMotionListener(new MouseMotionListener(){
 			Point ip;
 			@Override

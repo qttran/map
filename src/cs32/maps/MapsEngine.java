@@ -19,10 +19,10 @@ import cs32.maps.gui.StreetNode;
 
 public class MapsEngine {
 
-	public KDTree k;
-	public MapsIO fileReader;
-
-	private Set<String> streetNames; //autocomplete will get
+	private KDTree k;
+	public MapsIO fileReader; //public for testing
+	private PathFinder _pathFinder;
+	private Set<String> streetNames;
 	private LinkedList<Node> recentlyFoundKDNodes; //FOR GUI so dont have to keep kd-treeing
 
 	
@@ -34,8 +34,12 @@ public class MapsEngine {
 		recentlyFoundKDNodes = new LinkedList<>();
 		streetNodesOnScreen = new HashMap<>();
 		
+		
 		// build file reader
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
+		
+		// create pathfinder
+		_pathFinder = new PathFinder(fileReader);
 		
 		// build KD tree  (read nodes.tsv file)
 		this.k = new KDTree(fileReader.getKDNodes());
@@ -68,8 +72,7 @@ public class MapsEngine {
 		LocationNode nearestEndNode = fileReader.getLocationNode(intersection2);
 
 		// get shortest path between them (PathFinder)
-		PathFinder pF = new PathFinder(fileReader);
-		List<String> resultList = pF.getPathIds(nearestStartNode,nearestEndNode);
+		List<String> resultList = _pathFinder.getPathIds(nearestStartNode,nearestEndNode);
 		String result = "";
 		for (String x: resultList) {
 			result += x + "\n";
@@ -77,19 +80,18 @@ public class MapsEngine {
 		return result;
 	}
 
-	public String getOutputFromLatLongs(LatLong s, LatLong e) throws IOException {
+	public String getOutputFromLatLongs(Point2D.Double s, Point2D.Double e) throws IOException {
 		// find nearest start node (kdtree)
-		Node n1 = k.KDSearch(new Node("", s.lat, s.lon), 1)[0];
+		Node n1 = k.KDSearch(new Node("", s.x, s.y), 1)[0];
 		LocationNode nearestStartNode = fileReader.getLocationNode(n1.ID);
 
 		// find nearest end node (kdtree)
-		Node n2 = k.KDSearch(new Node("", e.lat, e.lon), 1)[0];
+		Node n2 = k.KDSearch(new Node("", e.x, e.y), 1)[0];
 		LocationNode nearestEndNode = fileReader.getLocationNode(n2.ID);
 
 
 		// get shortest path between them (PathFinder)
-		PathFinder pF = new PathFinder(fileReader);
-		List<String> resultList = pF.getPathIds(nearestStartNode,nearestEndNode);
+		List<String> resultList = _pathFinder.getPathIds(nearestStartNode,nearestEndNode);
 		String result = "";
 		for (String x: resultList) {
 			result += x + "\n";
@@ -125,7 +127,7 @@ public class MapsEngine {
 			intersection1 = fileReader.getIntersection(name1, name2);
 			if (intersection1.compareTo("") == 0) return null; 
 			LocationNode ln = fileReader.getLocationNode(intersection1);
-			return new Point2D.Double(ln.latlong.lat, ln.latlong.lon);
+			return ln.latlong;
 			
 		} catch (IOException e) {
 			return null;
@@ -162,14 +164,12 @@ public class MapsEngine {
 		LocationNode endNode = fileReader.getLocationNode(n2.ID);
 
 		// get shortest path between them (PathFinder)
-		PathFinder pF = new PathFinder(fileReader);
-
-		List<LatLong[]> resultList = pF.getPathLatLongs(startNode,endNode);
+		List<Point2D.Double[]> resultList = _pathFinder.getPathLatLongs(startNode,endNode);
 		if (resultList == null) return null;
 
-		for(LatLong[] leg : resultList) {
+		for(Point2D.Double[] leg : resultList) {
 			Preconditions.checkState(leg.length == 2); //should be a pair of latlongs
-			pathSet.add(new StreetNode(leg[0].lat, leg[0].lon, leg[1].lat, leg[1].lon, ""));
+			pathSet.add(new StreetNode(leg[0].x, leg[0].y, leg[1].x, leg[1].y, ""));
 		}
 		return pathSet;
 
@@ -185,7 +185,7 @@ public class MapsEngine {
 		Preconditions.checkState(intersectionID.startsWith("/n/"));
 		LocationNode intersectionNode = fileReader.getLocationNode(intersectionID);
 
-		return intersectionNode.latlong.getPt();
+		return intersectionNode.latlong;
 	}
 	
 
@@ -265,18 +265,16 @@ public class MapsEngine {
 		Set<StreetNode> snSet = new HashSet<>();
 
 		Map<String, LocationNode> nodeMap = fileReader.getAllLocationNodesWithin(topChunk, bottomChunk);
-		//System.out.println("read all location nodes done");
 		Set<String> ids = nodeMap.keySet();
-		//RandomAccessFile raf = fileReader.getRAF();
+		
 		// for each node
 		for(String n : ids) {
 			LocationNode node = nodeMap.get(n);
-			//System.out.println(node.toString());
 			// for each way ID, get opposide node and to snSet
 			for(String wID : node.ways) {
 				Way w = fileReader.getWay(wID);
 				String oppositeNodeID = w.endNodeID;
-				LatLong opposite;
+				Point2D.Double opposite;
 				if(ids.contains(oppositeNodeID)) {
 					opposite = nodeMap.get(oppositeNodeID).latlong;
 				}
@@ -285,12 +283,11 @@ public class MapsEngine {
 					LocationNode opp = fileReader.getLocationNode(oppositeNodeID);
 					opposite = opp.latlong;
 				}
-				LatLong start = node.latlong;
-				snSet.add(new StreetNode(start.lat,start.lon, opposite.lat,opposite.lon, w.name));
+				Point2D.Double start = node.latlong;
+				snSet.add(new StreetNode(start.x,start.y, opposite.x,opposite.y, w.name));
 
 			}
 		}
-		//raf.close();
 		return snSet;
 	}
 
@@ -340,8 +337,7 @@ public class MapsEngine {
 		LocationNode endNode = fileReader.getLocationNode(id2);
 
 		// get shortest path between them (PathFinder)
-		PathFinder pF = new PathFinder(fileReader);
-		List<String> resultList = pF.getPathIds(startNode, endNode);
+		List<String> resultList = _pathFinder.getPathIds(startNode, endNode);
 		String result = "";
 		for (String x: resultList) {
 			result += x + "\n";

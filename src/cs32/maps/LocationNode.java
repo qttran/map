@@ -1,5 +1,6 @@
 package cs32.maps;
 
+import java.awt.geom.Point2D;
 import java.util.List;
 
 import com.google.common.base.Objects;
@@ -8,8 +9,8 @@ import com.google.common.base.Preconditions;
 public class LocationNode {
 	public final String id;
 	public final List<String> ways;
-	public final LatLong latlong;
-	public LocationNode(String uniqueid, List<String> wayslist, LatLong ll) {
+	public final Point2D.Double latlong;
+	public LocationNode(String uniqueid, List<String> wayslist, Point2D.Double ll) {
 		id = uniqueid;
 		ways = wayslist;
 		latlong = ll;
@@ -21,7 +22,7 @@ public class LocationNode {
 
 	@Override
 	public String toString() {
-		String s = "\""+id+"\" ["+latlong.lat+", "+latlong.lon+"]  Ways:  ";
+		String s = "\""+id+"\" ["+latlong.x+", "+latlong.y+"]  Ways:  ";
 		for(String w : ways) {
 			s += w + ", ";
 		}

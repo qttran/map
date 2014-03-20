@@ -47,6 +47,9 @@ public class MapsGUI extends JFrame {
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
 
+	/*
+	 * Getters and Setters for current location (starting node) and destination (end node).
+	 */
 	public void setCurrentLocation(Point2D.Double p){
 		_location = p;
 	}
@@ -63,6 +66,10 @@ public class MapsGUI extends JFrame {
 		return _destination;
 	}
 	
+	/*
+	 * setPath uses MapEngine's getPathStreetNodes method to set the streets that are going to be
+	 * highlighted as a part of a path.
+	 */
 	public void setPath(){
 		if (_location != null && _destination != null) {
 			try {

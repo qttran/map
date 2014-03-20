@@ -1,21 +1,13 @@
 package PathFinding;
 
+import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Set;
+import java.util.*;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
-import cs32.maps.LatLong;
 import cs32.maps.LocationNode;
-import cs32.maps.MapsMathUtility;
 import cs32.maps.Way;
 import cs32.maps.FileReader.MapsIO;
 
@@ -26,26 +18,27 @@ import cs32.maps.FileReader.MapsIO;
 public class PathFinder {
 
 	/**
-	 * INNER CLASS:  Node
+	 * INNER CLASS:  PathFinderNode
 	 */
-	private static class Node {
+	private static class PathFinderNode {
 		public final LocationNode locNode;
 		public double g_score = Double.MAX_VALUE;
 		public double f_score = Double.MAX_VALUE;
-		public Node predecessor = null;
+		public PathFinderNode predecessor = null;
 		public String predConnection = ""; //unweighted connection to predecessor
-		public Node(LocationNode a) {
+		
+		public PathFinderNode(LocationNode a) {
 			locNode = a;
 		}
 
-		public void setPredecessor(Node pred, String conn) {
+		public void setPredecessor(PathFinderNode pred, String conn) {
 			predecessor = pred;
 			predConnection = conn;
 		}
 
 		@Override
 		public boolean equals(Object o){  //nodes are equal if they hold the same LocationNode
-			final Node other = (Node) o;
+			final PathFinderNode other = (PathFinderNode) o;
 			return locNode.equals(other.locNode); 
 		}
 		
@@ -58,9 +51,9 @@ public class PathFinder {
 	/**
 	 * Comparator -- for Priority Queue to compare nodes based on 'f_score' attribute
 	 */
-	public static Comparator<Node> NodeComparator = new Comparator<Node>() {
+	private static Comparator<PathFinderNode> NodeComparator = new Comparator<PathFinderNode>() {
 		@Override
-		public int compare(Node arg0, Node arg1) {
+		public int compare(PathFinderNode arg0, PathFinderNode arg1) {
 			if(arg0.f_score == arg1.f_score)
 				return 0;
 			if(arg0.f_score < arg1.f_score)
@@ -72,31 +65,36 @@ public class PathFinder {
 
 
 
-	private final MapsIO _mapsIO;
-	private Map<String, Node> _nodeMap;
+	private final MapsIO _fileReader;
+	private Map<String, PathFinderNode> _nodeMap;
 	private Map<String, LocationNode> _pagedNodes;
 	
 	
 	public PathFinder(MapsIO f){
-		_nodeMap = new HashMap<>(); // the priority queue of A-STAR
+		_fileReader = f;
+		
+		
+		// nodeMap holds exactly what is in the a-star priority queue, but 
+		// maps LocationNode IDs to their corresponding PathFinderNode
+		_nodeMap = new HashMap<>(); 
+		
+		// pagedNodes -- nodes that are nearby nodes we have searched so far in a current A-Star
 		_pagedNodes = new HashMap<>(); 
-		_mapsIO = f;
+		
 	}
 
 
 	/**
-	 * getPathIds --- for use with CLI (returns output ready to be printed
+	 * GET PATH FOR CLI: getPathIds 
 	 */
 	public List<String> getPathIds(LocationNode start, LocationNode end) throws IOException {
-		_nodeMap = new HashMap<>();
-		Node ret  = aStarSearch(new Node(start), new Node(end));
-
-
+		
+		PathFinderNode ret  = aStarSearch(new PathFinderNode(start), new PathFinderNode(end));
 		// trace path back
 		if(ret!=null){
 			List<String> path = new ArrayList<>();
-			Node curr = ret;
-			Node pred = ret.predecessor;
+			PathFinderNode curr = ret;
+			PathFinderNode pred = ret.predecessor;
 			
 			while(pred != null) {
 				String connection = pred.locNode.id+" -> "+curr.locNode.id+" : "+curr.predConnection;
@@ -106,31 +104,31 @@ public class PathFinder {
 			}
 			return path;
 		}
-
 		return null; //no path
 	}
 	
 	
 	
 	/**
+	 * GET PATH FOR GUI: getPathLatLongs
 	 * get path in the form of a list of pairs of lat longs
 	 * each pair represents a 'leg' of the path
 	 */
-	public List<LatLong[]> getPathLatLongs(LocationNode start, LocationNode end) throws IOException {
-		_nodeMap = new HashMap<>();
-		Node ret  = aStarSearch(new Node(start), new Node(end));
+	public List<Point2D.Double[]> getPathLatLongs(LocationNode start, LocationNode end) throws IOException {
+		
+		PathFinderNode ret  = aStarSearch(new PathFinderNode(start), new PathFinderNode(end));
 
 		// trace path back
 		if(ret!=null){
-			List<LatLong[]> path = new ArrayList<>();
+			List<Point2D.Double[]> path = new ArrayList<>();
 			
 			
-			Node curr = ret;
-			Node pred = ret.predecessor;
-			LatLong[] connection;
+			PathFinderNode curr = ret;
+			PathFinderNode pred = ret.predecessor;
+			Point2D.Double[] connection;
 			while(pred != null) {
 
-				connection = new LatLong[]{pred.locNode.latlong, curr.locNode.latlong};
+				connection = new Point2D.Double[]{pred.locNode.latlong, curr.locNode.latlong};
 				path.add(connection);
 				curr = pred;
 				pred = curr.predecessor;
@@ -142,21 +140,37 @@ public class PathFinder {
 	}
 
 	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/**
 	 * A STAR
+	 * reset _nodeMap and _pagedNodes
 	 */
-	private Node aStarSearch(Node start, Node goal) throws IOException {
+	private PathFinderNode aStarSearch(PathFinderNode start, PathFinderNode goal) throws IOException {
+		_nodeMap = new HashMap<>();
+		_pagedNodes = new HashMap<>();
 		
 		start.g_score = 0;
 		start.f_score = start.g_score + heuristic(start, goal);
 
-		PriorityQueue<Node> pq = new PriorityQueue<>(50, NodeComparator);
+		PriorityQueue<PathFinderNode> pq = new PriorityQueue<>(50, NodeComparator);
 		pq.add(start);		
 		_nodeMap.put(start.locNode.id, start);
 		
-		Node curr;
+		PathFinderNode curr;
 		
-		Set<Node> closedSet = new HashSet<>();
+		Set<PathFinderNode> closedSet = new HashSet<>();
 		
 		
 		while(!pq.isEmpty()) {
@@ -165,51 +179,22 @@ public class PathFinder {
 			curr = pq.poll(); 
 			Preconditions.checkNotNull(_nodeMap.remove(curr.locNode.id));
 			
-			//System.out.println("\n\nCURR "+curr.locNode.toString());
 			
 			if(curr.locNode.id.equals(goal.locNode.id)) { // found the best path!
-				//System.out.println("----------------");
 				return curr;
 			}
 
 			closedSet.add(curr);
 
-			Map<Node, String> neighbors = getConnectedNodes(curr); //  'neighbor Node' , 'wayID that connects it to curr'
-//			for(Node n : neighbors.keySet()) {
-//				System.out.println("    connected to "+n.locNode.id);
-//			}
+			Map<PathFinderNode, String> neighbors = getConnectedNodes(curr); //  'neighbor PathFinderNode' , 'wayID that connects it to curr'
 
 			/* for each neighbor 'b' of 'curr' */
-			for(Node b : neighbors.keySet() ) {
+			for(PathFinderNode b : neighbors.keySet() ) {
 				if(closedSet.contains(b))
 					continue;
-
-//				System.out.println();
-//				System.out.println(b.locNode.toString());
-//				System.out.println("PQ: ");
-//				for(Iterator<Node> it = pq.iterator(); it.hasNext(); ) {
-//					Node p = it.next();
-//					System.out.print(p.locNode.id + ", ");
-//				}
-//				System.out.println();
-//				System.out.println("Node Map: ");
-//				for(String s : _nodeMap.keySet()) {
-//					System.out.print(s+", ");
-//				}
-//				System.out.println("<><><<>");
 				
 				boolean isInPQ = pq.contains(b);
-
-				if(!isInPQ) {
-					Preconditions.checkState(b.predecessor.equals(curr));
-				}
-				else {
-					Preconditions.checkState(!b.predecessor.equals(curr));
-				}
-
-
-				double tentative_g_score = curr.g_score; // + dist_between(curr, b)
-
+				double tentative_g_score = curr.g_score; // plus weight, but all edges are unweighted
 				boolean thisPathIsBetter = tentative_g_score < b.g_score;
 
 
@@ -229,8 +214,6 @@ public class PathFinder {
 				}
 				else if(!isInPQ){
 					//predecessor info is already set
-					
-
 					Preconditions.checkNotNull(b.predecessor);
 					Preconditions.checkState(!_nodeMap.containsKey(b.locNode.id));
 					
@@ -249,48 +232,47 @@ public class PathFinder {
 		return null;
 	}
 
-	private static double heuristic(Node curr, Node goal) {
-		return MapsMathUtility.distance(curr.locNode.latlong, goal.locNode.latlong);
-	}
-
-
-
 
 
 
 
 	/**
+	 * GET CONNECTIONS
+	 * returns a map of (PathFinderNode -> wayID), where the wayID is the way that connects each node
+	 * to 'start', the input node.
+	 * 
+	 * Only goes to file if don't already have opposite node in _pagedNodes
 	 * 
 	 * @param start
-	 * @return
+	 * @return 
 	 * @throws IOException
 	 */
-	private Map<Node, String> getConnectedNodes(Node start) throws IOException {
+	private Map<PathFinderNode, String> getConnectedNodes(PathFinderNode start) throws IOException {
 		
-		Map<Node, String> neighbors = new HashMap<>();
+		Map<PathFinderNode, String> neighbors = new HashMap<>();
 
 		for(String wayID : start.locNode.ways) { // for every WAY connected to 'start'
 
-			Way way = _mapsIO.getWay(wayID); // "id"  "start node ID"    "end node ID"
+			Way way = _fileReader.getWay(wayID); // "id"  "start node ID"    "end node ID"
 			
 			Preconditions.checkState(start.locNode.id.equals(way.startNodeID));
 			
 			String oppositeNodeID = way.endNodeID;
-			Node neighbor = null;
+			PathFinderNode neighbor = null;
 			// if node is already in my nodeMap, get and add it to neighbors
 			if(_nodeMap.containsKey(oppositeNodeID)) { 
 				neighbor = _nodeMap.get(oppositeNodeID);
 			}
 			// else, if node is in my pagedMap
 			else if(_pagedNodes.containsKey(oppositeNodeID)) {
-				neighbor = new Node(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
+				neighbor = new PathFinderNode(_pagedNodes.get(oppositeNodeID)); // already have the LocationNode, just create new node
 				neighbor.setPredecessor(start, wayID);
 				
 			}
 			// else, read the node from file
 			else {
-				LocationNode opp = this.getLocationNode(oppositeNodeID); // will also add nodes to _pagedNodes
-				neighbor = new Node(opp);
+				LocationNode opp = this.getLocationNodeAndPage(oppositeNodeID); // READS A PAGE FROM FILE
+				neighbor = new PathFinderNode(opp);
 				neighbor.setPredecessor(start, wayID);	
 			}
 			
@@ -309,10 +291,8 @@ public class PathFinder {
 	 * 
 	 * return the found LocationNode of original nodeID
 	 */
-	private LocationNode getLocationNode(String nodeID) throws IOException {
-		//System.out.println("PAGING");
-		List<LocationNode> pageOfNodes = _mapsIO.getNodePage(nodeID);
-		//System.out.println("--");
+	private LocationNode getLocationNodeAndPage(String nodeID) throws IOException {
+		List<LocationNode> pageOfNodes = _fileReader.getNodePage(nodeID);
 		LocationNode toReturn = null;
 		for(LocationNode ln : pageOfNodes) {
 			if(ln.id.equals(nodeID)) {
@@ -327,12 +307,37 @@ public class PathFinder {
 	}
 	
 	
+	/**
+	 * A-Star Heuristic  (distance between two lat/long points)
+	 */
+	private static double heuristic(PathFinderNode curr, PathFinderNode goal) {
+		return distance(curr.locNode.latlong, goal.locNode.latlong);
+	}
+
+	private static double distance(Point2D.Double start, Point2D.Double end) {
+		double R = 6371;
+		double dLon = degreeToRad(start.y - end.y);
+		double dLat = degreeToRad(start.x - end.x);
+		double a = Math.sin(dLat/2)*Math.sin(dLat/2) +
+				Math.cos(degreeToRad(start.x)) *
+				Math.cos(degreeToRad(end.x)) *
+				Math.sin(dLon/2) * Math.sin(dLon/2);
+		a = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+		return R*a;
+	}
+	
+	private static double degreeToRad(double degree) {
+		return (degree * Math.PI / 180.0);
+	}
+	
+	
+	
 	/*** for testing only ***/
 	public Set<LocationNode> dummyGetReceivers(String nodeID) throws IOException{
-		LocationNode a = _mapsIO.getLocationNode(nodeID);
-		Map<Node, String> map = getConnectedNodes(new Node(a));
+		LocationNode a = _fileReader.getLocationNode(nodeID);
+		Map<PathFinderNode, String> map = getConnectedNodes(new PathFinderNode(a));
 		Set<LocationNode> as = new HashSet<>();
-		for(Node nn : map.keySet()){
+		for(PathFinderNode nn : map.keySet()){
 			as.add(nn.locNode);
 		}
 		return as;
