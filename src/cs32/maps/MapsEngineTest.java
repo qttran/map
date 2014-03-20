@@ -42,24 +42,36 @@ public class MapsEngineTest {
 //		System.out.println(en.nodeLatPointers.get("2222"));
 //	}
 	
+//	@Test
+//	public void waysWithinTest() throws IOException {
+//		System.out.println(" street node getting test ");
+//		MapsEngine en = new MapsEngine(ways, nodes, index);
+//		System.out.println("done creating engine");
+//		Point2D.Double t = new Point2D.Double(40.1631743, -73.747346);
+//		Point2D.Double b = new Point2D.Double(40.1881004, -73.7385398);
+//		Set<StreetNode> sn = en.getStreetNodesWithin(t, b);
+//		for(StreetNode s : sn) {
+//			System.out.println(sn.toString());
+//		}
+//		
+//		
+//		
+//		
+//		t = new Point2D.Double(40.1631743, -73.747346);
+//		b = new Point2D.Double(41.404415, -71.4636);
+//		sn = en.getStreetNodesWithin(t, b);
+//	}
+	
+
 	@Test
-	public void waysWithinTest() throws IOException {
-		System.out.println(" street node getting test ");
+	public void testKDTreeLatLongBuild() throws IOException {
 		MapsEngine en = new MapsEngine(ways, nodes, index);
-		System.out.println("done creating engine");
-		Point2D.Double t = new Point2D.Double(40.1631743, -73.747346);
-		Point2D.Double b = new Point2D.Double(40.1881004, -73.7385398);
-		Set<StreetNode> sn = en.getStreetNodesWithin(t, b);
-		for(StreetNode s : sn) {
-			System.out.println(sn.toString());
-		}
-		
-		
-		
-		
-		t = new Point2D.Double(40.1631743, -73.747346);
-		b = new Point2D.Double(41.404415, -71.4636);
-		sn = en.getStreetNodesWithin(t, b);
+		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4015.7374"));
+		assertTrue(!en.fileReader.nodeLatLongPointers.containsKey("4999.6766"));
+		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
+		System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
+		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374") == 907);
 	}
+	
 
 }
