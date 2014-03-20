@@ -141,6 +141,7 @@ public class MapsIO {
 		while (end > start) {
 			file.seek(mid);
 			String[] currentLine = readOneLine(file);
+			System.out.println(currentLine[whichCol]+ ", " + toFind);
 			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
 			if (difference == 0) {
 				//file.close();
@@ -156,6 +157,29 @@ public class MapsIO {
 		return null;
 	}
 
+	public String[] binarySearchID(RandomAccessFile file, int whichCol, String toFind) throws IOException {
+		file.seek(0);
+		nextNewLine(file);
+		long start = file.getFilePointer();
+		long end = (file.length() - 1);
+		long mid = (start + end)/2;
+		while (end > start) {
+			file.seek(mid);
+			String[] currentLine = readOneLine(file);
+			int difference = toFind.compareToIgnoreCase(currentLine[whichCol].substring(3,12));
+			if (difference == 0) {
+				//file.close();
+				return currentLine;
+			}
+			else if (difference > 0) 
+				start = mid + 1;
+			else 
+				end = mid - 1;
+			mid = (start + end)/2;
+		} 
+		file.close();
+		return null;
+	}
 
 
 	/**
@@ -483,27 +507,32 @@ public class MapsIO {
 		
 		// do a LINEAR search
 		String foundLine[] = null;
-		//TODO WTF it works when I add towo to the file ptr
 		file.seek(filePointerTop); // points to beginning of first line of chunk
-		while (file.getFilePointer() < filePointerBottom) {
 
+		foundLine = binarySearchID(file, nodes_idCol, chunkID);
+/*		while (file.getFilePointer() < fileSize) {
+			System.out.println("not over yet!.");
+>>>>>>> 02b45fb6fbd68a2b83cc8fbb2a72cf3a6338495a
 			String[] currentLine = readOneLine(file);
 			String IDhere = currentLine[nodes_idCol];
 			if(IDhere.equals(nodeID)) {
 				foundLine = currentLine;
 				break; // found node
-			}
+			}System.out.println(foundLine);
 			if(!getKeyValueFromID(IDhere).equals(chunkID)) {
 				// IF NO longer in this chunk (BADDD)
 				break;
 			}
 			
 		} 
-		file.close();
+		file.close();*/
 		
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
+		}
+		for (String s : foundLine) {
+			System.out.println(s);
 		}
 		
 		return createLocationNode(foundLine);

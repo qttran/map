@@ -10,7 +10,6 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import KDTree.Coordinates;
 
 import cs32.maps.MapsEngine;
 import cs32.maps.gui.StreetNode;
