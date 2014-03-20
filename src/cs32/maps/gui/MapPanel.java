@@ -7,7 +7,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
-import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -19,9 +18,7 @@ import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.lang.Thread.State;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
-import javax.swing.Timer;
 
 import javax.swing.JPanel;
 import cs32.maps.MapsEngine;
@@ -48,11 +45,6 @@ public class MapPanel extends JPanel {
 		_nodes = new HashSet<StreetNode>();
 		_gui = gui;
 		
-/*		Timer _timer = new Timer(3000, new ActionListener(){
-			
-		});
-		_timer.start();*/
-		
 		final MapPanel _map = this;
 		this.setBackground(Color.WHITE);
 		this.setPreferredSize(new Dimension(MAP_WIDTH, MAP_HEIGHT));
@@ -66,7 +58,7 @@ public class MapPanel extends JPanel {
 				ip = e.getPoint();
 				_map.repaint();
 			}
-
+			//System.out.println("CL:" + _location);
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				ip = null;
@@ -121,16 +113,15 @@ public class MapPanel extends JPanel {
 		super.paint(g);
 		//get updated points_location
 		Graphics2D g2D = (Graphics2D) g;
-		//g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.setColor(Color.BLACK);
-		//g2D.setStroke(new BasicStroke((int)(0.0002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
+		//g2D.setStroke(new BasicStroke((int)(0.00002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
 
 		bottomRight = getCoordinates(MAP_WIDTH, 0);
 		topLeft = getCoordinates(0, MAP_HEIGHT);
 		
 		if(_umthread == null || _umthread.getState() == State.TERMINATED) {
-			System.out.println("Hello");
 			_umthread = new UpdateMapThread(this);
 			_umthread.start();
 		}
@@ -140,8 +131,6 @@ public class MapPanel extends JPanel {
 				Point p1 = getPixelCoordinates(node.x1, node.y1);
 				Point p2 = getPixelCoordinates(node.x2, node.y2);
 				g2D.drawLine(p1.x, p1.y, p2.x, p2.y);
-				//System.out.println(node.startingPoint  + ", " + p1);
-//				System.out.println(node.endPoint  + ", " + p2);
 			}
 		}
 
@@ -172,13 +161,6 @@ public class MapPanel extends JPanel {
 			g2D.setColor(Color.ORANGE);
 			g2D.fill(new Ellipse2D.Double(des.x-4, des.y-4, 8, 8));
 		}
-		
-//		if (_clickedPoint != null) {
-//			Point a = getPixelCoordinates(_clickedPoint.x, _clickedPoint.y);
-//			g2D.setColor(Color.RED);
-//			g2D.fill(new Ellipse2D.Double(a.x-4, a.y-4, 8, 8));
-//		}
-		
 	}
 
 	private Point getPixelCoordinates(double x, double y){
@@ -192,7 +174,6 @@ public class MapPanel extends JPanel {
 	public void updateMap() {
 		try {
 			_nodes = _engine.getStreetNodes(topLeft, bottomRight);
-			System.out.println(_nodes.size());
 		} catch (IOException e) {}
 	}
 }

@@ -212,8 +212,8 @@ public class OptionPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e){
-				_gui.setPath();
-				_map.repaint();
+				PathRequestThread _prthread = new PathRequestThread(_gui);
+				_prthread.start();
 			}
         	
         });
@@ -221,8 +221,20 @@ public class OptionPanel extends JPanel {
         intersection1Button.addActionListener(new ActionListener(){
 
 			@Override
-			public void actionPerformed(ActionEvent e) {
+			public void actionPerformed(ActionEvent e) {				
 				_gui.setCurrentLocation(_engine.getNodeFromIntersection(street1Box.getText(),street2Box.getText()));
+				street1Box.setText(null);
+				street2Box.setText(null);
+				_map.repaint();
+			}
+        	
+        });
+        
+        intersection2Button.addActionListener(new ActionListener(){
+
+			@Override
+			public void actionPerformed(ActionEvent e) {				
+				_gui.setDestination(_engine.getNodeFromIntersection(street1Box.getText(),street2Box.getText()));
 				street1Box.setText(null);
 				street2Box.setText(null);
 				_map.repaint();
