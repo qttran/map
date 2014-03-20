@@ -25,6 +25,9 @@ public class MapsGUI extends JFrame {
 	public static final int FRAME_WIDTH = 800;
 	public static final int FRAME_HEIGHT = 900;
 	private static final long serialVersionUID = 1L;
+	private Point2D.Double _location;
+	private Point2D.Double _destination;
+	
 	public MapsGUI(MapsEngine en) throws IOException {
 /*		
 		 MapPanel (extends JPanel)
@@ -38,29 +41,37 @@ public class MapsGUI extends JFrame {
 		super();
 		this.setPreferredSize(new Dimension(FRAME_WIDTH, FRAME_HEIGHT));
 		
-/*		//for testing purposes
-		LinkedList<StreetNode> ll = new LinkedList<StreetNode>();
-		ll.add(new StreetNode(new Point2D.Double(50,50), new Point2D.Double(80,40), "a"));
-		ll.add(new StreetNode(new Point2D.Double(50,50), new Point2D.Double(30, 120), "b"));
-		ll.add(new StreetNode(new Point2D.Double(80,40), new Point2D.Double(200,170), "c"));
-		ll.add(new StreetNode(new Point2D.Double(80,40), new Point2D.Double(30, 120), "d"));
-		ll.add(new StreetNode(new Point2D.Double(200,170), new Point2D.Double(30, 120), "e"));
-		ll.add(new StreetNode(new Point2D.Double(50,50), new Point2D.Double(15, 0), "f"));
-		*/
-		
 		Set<StreetNode> set =  en.getStreetsFromFile("/home/bsenturk/course/cs032/map/all_ways.txt");
-		MapPanel mp = new MapPanel(en, set);
+		MapPanel mp = new MapPanel(en, this, set);
 		
 		//mp.setCurrentLocation(new Point2D.Double(15,0));
 		//mp.setDestination(new Point2D.Double(200, 170));
 		
 		JPanel mpWrap = new JPanel(new FlowLayout());
 		mpWrap.add(mp);
-		//OptionPanel op = new OptionPanel(en, mp);
+		OptionPanel op = new OptionPanel(en, this, mp);
 		this.add(mpWrap, BorderLayout.CENTER);
-		//this.add(op, BorderLayout.SOUTH);
+		this.add(op, BorderLayout.SOUTH);
 		this.pack();
 		this.setVisible(true);
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+
+	public void setCurrentLocation(Point2D.Double p){
+		_location = p;
+		System.out.println("CL:" + _location);
+	}
+	
+	public void setDestination(Point2D.Double p){
+		_destination = p;
+		System.out.println("D:" + _destination);
+	}
+	
+	public Point2D.Double getCurrentLocation(){
+		return _location;
+	}
+	
+	public Point2D.Double getDestination(){
+		return _destination;
 	}
 }

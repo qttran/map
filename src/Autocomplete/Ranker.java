@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Collections;
+import java.util.Set;
 
 public class Ranker {
 
@@ -33,13 +34,7 @@ public class Ranker {
 		>Output: --
 		>Throws: -- 
 	*/
-	public void insertToMaps(ArrayList<String> words) {
-		for (int i = 0 ; i < words.size() - 1 ; i++) {
-			String word = words.get(i)+words.get(i+1);
-			Integer c = _bigramMap.get(word); 
-			if (c != null) _bigramMap.put(word, c+1);
-			else _bigramMap.put(word, 1);
-		}
+	public void insertToMaps(Set<String> words) {
 		for (String word : words) {
 			Integer c = _unigramMap.get(word); 
 			if (c != null) _unigramMap.put(word, c+1);

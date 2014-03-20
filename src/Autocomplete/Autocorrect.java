@@ -6,14 +6,14 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Autocorrect {
 
 	private Trie _trie;
 	private Ranker _ranker;
 	private int _ED = 2;
-	private Boolean _isPrefix = false;
-	private Boolean _isWhitespace = false;
+
 	
 
 	/*
@@ -37,9 +37,7 @@ public class Autocorrect {
 		>Output: Boolean - whether the operation was successful or not. 
 		>Throws: -- 
 	*/
-	public Boolean addCorpus(String fileLocation){
-		ArrayList<String> words = Lister.listAllWords(fileLocation);
-		if (words == null) return false;				
+	public Boolean addCorpus(Set<String> words){				
 		_trie.insertToTrie(words);
 		_ranker.insertToMaps(words);
 		return true;

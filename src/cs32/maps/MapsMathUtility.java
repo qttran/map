@@ -19,5 +19,4 @@ public class MapsMathUtility {
 	private static double degreeToRad(double degree) {
 		return (degree * Math.PI / 180.0);
 	}
-	
 }
