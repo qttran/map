@@ -23,12 +23,12 @@ import cs32.maps.gui.StreetNode;
 public class MapsEngine {
 
 	public KDTree k;
-	private MapsIO fileReader;
+	protected MapsIO fileReader;
 		
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 		
 		fileReader = new MapsIO(fpWays, fpNodes, fpIndex);
-		this.k = buildKDTree(fpNodes);
+		this.k = buildKDTreeLatLong(fpNodes);
 		
 		
 		//fileReader.getAllWays(); // send to autocomplete??? TODO
@@ -174,15 +174,15 @@ public class MapsEngine {
 			
 //			String startTopLat = w.startNodeID.substring(3, 7);
 //			String startBotLat = Integer.toString(Integer.parseInt(startTopLat)+1);
-//			long t = nodeLatPointers.get(startTopLat);
-//			long b = nodeLatPointers.get(startBotLat);
+//			long t = nodeLatLongPointers.get(startTopLat);
+//			long b = nodeLatLongPointers.get(startBotLat);
 			LocationNode start = fileReader.getLocationNodeWithin(w.startNodeID);//, t, b);
 			
 			
 //			String endTopLat = w.endNodeID.substring(3, 7);
 //			String endBotLat = Integer.toString(Integer.parseInt(endTopLat)+1);
-//			t = nodeLatPointers.get(endTopLat);
-//			b = nodeLatPointers.get(endBotLat);
+//			t = nodeLatLongPointers.get(endTopLat);
+//			b = nodeLatLongPointers.get(endBotLat);
 			LocationNode end = fileReader.getLocationNodeWithin(w.endNodeID);//, t, b);
 			
 			
@@ -195,7 +195,7 @@ public class MapsEngine {
 
 
 	private KDTree buildKDTree(String nodeFile) throws IOException {
-		HashMap<String, Long> nodeLatPointers = new HashMap<>();
+		HashMap<String, Long> nodeLatLongPointers = new HashMap<>();
 		
 		
 		//Create a KDTree from the file
@@ -229,8 +229,8 @@ public class MapsEngine {
 			String currLat = list[0].substring(3,7);
 			//keep track of lat pointers:
 			if (!lat.equals(currLat)) {
-				if(!nodeLatPointers.containsKey(currLat)) {
-					nodeLatPointers.put(currLat, bytes);
+				if(!nodeLatLongPointers.containsKey(currLat)) {
+					nodeLatLongPointers.put(currLat, bytes);
 				}
 				lat = currLat;
 			} 
@@ -238,12 +238,64 @@ public class MapsEngine {
 			bytes += line.length() +1;
 		}
 
-		if(!nodeLatPointers.containsKey(lat)) {
-			nodeLatPointers.put(lat,bytes);
+		if(!nodeLatLongPointers.containsKey(lat)) {
+			nodeLatLongPointers.put(lat,bytes);
 		}
 		br.close();
 		
-		fileReader.setNodeLatPtrs(nodeLatPointers); //send hashmap to file reader
+		fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
+		return k;
+	}
+	
+	
+	private KDTree buildKDTreeLatLong(String nodeFile) throws IOException {
+		HashMap<String, Long> nodeLatLongPointers = new HashMap<>();
+		
+		
+		//Create a KDTree from the file
+		KDTree k = new KDTree();
+		BufferedReader br = new BufferedReader(new FileReader(nodeFile));
+		long bytes = 0;
+		
+		// read the first - unnecessary line
+		String line = br.readLine();
+		
+		bytes += line.getBytes().length + 1;
+				
+		String latLong = "9999.9999";
+
+		while (line != null) {
+			line = br.readLine();
+			if(line==null)
+				break;
+			
+			
+			String[] list = line.split("\t");
+			double x = Double.parseDouble(list[1]);
+			double y  = Double.parseDouble(list[2]);
+			//put in KDTree
+			Coordinates coordinate = new Coordinates(x,y);
+			String id = list[0];
+			k.insert(id, coordinate);
+
+			String currLatLong = list[0].substring(3,12) ;
+			//keep track of latLong pointers:
+			if (!latLong.equals(currLatLong)) {
+				if(!nodeLatLongPointers.containsKey(currLatLong)) {
+					nodeLatLongPointers.put(currLatLong, bytes);
+				}
+				latLong = currLatLong;
+			} 
+
+			bytes += line.getBytes().length +1;
+		}
+
+		if(!nodeLatLongPointers.containsKey(latLong)) {
+			nodeLatLongPointers.put(latLong,bytes);
+		}
+		br.close();
+		
+		fileReader.setNodeLatLongPtrs(nodeLatLongPointers); //send hashmap to file reader
 		return k;
 	}
 	

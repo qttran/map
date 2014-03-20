@@ -28,7 +28,7 @@ public class MapsIO {
 	
 	
 	private HashMap<String, Long> wayLatPointers;
-	private HashMap<String, Long> nodeLatPointers;
+	public HashMap<String, Long> nodeLatLongPointers;
 	
 	
 	
@@ -36,7 +36,7 @@ public class MapsIO {
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
 		
 		wayLatPointers = new HashMap<>(); //getAllWays fills this up
-		nodeLatPointers = new HashMap<>();
+		nodeLatLongPointers = new HashMap<>();
 		
 		
 		this.waysFile = waysFile;
@@ -61,8 +61,8 @@ public class MapsIO {
 
 	}
 	
-	public void setNodeLatPtrs(HashMap<String, Long> hm) {
-		nodeLatPointers=hm;
+	public void setNodeLatLongPtrs(HashMap<String, Long> hm) {
+		nodeLatLongPointers=hm;
 	}
 
 
@@ -574,10 +574,10 @@ public class MapsIO {
 		catch(Exception E) {
 			System.out.println(startTopLat);
 		}
-		long latTop = nodeLatPointers.get(startTopLat);
+		long latTop = nodeLatLongPointers.get(startTopLat);
 		long latBottom = file.length();
-		if(nodeLatPointers.containsKey(startBotLat))
-				latBottom = nodeLatPointers.get(startBotLat);
+		if(nodeLatLongPointers.containsKey(startBotLat))
+				latBottom = nodeLatLongPointers.get(startBotLat);
 		
 		
 		
