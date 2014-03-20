@@ -58,7 +58,7 @@ public class MapPanel extends JPanel {
 				ip = e.getPoint();
 				_map.repaint();
 			}
-			//System.out.println("CL:" + _location);
+
 			@Override
 			public void mouseMoved(MouseEvent e) {
 				ip = null;
@@ -115,7 +115,6 @@ public class MapPanel extends JPanel {
 		Graphics2D g2D = (Graphics2D) g;
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.setColor(Color.BLACK);
-		//g2D.setStroke(new BasicStroke((int)(0.00002*scale), BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
 
 		bottomRight = getCoordinates(MAP_WIDTH, 0);
@@ -147,6 +146,7 @@ public class MapPanel extends JPanel {
 				}
 			}
 		}
+
 		
 		Point2D.Double location = _gui.getCurrentLocation();
 		Point2D.Double destination = _gui.getDestination();

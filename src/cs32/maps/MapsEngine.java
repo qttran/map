@@ -29,6 +29,7 @@ public class MapsEngine {
 	private Map<String, Set<StreetNode>> streetNodesOnScreen; 
 	// map "4-lat""4-long" to streetNodes
 	
+	
 	public MapsEngine(String fpWays, String fpNodes, String fpIndex) throws IOException {
 		recentlyFoundKDNodes = new LinkedList<>();
 		streetNodesOnScreen = new HashMap<>();

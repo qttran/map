@@ -1,23 +1,13 @@
 package cs32.maps.gui;
 
 import java.awt.BorderLayout;
-import java.awt.CardLayout;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import cs32.maps.LatLong;
-import cs32.maps.LocationNode;
 import cs32.maps.MapsEngine;
 
 public class MapsGUI extends JFrame {

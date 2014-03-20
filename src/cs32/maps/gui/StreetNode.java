@@ -4,8 +4,6 @@ import java.awt.geom.Line2D;
 
 import com.google.common.base.Objects;
 
-import cs32.maps.LocationNode;
-
 public class StreetNode extends Line2D.Double{
 
 	private static final long serialVersionUID = 1L;
