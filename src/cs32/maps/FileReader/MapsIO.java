@@ -1,6 +1,5 @@
 package cs32.maps.FileReader;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -31,7 +30,9 @@ public class MapsIO {
 	public HashMap<String, Long> nodeLatLongPointers;
 	
 	
-	
+	private long nodes_maxLat = Long.MIN_VALUE;
+	private long nodes_minLat = Long.MAX_VALUE;
+	private long ways_maxLat = Long.MIN_VALUE;
 
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
 		
@@ -190,21 +191,21 @@ public class MapsIO {
 	 * Given a nodeID, search the *nodes file* for correct line
 	 * and return a single LocationNode object with all relevant info
 	 */
-	public LocationNode getLocationNode(String nodeID) throws IOException {
-		// do binary search
-		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
-		String[] line = binarySearch(raf, nodes_idCol, nodeID);
-		if(line==null) {
-			System.out.printf("No such node ID: %s\n", nodeID);
-			return null;
-		}
-
-		LocationNode ln = createLocationNode(line);
-
-		Preconditions.checkState(ln.id.equals(nodeID)); // id should be the same one that was requested
-		raf.close();////
-		return ln;		
-	}
+//	public LocationNode getLocationNode(String nodeID) throws IOException {
+//		// do binary search
+//		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+//		String[] line = binarySearch(raf, nodes_idCol, nodeID);
+//		if(line==null) {
+//			System.out.printf("No such node ID: %s\n", nodeID);
+//			return null;
+//		}
+//
+//		LocationNode ln = createLocationNode(line);
+//
+//		Preconditions.checkState(ln.id.equals(nodeID)); // id should be the same one that was requested
+//		raf.close();////
+//		return ln;		
+//	}
 
 	/* given a street name,
 	   read the INDEX file. Find ALL 
@@ -419,31 +420,34 @@ public class MapsIO {
 	 * Given a wayID, search the *ways file* for correct line
 	 * and return a Way object with all relevant info
 	 */
-	public List<Way> getAllWays() throws IOException {
-		List<Way> points = new ArrayList<>();
+	public Set<String> getAllStreetNames() throws IOException {
+		Set<String> streets = new HashSet<>();
 		
 		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
 		nextNewLine(raf); //skip header with titles
-		String inp = "";
+
 		long fileSize = raf.length();
+		long topOfCurrLine;
 		String lat = "9999";
+		String[] line;
+		String id, name, currLat;
 		
 		while(raf.getFilePointer() < fileSize) {
-			long topOfThisLine = raf.getFilePointer();
-			String[] line = readOneLine(raf);
-			String id = line[ways_idCol];
-			String startID = line[ways_startCol];
-			String endID = line[ways_endCol];
-			String name = line[ways_nameCol];
-			points.add(new Way(id, startID, endID, name));
+			// read line
+			topOfCurrLine = raf.getFilePointer();
+			line = readOneLine(raf);
+			id = line[ways_idCol];
+			name = line[ways_nameCol];
+		
+			// add street name to set
+			streets.add(name);
 			
-			String currLat = id.substring(3, 7);
+			// add latitude to hashmap
+			currLat = id.substring(3, 7);
 			if(!lat.equals(currLat)) {
 				if(!wayLatPointers.containsKey(currLat)) {
-					wayLatPointers.put(currLat, topOfThisLine);
-					
+					wayLatPointers.put(currLat, topOfCurrLine);
 				}
-				
 				lat = currLat;
 			}
 			
@@ -451,18 +455,168 @@ public class MapsIO {
 		}
 		raf.close();
 		
-		/*
-		 		string = string.toLowerCase();
-				string = string.replaceAll(" +", " ");
-				stringList.add(string.split("	")[1]);
-		 */
-
-		return points;
+		return streets;
 	}
 	
-	/** read within bytes of file **/
 	
+	
+	
+	
+	
+	
+	/**
+	 * 
+	 * @param latTop
+	 * @param latBottom
+	 * @return
+	 * @throws IOException
+	 */
+	public List<Way> getAllWaysWithin(String latTop, String latBottom) throws IOException {
 
+		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
+		
+		
+		long top = 0;
+		long bottom = raf.length();
+		
+		//TODO extend this so it checks if it contains the incremented key etc
+		if(wayLatPointers.containsKey(latTop)) {
+			top = wayLatPointers.get(latTop);
+		}
+		if (wayLatPointers.containsKey(latBottom)) {
+			bottom = wayLatPointers.get(latBottom);
+		}
+
+		raf.seek(top);
+
+		List<Way> wl = new ArrayList<>();
+		
+		//long fileSize = raf.length();
+		while(raf.getFilePointer() < bottom) {
+			String[] line = readOneLine(raf);
+			String id = line[ways_idCol];
+			String startID = line[ways_startCol];
+			String endID = line[ways_endCol];
+			String name = line[ways_nameCol];
+			wl.add(new Way(id, startID, endID, name));
+			nextNewLine(raf);
+		}
+		raf.close();
+
+		
+		return wl;
+	}
+
+
+	
+	//  "/w/11.22.234.53454"  ==>   "1122"
+	public static String getFirstFourFromID(String id) {
+		String s = id.substring(3, 5) + id.substring(6, 8);
+		return s;
+	}
+	
+	
+	/**
+	 * GET LOCATION NODE
+	 * 
+	 * 1. find bounds
+	 * 2. do binary search
+	 * 3. create LocationNode object
+	 */
+	public LocationNode getLocationNode(String nodeID) throws IOException {
+		RandomAccessFile file = new RandomAccessFile(nodesFile, "r");
+	
+		// get the bounds of where to look
+		long[] bounds = getByteBoundsNodeID(nodeID);
+		long latTop = bounds[0];
+		long latBottom = bounds[1];
+		
+		
+		// do a binary search
+		String foundLine[] = null;
+		file.seek(latTop);
+
+		long start = latTop;
+		long end = latBottom;
+		long mid = (start + end)/2;
+		while (end > start) {
+			file.seek(mid);
+			String[] currentLine = readOneLine(file);
+			int difference = nodeID.compareToIgnoreCase(currentLine[nodes_idCol]);
+			if (difference == 0) {
+				file.close();
+				foundLine = currentLine;
+				break;
+				
+			}
+			else if (difference > 0) 
+				start = mid + 1;
+			else 
+				end = mid - 1;
+			mid = (start + end)/2;
+		} 
+		file.close();
+		
+		if(foundLine == null) {
+			System.out.printf("ERROR: no such node %s\n", nodeID);
+			return null;
+		}
+		
+		return createLocationNode(foundLine);
+	}
+
+	
+	/**
+	 * helper for getLocationNode to find which bounds to look between
+	 * (by looking in the hashmap)
+	 */
+	public long[] getByteBoundsNodeID(String id) throws IOException{
+		// find max length
+		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+		long length = raf.length();
+		raf.close();
+		
+		// set top and bottom bounds
+		String givenLat = getFirstFourFromID(id);
+		Long longVal = Long.parseLong(givenLat);
+
+		
+		// to find upper bound, decrement lat until it is min OR until it is in hashtable
+		Long upper = longVal;
+		while(!(nodeLatLongPointers.containsKey(Long.toString(upper)) && upper > nodes_minLat)) {
+			upper--;
+		}
+		
+		// to find lower bound, increment lat until it is max OR until it is in hashtable
+		
+		Long lower = longVal+1;
+		while(!(nodeLatLongPointers.containsKey(Long.toString(lower)) && lower < nodes_maxLat)) {
+			longVal++;
+		}
+		
+		String topChunk = Long.toString(upper);
+		String bottomChunk = Long.toString(lower);
+
+		// now that you know chunks, get bounds (LONGS) from hashtable 
+		long latTop = 0; 
+		long latBottom = length;
+		if(nodeLatLongPointers.containsKey(topChunk)) {
+			latTop = nodeLatLongPointers.get(topChunk);
+		}
+		if(nodeLatLongPointers.containsKey(bottomChunk)) {
+			latBottom = nodeLatLongPointers.get(bottomChunk);
+		}
+		return new long[]{latTop, latBottom};
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	/** for finding column info @mcashton */
 	private int getColumn(String filePath, String colName) throws IOException {
 		RandomAccessFile raf = new RandomAccessFile(filePath, "r");
@@ -495,10 +649,9 @@ public class MapsIO {
 			bytesRead++;
 		}
 
-
 		//go back to starting point
 		raf.seek(originalLoc);
-		// TODO Auto-generated method stub
+
 		//read that number of bytes
 		byte[] b = new byte[bytesRead];
 		raf.readFully(b);
@@ -528,38 +681,6 @@ public class MapsIO {
 	}
 	
 	
-	
-	public List<Way> getWaysWithin(String latTop, String latBottom) throws IOException {
-
-		RandomAccessFile raf = new RandomAccessFile(waysFile, "r");
-		
-		
-		long top = wayLatPointers.get(latTop);
-		long bottom = raf.length();
-		if (wayLatPointers.containsKey(latBottom)) {
-			bottom = wayLatPointers.get(latBottom);
-		}
-
-		raf.seek(top);
-
-		List<Way> wl = new ArrayList<>();
-		
-		//long fileSize = raf.length();
-		while(raf.getFilePointer() < bottom) {
-			String[] line = readOneLine(raf);
-			String id = line[ways_idCol];
-			String startID = line[ways_startCol];
-			String endID = line[ways_endCol];
-			String name = line[ways_nameCol];
-			wl.add(new Way(id, startID, endID, name));
-			nextNewLine(raf);
-		}
-		raf.close();
-
-		
-		return wl;
-	}
-
 	
 	
 	public LocationNode getLocationNodeWithin(String nodeID) throws IOException {
@@ -613,30 +734,101 @@ public class MapsIO {
 
 	
 	
-	public String[] findBlockStart(RandomAccessFile file, int whichCol, String toFind) throws IOException {
-		file.seek(0);
-		nextNewLine(file);
-		long start = file.getFilePointer();
-		long end = (file.length() - 1);
-		long mid = (start + end)/2;
-		while (end > start) {
-			file.seek(mid);
-			String[] currentLine = readOneLine(file);
-			String wordHere = currentLine[whichCol].substring(3, 7); //first four digs of an ID
-			int difference = toFind.compareToIgnoreCase(currentLine[whichCol]);
-			if (difference == 0) {
-				//file.close();
-				return currentLine;
-			}
-			else if (difference > 0) 
-				start = mid + 1;
-			else 
-				end = mid - 1;
-			mid = (start + end)/2;
-		} 
-		file.close();
-		return null;
-	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+//	
+//	
+//	
+//	
+//	
+//	public List<LocationNode> getAllLocationNodesWithin(String latTop, String latBottom) throws IOException {
+//
+//		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+//		
+//		
+//		long top = 0;
+//		long bottom = raf.length();
+//		
+//		//TODO extend this so it checks if it contains the incremented key etc
+//		if(wayLatPointers.containsKey(latTop)) {
+//			top = wayLatPointers.get(latTop);
+//		}
+//		if (wayLatPointers.containsKey(latBottom)) {
+//			bottom = wayLatPointers.get(latBottom);
+//		}
+//
+//		raf.seek(top);
+//
+//		List<Way> wl = new ArrayList<>();
+//		
+//		//long fileSize = raf.length();
+//		while(raf.getFilePointer() < bottom) {
+//			String[] line = readOneLine(raf);
+//			String id = line[ways_idCol];
+//			String startID = line[ways_startCol];
+//			String endID = line[ways_endCol];
+//			String name = line[ways_nameCol];
+//			wl.add(new Way(id, startID, endID, name));
+//			nextNewLine(raf);
+//		}
+//		raf.close();
+//
+//		
+//		return wl;
+//	}
+//	
+//	
+//	
+//	/**
+//	 * helper for getLocationNode to find which bounds to look between
+//	 * (by looking in the hashmap)
+//	 */
+//	public long[] getByteBoundsNodeID(String id) throws IOException{
+//		// find max length
+//		RandomAccessFile raf = new RandomAccessFile(nodesFile, "r");
+//		long length = raf.length();
+//		raf.close();
+//		
+//		// set top and bottom bounds
+//		String givenLat = getFirstFourFromID(id);
+//		Long longVal = Long.parseLong(givenLat);
+//
+//		
+//		// to find upper bound, decrement lat until it is min OR until it is in hashtable
+//		Long upper = longVal;
+//		while(!(nodeLatLongPointers.containsKey(Long.toString(upper)) && upper > nodes_minLat)) {
+//			upper--;
+//		}
+//		
+//		// to find lower bound, increment lat until it is max OR until it is in hashtable
+//		
+//		Long lower = longVal+1;
+//		while(!(nodeLatLongPointers.containsKey(Long.toString(lower)) && lower < nodes_maxLat)) {
+//			longVal++;
+//		}
+//		
+//		String topChunk = Long.toString(upper);
+//		String bottomChunk = Long.toString(lower);
+//
+//		// now that you know chunks, get bounds (LONGS) from hashtable 
+//		long latTop = 0; 
+//		long latBottom = length;
+//		if(nodeLatLongPointers.containsKey(topChunk)) {
+//			latTop = nodeLatLongPointers.get(topChunk);
+//		}
+//		if(nodeLatLongPointers.containsKey(bottomChunk)) {
+//			latBottom = nodeLatLongPointers.get(bottomChunk);
+//		}
+//		return new long[]{latTop, latBottom};
+//	}
 
 }
 

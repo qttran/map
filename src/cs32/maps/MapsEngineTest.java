@@ -63,7 +63,7 @@ public class MapsEngineTest {
 		assertTrue(!en.fileReader.nodeLatLongPointers.containsKey("4999.6766"));
 		assertTrue(en.fileReader.nodeLatLongPointers.containsKey("4209.7169"));
 		System.out.println(en.fileReader.nodeLatLongPointers.get("4015.7374"));
-		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374"));
+		System.out.println(en.fileReader.nodeLatLongPointers.get("4017.7374") == 907);
 	}
 	
 
