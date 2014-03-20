@@ -179,11 +179,6 @@ public class MapsIO {
 		return null;
 	}
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 	/**
 	 * Given a wayID, search the *ways file* for correct line
 	 * and return a Way object with all relevant info
@@ -205,7 +200,7 @@ public class MapsIO {
 		String name = line[ways_nameCol];
 
 		Preconditions.checkState(id.equals(wayID)); // id should be the same one that was requested
-
+		raf.close();
 		return new Way(id, startID, endID, name);
 	}
 
@@ -521,59 +516,15 @@ public class MapsIO {
 			System.out.println("ERRORRR why does hashtable not contain "+chunkID);
 		}
 
-//		long[] bounds = getByteBoundsNodeID(nodeID);
-//		long latTop = bounds[0];
-//		long latBottom = bounds[1];
-		
-		
-<<<<<<< HEAD
-		// do a BINARY search
-=======
-		// do a binary search
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 		String foundLine[] = null;
 
 		file.seek(filePointerTop); // points to beginning of first line of chunk
 		foundLine = binarySearch(file, nodes_idCol, nodeID);
-<<<<<<< HEAD
-		
-=======
-//		foundLine = binarySearchID(file, nodes_idCol, chunkID);
-/*		while (file.getFilePointer() < fileSize) {
-			System.out.println("not over yet!.");
 
-		file.seek(latTop);
-
-		long start = latTop;
-		long end = latBottom;
-		long mid = (start + end)/2;
-		while (end > start) {
-			file.seek(mid);
-			String[] currentLine = readOneLine(file);
-			int difference = nodeID.compareToIgnoreCase(currentLine[nodes_idCol]);
-			if (difference == 0) {
-				file.close();
-				foundLine = currentLine;
-				break;
-				
-			}
-			else if (difference > 0) 
-				start = mid + 1;
-			else 
-				end = mid - 1;
-			mid = (start + end)/2;
-		} 
-		file.close();
-		*/
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 		if(foundLine == null) {
 			System.out.printf("ERROR: no such node %s\n", nodeID);
 			return null;
 		}
-<<<<<<< HEAD
-=======
-		
->>>>>>> 203df21255a7b31159888876b780490ea8c7f95a
 		return createLocationNode(foundLine);
 	}
 
@@ -731,7 +682,6 @@ public class MapsIO {
 	
 	//  "/w/1122.23453454"  ==>   "1122.2345"
 	public static String getKeyValueFromID(String id) {
-		System.out.println(id);
 		return id.substring(3,7) + "." + id.substring(8, 12);
 	}
 	
