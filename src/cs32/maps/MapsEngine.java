@@ -159,7 +159,7 @@ public class MapsEngine {
 		if(n2==null)
 			n2 = k.KDSearch(new Node("", end.x, end.y), 1)[0];
 
-
+		System.out.println(n1.ID + " " + n2.ID);
 		LocationNode startNode = fileReader.getLocationNode(n1.ID);
 		LocationNode endNode = fileReader.getLocationNode(n2.ID);
 
@@ -196,36 +196,9 @@ public class MapsEngine {
 	
 	// Should be called by the GUI, take in 2 bounding latlongs, return a set of nodes inside the bounding box 
 	public Set<StreetNode> getStreetNodes (Point2D.Double topLeft, Point2D.Double botRight) throws IOException {
-/*		double maxLat = this.fileReader.maxLat;
-		double minLat = this.fileReader.minLat;
-		double maxLon = this.fileReader.maxLon;
-		double minLon = this.fileReader.minLon;
-		//System.out.printf("\n\n%s, %s, %s, %s\n\n", maxLat, minLat, maxLon, minLon);
-		Point2D.Double expTop = expandPoint(topLeft, .5);
-		System.out.println(expTop);
-		//if out of bounds,  bring back in
-		expTop.x = expTop.x > maxLat ? maxLat : expTop.x;
-		expTop.x = expTop.x < minLat ? minLat : expTop.x;
-		expTop.y = expTop.y > maxLon ? maxLon : expTop.y;
-		expTop.y = expTop.y < minLon ? minLon : expTop.y;
-
-		Point2D.Double expBot = expandPoint(botRight, .5);
-		System.out.println(expTop+ "   " + expBot);
-		//if out of bounds,  bring back in
-		
-		expBot.x = expBot.x < minLat ? minLat : expBot.x;
-		expBot.x = expBot.x > maxLat ? maxLat : expBot.x;
-		
-		expBot.y = expBot.y > maxLon ? maxLon : expBot.y;
-		expBot.y = expBot.y < minLon ? minLon : expBot.y;
-		
-		
-		topLeft = expTop;
-		botRight = expBot;*/
 		
 		Set<StreetNode> result = new HashSet<StreetNode>();
 		//note: the direction  x/y - lat/long - ?? could be wrong ... not sure
-		//System.out.println(expTop+ "   " + expBot);
 		
 		String xRight = Double.toString(botRight.x+0.01).substring(0,2) + Double.toString(botRight.x+0.01).substring(3,5);
 		String xLeft = Double.toString(topLeft.x).substring(0,2) + Double.toString(topLeft.x).substring(3,5);

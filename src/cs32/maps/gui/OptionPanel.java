@@ -10,6 +10,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.lang.Thread.State;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Box;
@@ -41,6 +42,7 @@ public class OptionPanel extends JPanel {
 	private JButton directionsButton;
 	private int _currentBox = 1;
 	private boolean _isShifting = false;
+	private PathRequestThread _prthread;
 	
 	/*
 	 * option panel is contains text input and buttons for getting a shortest path and clearing the screen.
@@ -220,8 +222,13 @@ public class OptionPanel extends JPanel {
 
 			@Override
 			public void actionPerformed(ActionEvent e){
-				PathRequestThread _prthread = new PathRequestThread(_gui);
-				_prthread.start();
+				if (_prthread == null || _prthread.getState() == State.TERMINATED) {
+					_prthread = new PathRequestThread(_gui);
+					_prthread.start();
+				}
+				else {
+					System.out.println("Warning: Previous Search is not complete");
+				}
 			}
         	
         });
