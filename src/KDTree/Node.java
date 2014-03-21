@@ -9,18 +9,13 @@ public class Node {
 	private Node _leftChild;
 	private Node _rightChild;
 
-	/*
-		>Purpose:
-		>Input:
-		>Output:
-		>Throws:
-	*/
 	public Node(String ID, Double x, Double y){
 		this.ID = ID;
 		this.x = x;
 		this.y = y;
 	}
 	
+	//useful while comparing
 	public Double getSplitAxis(Axis axis) {
 		switch (axis){
 			case X:

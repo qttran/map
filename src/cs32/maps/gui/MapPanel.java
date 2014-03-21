@@ -72,19 +72,24 @@ public class MapPanel extends JPanel {
 
 		});
 		
+		//MouseWheeler listener allows MapPanel to respond to mouse wheel input.
+		//We use this listener for zooming.
 		this.addMouseWheelListener(new MouseWheelListener(){
 
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent e) {
+				//scale is altered by using an exponential function.
 				scale = Math.pow(scale, 1 - e.getWheelRotation()*0.02);
+				//there is a hard limit to allowable zoom out to compensate for file reading performance. 
 				if (scale < 35000D) scale = 35000D;
 				_map.repaint();
 			}
 			
 		});
-		
+		//MouseListener is used to determine where the user clicked on the screen for selecting a node.
 		this.addMouseListener(new MouseListener() {
 
+			//replace CurrentLocation or Destination with the intersection that is closest to the mouse click/
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (_currentVariable == 1){
@@ -114,23 +119,27 @@ public class MapPanel extends JPanel {
 		});
 	}
 
+	//paint method is necessary for displaying visuals. 
 	@Override
 	public void paint(Graphics g){
 		super.paint(g);
-		//get updated points_location
 		Graphics2D g2D = (Graphics2D) g;
 		g2D.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2D.setColor(Color.BLACK);
+		//select the bounding box using Rectangle2D.Double instance.
 		Rectangle2D.Double bb = new Rectangle2D.Double(_center.x - (MAP_WIDTH/2)/scale, _center.y - (MAP_HEIGHT/2)/scale, MAP_WIDTH/scale, MAP_HEIGHT/scale);
-
+		
+		//select the two corners that define the bounding box.
 		bottomRight = getCoordinates(MAP_WIDTH, 0);
 		topLeft = getCoordinates(0, MAP_HEIGHT);
 		
+		//if there is no ongoing request for an updated map, create a new request.
 		if(_umthread == null || _umthread.getState() == State.TERMINATED) {
 			_umthread = new UpdateMapThread(this);
 			_umthread.start();
 		}
 		
+		//paint all the street nodes using black.
 		for (StreetNode node: _nodes){
 			if(bb.intersectsLine(node)){
 				Point p1 = getPixelCoordinates(node.x1, node.y1);
@@ -139,6 +148,7 @@ public class MapPanel extends JPanel {
 			}
 		}
 
+		//if _path has any nodes in it, draw them with green.
 		if (_gui.getPath() != null) {
 			g2D.setColor(Color.GREEN);
 			g2D.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
@@ -153,7 +163,7 @@ public class MapPanel extends JPanel {
 			}
 		}
 
-		
+		//paint the current location and destination nodes.
 		Point2D.Double location = _gui.getCurrentLocation();
 		Point2D.Double destination = _gui.getDestination();
 
@@ -168,7 +178,8 @@ public class MapPanel extends JPanel {
 			g2D.fill(new Ellipse2D.Double(des.x-4, des.y-4, 8, 8));
 		}
 	}
-
+	
+	//helper methods for displaying purposes.
 	private Point getPixelCoordinates(double x, double y){
 		return new Point((int) ((scale*(y - _center.y)) + (MAP_WIDTH/2)), (int) -((scale*(x - _center.x)) - (MAP_HEIGHT/2)));
 	}
@@ -177,6 +188,7 @@ public class MapPanel extends JPanel {
 		return new Point2D.Double(_center.x + (-y + MAP_HEIGHT/2)/scale, _center.y + (x - MAP_WIDTH/2)/scale);
 	}
 	
+	//send an update request.
 	public void updateMap() {
 		try {
 			_nodes = _engine.getStreetNodes(topLeft, bottomRight);

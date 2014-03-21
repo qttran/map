@@ -22,6 +22,7 @@ public class KDTree {
 		_root = RecursiveKDBuilder(_starsToAdd, 0);
 	}
 
+	// get an approximate median -> get comparison axis -> compare to median -> put into different children
 	private Node RecursiveKDBuilder(List<Node> stars, Integer depth){
 		if (stars.size() == 1) return stars.get(0);
 		Axis axis = Axis.getAxis(depth);
@@ -50,37 +51,7 @@ public class KDTree {
 		return median;
 	}
 
-	private Node naiveHeuristic(List<Node> stars, Axis axis){
-		List<Integer> indices = new ArrayList<Integer>();
-
-		for (Integer index = 0; index< stars.size(); index++) {
-			indices.add(index);
-		}
-
-		Collections.shuffle(indices);
-		Integer sampleSize;
-		sampleSize = stars.size();
-		ComparableNode[] sample = new ComparableNode[sampleSize];
-
-		switch (axis) {
-		case X:
-			for (int i = 0; i < sampleSize; i++) {
-				Node n = stars.get(indices.remove(0));
-				sample[i] = new ComparableNode(n.x, n);
-			}
-			break;
-		default:
-			for (int i = 0; i < sampleSize; i++) {
-				Node n = stars.get(indices.remove(0));
-				sample[i] = new ComparableNode(n.y, n);
-			}
-		}
-
-		Arrays.sort(sample);
-		if (sampleSize % 2 == 0) return sample[sampleSize / 2].n;
-		else return sample[(sampleSize - 1) / 2].n;
-	}
-
+	// get a random sample of nodes -> sort them according to the comparison axis -> return the middle element. 
 	private Node MedianHeuristic(List<Node> stars, Axis axis){
 		List<Integer> indices = new ArrayList<Integer>();
 
@@ -92,7 +63,6 @@ public class KDTree {
 		Integer sampleSize;
 		if (stars.size() > 1000) sampleSize = 1000;
 		else sampleSize = stars.size();
-		//System.out.println("sampleSize: " + sampleSize);
 		ComparableNode[] sample = new ComparableNode[sampleSize];
 
 		switch (axis) {
@@ -114,11 +84,12 @@ public class KDTree {
 		else return sample[(sampleSize - 1) / 2].n;
 	}
 
+	
 	public enum Axis {
-		X, Y;
+		X, Y;	
 
 		static Axis getAxis(Integer depth){
-			Integer i = depth % 3;
+			Integer i = depth % 2;
 			switch (i){
 			case 0:
 				return X;

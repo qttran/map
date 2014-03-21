@@ -42,18 +42,23 @@ public class OptionPanel extends JPanel {
 	private int _currentBox = 1;
 	private boolean _isShifting = false;
 	
+	/*
+	 * option panel is contains text input and buttons for getting a shortest path and clearing the screen.
+	 */
+	
 	public OptionPanel(MapsEngine en, MapsGUI gui, MapPanel mp) { //also needs to know about Autocomplete engine
 		_engine = en;
 		_gui = gui;
 		_map = mp;
 		_ac = new AutocompleteEngine();
-		
-		//this.setPreferredSize(new Dimension(80,80));
+	
 		Set<String> names = _engine.getStreetNames();
 		_ac.addAllWords(names);
         
+		//new string model for the autocomplete suggestions
         listModel = new DefaultListModel<String>();
         
+        //autocomplete suggestions are presented in a list.
         suggestionList = new JList<String>(listModel);
         suggestionList.setVisible(false);
         suggestionList.setPreferredSize(new Dimension(220,100));
@@ -62,11 +67,13 @@ public class OptionPanel extends JPanel {
         suggestionList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         
         
+        //JTextFields for the text input and JLabels to display what they are for.
         JLabel street1Label = new JLabel("Street 1:");
         JLabel street2Label = new JLabel("Street 2:");
         street1Box = new JTextField(20);
         street2Box = new JTextField(20);
         
+        //Swing elements are aligned using multiple JPanels and layout managers.
         JPanel boxPanel = new JPanel();
         boxPanel.setLayout(new BoxLayout(boxPanel, BoxLayout.Y_AXIS));
         JPanel buttonPanel = new JPanel();
@@ -75,6 +82,8 @@ public class OptionPanel extends JPanel {
         street1Panel.setAlignmentX(Component.LEFT_ALIGNMENT);
         JPanel street2Panel = new JPanel();
         street2Panel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        
+        //intersection buttons allow users to set location and destination nodes using streetnames.
         JButton intersection1Button = new JButton("Set Location");
         intersection1Button.setAlignmentX(Component.LEFT_ALIGNMENT);
         JButton intersection2Button = new JButton("Set Destination");      
@@ -93,6 +102,7 @@ public class OptionPanel extends JPanel {
         this.add(boxPanel);
         this.add(suggestionList);
         
+        //clearButton and directionsButton for clearing the user input and creating a shortest path request.
         clearButton = new JButton("Clear");
         clearButton.setAlignmentX(Component.CENTER_ALIGNMENT);
         directionsButton = new JButton("Get Directions");
@@ -113,6 +123,7 @@ public class OptionPanel extends JPanel {
         street2Box.addKeyListener(new BoxKeyListener(2));
         street2Box.addFocusListener(new BoxFocusListener(2));
         
+        //multiple focus listeners allows us to implement an autocomplete suggestions list that disappears when not in use. 
         suggestionList.addFocusListener(new FocusListener(){
 
 			@Override
@@ -125,6 +136,8 @@ public class OptionPanel extends JPanel {
         	
         });
         
+        //users need to be able to navigate the list using keyboard inputs.
+        //pressing ENTER should transfer the selected item to the textField
         suggestionList.addKeyListener(new KeyListener(){
 
 			@Override
@@ -152,6 +165,7 @@ public class OptionPanel extends JPanel {
         	
         });
         
+        //similarly, users should also be able to transfer a selection to a textField by double clicking on the list.
         suggestionList.addMouseListener(new MouseListener(){
 
 			@Override
@@ -185,6 +199,7 @@ public class OptionPanel extends JPanel {
         	
         });
         
+        //clearButton resets all the user information in GUI when clicked. 
         clearButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -200,6 +215,7 @@ public class OptionPanel extends JPanel {
         	
         });
         
+        //directionsButton creates a new thread to retrieve the shortest path.
         directionsButton.addActionListener(new ActionListener(){
 
 			@Override
@@ -210,6 +226,7 @@ public class OptionPanel extends JPanel {
         	
         });
         
+        //intersection buttons use getNodeFromIntersection methods to select a node using two street names.
         intersection1Button.addActionListener(new ActionListener(){
 
 			@Override
@@ -277,6 +294,7 @@ public class OptionPanel extends JPanel {
 			
 	}
 	
+	//pressing up or down while typing in a TextField should shift the focus to the autocorrect list.
 	private class BoxKeyListener implements KeyListener {
 		private int _boxNo;
 		public BoxKeyListener(int i) {
