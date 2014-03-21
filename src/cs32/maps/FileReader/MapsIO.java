@@ -23,7 +23,6 @@ public class MapsIO {
 	public int index_nameCol, index_nodesCol;
 	
 	//1234.0000 1234.5678
-	//private HashMap<String, Long> wayLatPointers;
 	public HashMap<String, List<Long>> nodeLatLongPointers;
 	public HashMap<String, Long> nodeLatPointers;
 	
@@ -41,7 +40,6 @@ public class MapsIO {
 	
 	public MapsIO(String waysFile, String nodesFile, String indexFile) {
 		
-		//wayLatPointers = new HashMap<>(); //getAllWays fills this up
 		nodeLatLongPointers = new HashMap<>();
 		nodeLatPointers = new HashMap<String, Long>();
 		
@@ -62,7 +60,8 @@ public class MapsIO {
 			nodes_lonCol = getColumn(nodesFile, "longitude");
 			nodes_waysCol = getColumn(nodesFile, "ways");
 		} catch(IOException e) {
-			e.printStackTrace();
+			System.out.println("ERROR: invalid file");
+			System.exit(0);
 		}
 
 	}
