@@ -17,7 +17,6 @@ public class MapsCLI {
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 		String input = null;
 
-		System.out.println("Ready");
 		while(true) {
 			try {
 				input = in.readLine();
