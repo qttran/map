@@ -88,7 +88,7 @@ public class KDTree {
 	public enum Axis {
 		X, Y;	
 
-		static Axis getAxis(Integer depth){
+		static Axis getAxis(Integer depth){//nodes with same depth share a comparison axis.
 			Integer i = depth % 2;
 			switch (i){
 			case 0:

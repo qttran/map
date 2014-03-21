@@ -189,20 +189,20 @@ public class MapsEngine {
 	}
 	
 
-	public static Point2D.Double expandPoint(Point2D.Double latlon, double factor) {
-		return new Point2D.Double(latlon.x + (latlon.x * factor), latlon.y + (latlon.y * factor));
-	}
+//	public static Point2D.Double expandPoint(Point2D.Double latlon, double factor) {
+//		return new Point2D.Double(latlon.x + (latlon.x * factor), latlon.y + (latlon.y * factor));
+//	}
 	
 	
 	// Should be called by the GUI, take in 2 bounding latlongs, return a set of nodes inside the bounding box 
 	public Set<StreetNode> getStreetNodes (Point2D.Double topLeft, Point2D.Double botRight) throws IOException {
-		double maxLat = this.fileReader.maxLat;
+/*		double maxLat = this.fileReader.maxLat;
 		double minLat = this.fileReader.minLat;
 		double maxLon = this.fileReader.maxLon;
 		double minLon = this.fileReader.minLon;
-		System.out.printf("\n\n%s, %s, %s, %s\n\n", maxLat, minLat, maxLon, minLon);
+		//System.out.printf("\n\n%s, %s, %s, %s\n\n", maxLat, minLat, maxLon, minLon);
 		Point2D.Double expTop = expandPoint(topLeft, .5);
-
+		System.out.println(expTop);
 		//if out of bounds,  bring back in
 		expTop.x = expTop.x > maxLat ? maxLat : expTop.x;
 		expTop.x = expTop.x < minLat ? minLat : expTop.x;
@@ -210,7 +210,7 @@ public class MapsEngine {
 		expTop.y = expTop.y < minLon ? minLon : expTop.y;
 
 		Point2D.Double expBot = expandPoint(botRight, .5);
-		
+		System.out.println(expTop+ "   " + expBot);
 		//if out of bounds,  bring back in
 		
 		expBot.x = expBot.x < minLat ? minLat : expBot.x;
@@ -221,18 +221,16 @@ public class MapsEngine {
 		
 		
 		topLeft = expTop;
-		botRight = expBot;
+		botRight = expBot;*/
 		
 		Set<StreetNode> result = new HashSet<StreetNode>();
 		//note: the direction  x/y - lat/long - ?? could be wrong ... not sure
-		System.out.println(expTop+ "   " + expBot);
+		//System.out.println(expTop+ "   " + expBot);
 		
 		String xRight = Double.toString(botRight.x+0.01).substring(0,2) + Double.toString(botRight.x+0.01).substring(3,5);
 		String xLeft = Double.toString(topLeft.x).substring(0,2) + Double.toString(topLeft.x).substring(3,5);
 		String yTop = Double.toString(topLeft.y-0.01).substring(1,3) + Double.toString(topLeft.y-0.01).substring(4,6);
 		String yBot = Double.toString(botRight.y).substring(1,3) + Double.toString(botRight.y).substring(4,6);
-
-		System.out.println(xRight + ", " + xLeft + ", " + yTop + ", " + yBot );
 		
 		//ensure that does not go out of the borders of map:
 		xRight = Math.min(Integer.parseInt(xRight),this.fileReader.maxLatChunk) + "";
@@ -240,14 +238,10 @@ public class MapsEngine {
 		xLeft = Math.min(Integer.parseInt(xLeft),this.fileReader.maxLatChunk) + "";
 		xLeft = Math.max(Integer.parseInt(xLeft),this.fileReader.minLatChunk) + "";
 		
-		
-		
 		yTop = Math.min(Integer.parseInt(yTop),this.fileReader.maxLonChunk) + "";
 		yTop = Math.max(Integer.parseInt(yTop),this.fileReader.minLonChunk) + "";
 		yBot = Math.min(Integer.parseInt(yBot),this.fileReader.maxLonChunk) + "";
 		yBot = Math.max(Integer.parseInt(yBot),this.fileReader.minLonChunk) + "";
-
-		System.out.println(xRight + ", " + xLeft + ", " + yTop + ", " + yBot );
 
 		/**
 		 * loop through all mini chunks -- if they are already in hashtable, don't get them (get them from hashtable)

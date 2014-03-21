@@ -203,13 +203,7 @@ public class MapsEngineTest {
 		String s = e.getOutputFromIntersection(streets);
 		System.out.println(s);
 	}
-	
-	@Test
-	public void expandDoubleTest() {
-		Point2D.Double d = new Point2D.Double(50, 50);
-		Point2D.Double exp = MapsEngine.expandPoint(d, .50);
-		assertTrue(exp.x==75.0 && exp.y == 75.0);
-	}
+
 //	
 //	
 //	@Test
