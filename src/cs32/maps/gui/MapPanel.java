@@ -94,6 +94,7 @@ public class MapPanel extends JPanel {
 			public void mouseClicked(MouseEvent e) {
 				if (_currentVariable == 1){
 					_gui.setCurrentLocation(_engine.getNearestPoint(getCoordinates(e.getPoint().x, e.getPoint().y)));
+					
 					_currentVariable = 2;
 					_map.repaint();
 				}
@@ -176,6 +177,13 @@ public class MapPanel extends JPanel {
 			Point des = getPixelCoordinates(destination.x, destination.y);
 			g2D.setColor(Color.ORANGE);
 			g2D.fill(new Ellipse2D.Double(des.x-4, des.y-4, 8, 8));
+		}
+		
+		if (_gui.getSearching()){
+			g2D.setColor(Color.RED);
+			g2D.fillOval((MAP_HEIGHT/2)-40, (MAP_WIDTH/2)-40, 80, 80);
+			g2D.setColor(Color.WHITE);
+			g2D.drawString("Searching", (MAP_HEIGHT/2)-30, (MAP_WIDTH/2)+5);
 		}
 	}
 	

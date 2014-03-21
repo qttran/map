@@ -6,8 +6,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
-
-import KDTree.KDTree;
 import KDTree.Node;
 
 import com.google.common.base.Preconditions;
@@ -375,6 +373,9 @@ public class MapsIO {
 	public String getIntersection(String street1, String street2) throws IOException{
 		Set<String> idSetOne = this.getNodeIDsFromStreet(street1);
 		Set<String> idSetTwo = this.getNodeIDsFromStreet(street2);
+		
+		if (idSetOne == null || idSetTwo == null) return null;
+		
 		for(Iterator<String> iter = idSetOne.iterator(); iter.hasNext(); ) {
 			String id = iter.next();
 			if(idSetTwo.contains(id)) {

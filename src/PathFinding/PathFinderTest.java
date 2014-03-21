@@ -4,10 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
-
 import org.junit.Test;
-
 import cs32.maps.LocationNode;
 import cs32.maps.FileReader.MapsIO;
 

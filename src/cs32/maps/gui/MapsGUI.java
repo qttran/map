@@ -19,6 +19,7 @@ public class MapsGUI extends JFrame {
 	private Point2D.Double _destination;
 	private Set<StreetNode> _path;
 	private MapsEngine _engine;
+	private boolean _isSearching = false;
 	
 	public MapsGUI(MapsEngine en) throws IOException {
 /*		
@@ -72,8 +73,11 @@ public class MapsGUI extends JFrame {
 	 */
 	public void setPath(){
 		if (_location != null && _destination != null) {
+			_isSearching = true;
 			try {
 				_path = _engine.getPathStreetNodes(_location, _destination);
+				_isSearching = false;
+				
 			} catch (IOException e) {
 				_path = null;
 			}
@@ -83,5 +87,13 @@ public class MapsGUI extends JFrame {
 	
 	public Set<StreetNode> getPath(){
 		return _path;
+	}
+	
+	public void setSearching(boolean b) {
+		_isSearching = b;
+	}
+	
+	public boolean getSearching() {
+		return _isSearching;
 	}
 }

@@ -177,7 +177,10 @@ public class PathFinder {
 
 			//remove 'curr' from PQ
 			curr = pq.poll(); 
-			Preconditions.checkNotNull(_nodeMap.remove(curr.locNode.id));
+			try{
+				Preconditions.checkNotNull(_nodeMap.remove(curr.locNode.id));
+			} catch (NullPointerException e) {}
+			
 			
 			
 			if(curr.locNode.id.equals(goal.locNode.id)) { // found the best path!

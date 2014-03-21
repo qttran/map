@@ -1,8 +1,6 @@
 package cs32.maps.FileReader;
 
 import static org.junit.Assert.assertTrue;
-
-import java.awt.geom.Point2D;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
